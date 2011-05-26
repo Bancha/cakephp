@@ -55,8 +55,14 @@ class CakeTestLoader extends PHPUnit_Runner_StandardTestSuiteLoader {
 		} elseif (!empty($params['app'])) {
 			$result = APP_TEST_CASES;
 		} else if (!empty($params['plugin'])) {
-			$pluginPath = App::pluginPath($params['plugin']);
-			$result = $pluginPath . 'tests' . DS . 'Case';
+			if (!CakePlugin::loaded($params['plugin'])) {
+				try {
+					CakePlugin::load($params['plugin']);
+					$result = CakePlugin::path($params['plugin']) . 'Test' . DS . 'Case';
+				} catch (MissingPluginException $e) {}
+			} else {
+				$result = CakePlugin::path($params['plugin']) . 'Test' . DS . 'Case';
+			}
 		}
 		return $result;
 	}

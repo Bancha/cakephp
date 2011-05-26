@@ -49,23 +49,21 @@ class ProjectTask extends Shell {
 			$project = $this->args[0];
 		}
 
-		if ($project && isset($_SERVER['PWD'])) {
-			$project = $_SERVER['PWD'] . DS . $project;
-		}
-
 		while (!$project) {
 			$prompt = __d('cake_console', "What is the path to the project you want to bake?");
 			$project = $this->in($prompt, null, APP_PATH . 'myapp');
 		}
 
-		if ($project) {
-			$response = false;
-			while ($response == false && is_dir($project) === true && file_exists($project . 'config' . 'core.php')) {
-				$prompt = __d('cake_console', '<warning>A project already exists in this location:</warning> %s Overwrite?', $project);
-				$response = $this->in($prompt, array('y','n'), 'n');
-				if (strtolower($response) === 'n') {
-					$response = $project = false;
-				}
+		if ($project && !Folder::isAbsolute($project) && isset($_SERVER['PWD'])) {
+			$project = $_SERVER['PWD'] . DS . $project;
+		}
+
+		$response = false;
+		while ($response == false && is_dir($project) === true && file_exists($project . 'Config' . 'core.php')) {
+			$prompt = __d('cake_console', '<warning>A project already exists in this location:</warning> %s Overwrite?', $project);
+			$response = $this->in($prompt, array('y','n'), 'n');
+			if (strtolower($response) === 'n') {
+				$response = $project = false;
 			}
 		}
 
@@ -82,14 +80,14 @@ class ProjectTask extends Shell {
 			if ($this->securitySalt($path) === true) {
 				$this->out(__d('cake_console', ' * Random hash key created for \'Security.salt\''));
 			} else {
-				$this->err(__d('cake_console', 'Unable to generate random hash for \'Security.salt\', you should change it in %s', CONFIGS . 'core.php'));
+				$this->err(__d('cake_console', 'Unable to generate random hash for \'Security.salt\', you should change it in %s', APP . 'Config' . DS . 'core.php'));
 				$success = false;
 			}
 
 			if ($this->securityCipherSeed($path) === true) {
 				$this->out(__d('cake_console', ' * Random seed created for \'Security.cipherSeed\''));
 			} else {
-				$this->err(__d('cake_console', 'Unable to generate random seed for \'Security.cipherSeed\', you should change it in %s', CONFIGS . 'core.php'));
+				$this->err(__d('cake_console', 'Unable to generate random seed for \'Security.cipherSeed\', you should change it in %s', APP . 'Config' . DS . 'core.php'));
 				$success = false;
 			}
 
@@ -165,31 +163,34 @@ class ProjectTask extends Shell {
 
 		$looksGood = $this->in(__d('cake_console', 'Look okay?'), array('y', 'n', 'q'), 'y');
 
-		if (strtolower($looksGood) == 'y') {
-			$Folder = new Folder($skel);
-			if (!empty($this->params['empty'])) {
-				$skip = array();
-			}
+		switch (strtolower($looksGood)) {
+			case 'y':
+				$Folder = new Folder($skel);
+				if (!empty($this->params['empty'])) {
+					$skip = array();
+				}
 
-			if ($Folder->copy(array('to' => $path, 'skip' => $skip))) {
-				$this->hr();
-				$this->out(__d('cake_console', '<success>Created:</success> %s in %s', $app, $path));
-				$this->hr();
-			} else {
-				$this->err(__d('cake_console', "<error>Could not create</error> '%s' properly.", $app));
+				if ($Folder->copy(array('to' => $path, 'skip' => $skip))) {
+					$this->hr();
+					$this->out(__d('cake_console', '<success>Created:</success> %s in %s', $app, $path));
+					$this->hr();
+				} else {
+					$this->err(__d('cake_console', "<error>Could not create</error> '%s' properly.", $app));
+					return false;
+				}
+
+				foreach ($Folder->messages() as $message) {
+					$this->out(String::wrap(' * ' . $message), 1, Shell::VERBOSE);
+				}
+
+				return true;
+			case 'n':
+				unset($this->args[0]);
+				$this->execute();
 				return false;
-			}
-
-			foreach ($Folder->messages() as $message) {
-				$this->out(String::wrap(' * ' . $message), 1, Shell::VERBOSE);
-			}
-
-			return true;
-		} elseif (strtolower($looksGood) == 'q') {
-			$this->out(__d('cake_console', 'Bake Aborted.'));
-		} else {
-			$this->execute(false);
-			return false;
+			case 'q':
+				$this->out(__d('cake_console', '<error>Bake Aborted.</error>'));
+				return false;
 		}
 	}
 
@@ -201,8 +202,8 @@ class ProjectTask extends Shell {
  */
 	public function createHome($dir) {
 		$app = basename($dir);
-		$path = $dir . 'View' . DS . 'pages' . DS;
-		$source = LIBS . 'Console' . DS . 'templates' . DS .'default' . DS . 'views' . DS . 'home.ctp';
+		$path = $dir . 'View' . DS . 'Pages' . DS;
+		$source = CAKE . 'Console' . DS . 'templates' . DS .'default' . DS . 'views' . DS . 'home.ctp';
 		include($source);
 		return $this->createFile($path.'home.ctp', $output);
 	}
@@ -218,7 +219,7 @@ class ProjectTask extends Shell {
 		$File = new File($path . 'Console' . DS . 'cake.php');
 		$contents = $File->read();
 		if (preg_match('/(__CAKE_PATH__)/', $contents, $match)) {
-			$path = LIBS . 'Console' . DS;
+			$path = CAKE . 'Console' . DS;
 			$replacement = "'" . str_replace(DS, "' . DIRECTORY_SEPARATOR . '", $path) . "'";
 			$result = str_replace($match[0], $replacement, $contents);
 			if ($File->write($result)) {
@@ -236,7 +237,7 @@ class ProjectTask extends Shell {
  * @return boolean Success
  */
 	public function securitySalt($path) {
-		$File = new File($path . 'config' . DS . 'core.php');
+		$File = new File($path . 'Config' . DS . 'core.php');
 		$contents = $File->read();
 		if (preg_match('/([\s]*Configure::write\(\'Security.salt\',[\s\'A-z0-9]*\);)/', $contents, $match)) {
 			$string = Security::generateAuthKey();
@@ -256,11 +257,11 @@ class ProjectTask extends Shell {
  * @return boolean Success
 	 */
 	public function securityCipherSeed($path) {
-		$File = new File($path . 'config' . DS . 'core.php');
+		$File = new File($path . 'Config' . DS . 'core.php');
 		$contents = $File->read();
 		if (preg_match('/([\s]*Configure::write\(\'Security.cipherSeed\',[\s\'A-z0-9]*\);)/', $contents, $match)) {
 			if (!class_exists('Security')) {
-				require LIBS . 'Utility' . DS . 'security.php';
+				require CAKE . 'Utility' . DS . 'security.php';
 			}
 			$string = substr(bin2hex(Security::generateAuthKey()), 0, 30);
 			$result = str_replace($match[0], "\t" . 'Configure::write(\'Security.cipherSeed\', \''.$string.'\');', $contents);
@@ -282,7 +283,7 @@ class ProjectTask extends Shell {
 		if (dirname($path) !== CAKE_CORE_INCLUDE_PATH) {
 			$File = new File($path . 'webroot' . DS . 'index.php');
 			$contents = $File->read();
-			if (preg_match('/([\s]*define\(\'CAKE_CORE_INCLUDE_PATH\',[\s\'A-z0-9]*\);)/', $contents, $match)) {
+			if (preg_match('/([\s]*define\(\'CAKE_CORE_INCLUDE_PATH\',[\s\'A-z0-9\.]*\);)/', $contents, $match)) {
 				$root = strpos(CAKE_CORE_INCLUDE_PATH, '/') === 0 ? " DS . '" : "'";
 				$result = str_replace($match[0], "\n\t\tdefine('CAKE_CORE_INCLUDE_PATH', " . $root . str_replace(DS, "' . DS . '", trim(CAKE_CORE_INCLUDE_PATH, DS)) . "');", $contents);
 				if (!$File->write($result)) {
@@ -313,7 +314,7 @@ class ProjectTask extends Shell {
  * @return boolean Success
  */
 	public function cakeAdmin($name) {
-		$path = (empty($this->configPath)) ? CONFIGS : $this->configPath;
+		$path = (empty($this->configPath)) ? APP . 'Config' . DS : $this->configPath;
 		$File = new File($path . 'core.php');
 		$contents = $File->read();
 		if (preg_match('%(\s*[/]*Configure::write\(\'Routing.prefixes\',[\s\'a-z,\)\(]*\);)%', $contents, $match)) {
@@ -387,7 +388,7 @@ class ProjectTask extends Shell {
 			))->addOption('empty', array(
 				'help' => __d('cake_console', 'Create empty files in each of the directories. Good if you are using git')
 			))->addOption('skel', array(
-				'default' => current(App::core('Console')) . DS . 'templates' . DS . 'skel',
+				'default' => current(App::core('Console')) . 'templates' . DS . 'skel',
 				'help' => __d('cake_console', 'The directory layout to use for the new application skeleton. Defaults to cake/console/templates/skel of CakePHP used to create the project.')
 			));
 	}

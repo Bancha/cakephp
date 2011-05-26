@@ -37,7 +37,7 @@ endif;
 <p>
 <?php
 	\$filePresent = null;
-	if (file_exists(CONFIGS . 'database.php')):
+	if (file_exists(APP . 'Config' . DS . 'database.php')):
 		echo '<span class=\"notice success\">';
 			echo __('Your database configuration file is present.');
 			\$filePresent = true;
@@ -90,7 +90,7 @@ $output .= "<?php\n";
 $output .= "\techo __('To change the content of this page, edit: %s\n";
 $output .= "\t\tTo change its layout, edit: %s\n";
 $output .= "\t\tYou can also add some CSS styles for your pages at: %s',\n";
-$output .= "\t\tAPP . 'views' . DS . 'pages' . DS . 'home.ctp.<br />',  APP . 'views' . DS . 'layouts' . DS . 'default.ctp.<br />', APP . 'webroot' . DS . 'css');\n";
+$output .= "\t\tAPP . 'View' . DS . 'Pages' . DS . 'home.ctp.<br />',  APP . 'View' . DS . 'Layouts' . DS . 'default.ctp.<br />', APP . 'webroot' . DS . 'css');\n";
 $output .= "?>\n";
 $output .= "</p>\n";
 ?>

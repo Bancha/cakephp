@@ -28,7 +28,7 @@ App::uses('Folder', 'Utility');
 class PluginTask extends Shell {
 
 /**
- * path to CONTROLLERS directory
+ * path to plugins directory
  *
  * @var array
  * @access public
@@ -41,7 +41,7 @@ class PluginTask extends Shell {
  * @return void
  */
 	function initialize() {
-		$this->path = APP . 'plugins' . DS;
+		$this->path = current(App::path('plugins'));
 	}
 
 /**
@@ -76,7 +76,7 @@ class PluginTask extends Shell {
 		}
 
 		if (!$this->bake($plugin)) {
-			$this->error(__d('cake_console', "An error occured trying to bake: %s in %s", $plugin, $this->path . Inflector::underscore($pluginPath)));
+			$this->error(__d('cake_console', "An error occured trying to bake: %s in %s", $plugin, $this->path . Inflector::camelize($plugin)));
 		}
 	}
 
@@ -88,14 +88,13 @@ class PluginTask extends Shell {
  * @return bool
  */
 	public function bake($plugin) {
-		$pluginPath = Inflector::underscore($plugin);
-
+		$pluginPath = Inflector::camelize($plugin);
 		$pathOptions = App::path('plugins');
 		if (count($pathOptions) > 1) {
 			$this->findPath($pathOptions);
 		}
 		$this->hr();
-		$this->out(__d('cake_console', "<info>Plugin Name:</info> %s",  $plugin));
+		$this->out(__d('cake_console', "<info>Plugin Name:</info> %s", $plugin));
 		$this->out(__d('cake_console', "<info>Plugin Directory:</info> %s", $this->path . $pluginPath));
 		$this->hr();
 
@@ -104,18 +103,18 @@ class PluginTask extends Shell {
 		if (strtolower($looksGood) == 'y') {
 			$Folder = new Folder($this->path . $pluginPath);
 			$directories = array(
-				'config' . DS . 'schema',
+				'Config' . DS . 'schema',
 				'Model' . DS . 'Behavior',
 				'Model' . DS . 'Datasource',
 				'Console' . DS . 'Command' . DS . 'Task',
 				'Controller' . DS . 'Component',
 				'Lib',
 				'View' . DS . 'Helper',
-				'tests' . DS . 'Case' . DS . 'Controller' . DS . 'Component',
-				'tests' . DS . 'Case' . DS . 'View' . DS . 'Helper',
-				'tests' . DS . 'Case' . DS . 'Model' . DS . 'Behavior',
-				'tests' . DS . 'Fixture',
-				'vendors',
+				'Test' . DS . 'Case' . DS . 'Controller' . DS . 'Component',
+				'Test' . DS . 'Case' . DS . 'View' . DS . 'Helper',
+				'Test' . DS . 'Case' . DS . 'Model' . DS . 'Behavior',
+				'Test' . DS . 'Fixture',
+				'Vendor',
 				'webroot'
 			);
 
@@ -164,6 +163,11 @@ class PluginTask extends Shell {
  */
 	public function findPath($pathOptions) {
 		$valid = false;
+		foreach ($pathOptions as $i =>$path) {
+			if(!is_dir($path)) {
+				array_splice($pathOptions, $i, 1);
+			}
+		}
 		$max = count($pathOptions);
 		while (!$valid) {
 			foreach ($pathOptions as $i => $option) {
@@ -185,7 +189,7 @@ class PluginTask extends Shell {
  */
 	public function getOptionParser() {
 		$parser = parent::getOptionParser();
-		return $parser->description(__d('cake_console', 
+		return $parser->description(__d('cake_console',
 			'Create the directory structure, AppModel and AppController classes for a new plugin. ' .
 			'Can create plugins in any of your bootstrapped plugin paths.'
 		))->addArgument('name', array(

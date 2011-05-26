@@ -17,12 +17,6 @@
  * @since         CakePHP(tm) v 1.2.0.6833
  * @license       MIT License (http://www.opensource.org/licenses/mit-license.php)
  */
-if (function_exists('mb_internal_encoding')) {
-	$encoding = Configure::read('App.encoding');
-	if (!empty($encoding)) {
-		mb_internal_encoding($encoding);
-	}
-}
 
 /**
  * Find position of first occurrence of a case-insensitive string.
@@ -1073,7 +1067,7 @@ class Multibyte {
 			}
 			if (!Configure::configured('_cake_core_')) {
 				App::uses('PhpReader', 'Configure');
-				Configure::config('_cake_core_', new PhpReader(CAKE . 'config' . DS));
+				Configure::config('_cake_core_', new PhpReader(CAKE . 'Config' . DS));
 			}
 			Configure::load('unicode' . DS . 'casefolding' . DS . $range, '_cake_core_');
 			self::$__caseFold[$range] = Configure::read($range);

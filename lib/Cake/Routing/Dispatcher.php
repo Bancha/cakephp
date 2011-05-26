@@ -33,7 +33,7 @@ App::uses('Debugger', 'Utility');
 
 /**
  * Dispatcher converts Requests into controller actions.  It uses the dispatched Request
- * to locate and load the correct controller.  If found, the requested action is called on 
+ * to locate and load the correct controller.  If found, the requested action is called on
  * the controller.
  *
  * @package       cake
@@ -64,7 +64,7 @@ class Dispatcher {
  * to autoRender, via Controller::$autoRender, then Dispatcher will render the view.
  *
  * Actions in CakePHP can be any public method on a controller, that is not declared in Controller.  If you
- * want controller methods to be public and in-accesible by URL, then prefix them with a `_`.  
+ * want controller methods to be public and in-accesible by URL, then prefix them with a `_`.
  * For example `public function _loadPosts() { }` would not be accessible via URL.  Private and protected methods
  * are also not accessible via URL.
  *
@@ -103,7 +103,7 @@ class Dispatcher {
 	}
 
 /**
- * Check if the request's action is marked as private, with an underscore, of if the request is attempting to 
+ * Check if the request's action is marked as private, with an underscore, of if the request is attempting to
  * directly accessing a prefixed action.
  *
  * @param CakeRequest $request The request to check
@@ -236,7 +236,8 @@ class Dispatcher {
  * @return void
  */
 	protected function _loadRoutes() {
-		include CONFIGS . 'routes.php';
+		include APP . 'Config' . DS . 'routes.php';
+		CakePlugin::routes();
 	}
 
 /**
@@ -278,7 +279,7 @@ class Dispatcher {
 		}
 		$filters = Configure::read('Asset.filter');
 		$isCss = (
-			strpos($url, 'ccss/') === 0 || 
+			strpos($url, 'ccss/') === 0 ||
 			preg_match('#^(theme/([^/]+)/ccss/)|(([^/]+)(?<!css)/ccss)/#i', $url)
 		);
 		$isJs = (
@@ -313,12 +314,14 @@ class Dispatcher {
 				$assetFile = $path . $fileFragment;
 			}
 		} else {
-			$plugin = $parts[0];
-			unset($parts[0]);
-			$fileFragment = implode(DS, $parts);
-			$pluginWebroot = App::pluginPath($plugin) . 'webroot' . DS;
-			if (file_exists($pluginWebroot . $fileFragment)) {
-				$assetFile = $pluginWebroot . $fileFragment;
+			$plugin = Inflector::camelize($parts[0]);
+			if (CakePlugin::loaded($plugin)) {
+				unset($parts[0]);
+				$fileFragment = implode(DS, $parts);
+				$pluginWebroot = CakePlugin::path($plugin) . 'webroot' . DS;
+				if (file_exists($pluginWebroot . $fileFragment)) {
+					$assetFile = $pluginWebroot . $fileFragment;
+				}
 			}
 		}
 
