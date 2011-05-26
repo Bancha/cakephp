@@ -183,7 +183,7 @@ class Router {
 	}
 
 /**
- * Gets the named route elements for use in app/config/routes.php
+ * Gets the named route elements for use in app/Config/routes.php
  *
  * @return array Named route elements
  * @see Router::$__namedExpressions
@@ -579,7 +579,7 @@ class Router {
  * @access private
  */
 	private static function __connectDefaultRoutes() {
-		if ($plugins = App::objects('plugin')) {
+		if ($plugins = CakePlugin::loaded()) {
 			App::uses('PluginShortRoute', 'Routing/Route');
 			foreach ($plugins as $key => $value) {
 				$plugins[$key] = Inflector::underscore($value);
@@ -1029,7 +1029,8 @@ class Router {
 
 		unset(
 			$params['pass'], $params['named'], $params['paging'], $params['models'], $params['url'], $url['url'],
-			$params['autoRender'], $params['bare'], $params['requested'], $params['return']
+			$params['autoRender'], $params['bare'], $params['requested'], $params['return'],
+			$params['_Token']
 		);
 		$params = array_merge($params, $pass, $named);
 		if (!empty($url)) {

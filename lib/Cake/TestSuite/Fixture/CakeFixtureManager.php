@@ -105,7 +105,7 @@ class CakeFixtureManager {
 
 			if (strpos($fixture, 'core.') === 0) {
 				$fixture = substr($fixture, strlen('core.'));
-				$fixturePaths[] = LIBS . 'tests' . DS . 'Fixture';
+				$fixturePaths[] = CAKE . 'Test' . DS . 'Fixture';
 			} elseif (strpos($fixture, 'app.') === 0) {
 				$fixture = substr($fixture, strlen('app.'));
 				$fixturePaths = array(
@@ -116,13 +116,13 @@ class CakeFixtureManager {
 				$pluginName = $parts[1];
 				$fixture = $parts[2];
 				$fixturePaths = array(
-					App::pluginPath($pluginName) . 'tests' . DS . 'Fixture',
+					CakePlugin::path(Inflector::camelize($pluginName)) . 'Test' . DS . 'Fixture',
 					TESTS . 'Fixture'
 				);
 			} else {
 				$fixturePaths = array(
 					TESTS . 'Fixture',
-					LIBS  . 'tests' . DS . 'Fixture'
+					CAKE  . 'Test' . DS . 'Fixture'
 				);
 			}
 
@@ -149,11 +149,11 @@ class CakeFixtureManager {
  * @return void
  */
 	protected function _setupTable($fixture, $db = null, $drop = true) {
-		if (!empty($fixture->created)) {
-			return;
-		}
 		if (!$db) {
 			$db = $this->_db;
+		}
+		if (!empty($fixture->created) && $fixture->created == $db->configKeyName) {
+			return;
 		}
 
 		$cacheSources = $db->cacheSources;
@@ -165,10 +165,10 @@ class CakeFixtureManager {
 		if ($drop && in_array($table, $sources)) {
 			$fixture->drop($db);
 			$fixture->create($db);
-			$fixture->created = true;
+			$fixture->created = $db->configKeyName;
 		} elseif (!in_array($table, $sources)) {
 			$fixture->create($db);
-			$fixture->created = true;
+			$fixture->created = $db->configKeyName;
 		}
 	}
 
