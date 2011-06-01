@@ -92,7 +92,7 @@ class App {
 		'class' => array('extends' => null, 'core' => true),
 		'file' => array('extends' => null, 'core' => true),
 		'model' => array('extends' => 'AppModel', 'core' => false),
-		'behavior' => array('extends' => 'ModelBehavior', 'core' => true),
+		'behavior' => array( 'suffix' => 'Behavior', 'extends' => 'Model/ModelBehavior', 'core' => true),
 		'controller' => array('suffix' => 'Controller', 'extends' => 'AppController', 'core' => true),
 		'component' => array('suffix' => 'Component', 'extends' => null, 'core' => true),
 		'lib' => array('extends' => null, 'core' => true),
@@ -247,6 +247,8 @@ class App {
  *
  * `App::build(array('View/Helper' => array('/path/to/helpers/', '/another/path/))); will setup multiple search paths for helpers`
  *
+ * If reset is set to true, all loaded plugins will be forgotten and they will be needed to be loaded again.
+ *
  * @param array $paths associative array with package names as keys and a list of directories for new search paths
  * @param mixed $mode App::RESET will set paths, App::APPEND with append paths, App::PREPEND will prepend paths, [default] App::PREPEND
  * @return void
@@ -309,10 +311,11 @@ class App {
 				'locales' => array(
 					'%s' . 'locale' . DS
 				),
-				'vendors' => array('%s' . 'vendors' . DS, VENDORS),
+				'vendors' => array('%s' . 'Vendor' . DS, VENDORS),
 				'plugins' => array(
+					APP . 'Plugin' . DS,
 					APP . 'plugins' . DS,
-					dirname(dirname(CAKE)) . DS . 'plugins' . DS
+					dirname(dirname(CAKE)) . DS . 'plugins' . DS,
 				)
 			);
 		}
@@ -323,6 +326,7 @@ class App {
 					$type = self::$legacy[$type];
 				}
 				self::$__packages[$type] = (array)$new;
+				self::objects($type, null, false);
 			}
 			return $paths;
 		}
@@ -374,13 +378,7 @@ class App {
  * @return string full path to the plugin.
  */
 	public static function pluginPath($plugin) {
-		$pluginDir = Inflector::underscore($plugin);
-		foreach (self::$__packages['plugins'] as $pluginPath) {
-			if (is_dir($pluginPath . $pluginDir)) {
-				return $pluginPath . $pluginDir . DS ;
-			}
-		}
-		return self::$__packages['plugins'][0] . $pluginDir . DS;
+		return CakePlugin::path($plugin);
 	}
 
 /**
@@ -390,11 +388,11 @@ class App {
  *
  * `App::themePath('MyTheme'); will return the full path to the 'MyTheme' theme`
  *
- * @param string $theme lower_cased theme name to find the path of.
+ * @param string $theme theme name to find the path of.
  * @return string full path to the theme.
  */
 	public static function themePath($theme) {
-		$themeDir = 'themed' . DS . Inflector::underscore($theme);
+		$themeDir = 'Themed' . DS . Inflector::camelize($theme);
 		foreach (self::$__packages['View'] as $path) {
 			if (is_dir($path . $themeDir)) {
 				return $path . $themeDir . DS ;
@@ -414,7 +412,7 @@ class App {
  * @return string full path to package
  */
 	public static function core($type) {
-		return array(LIBS . str_replace('/', DS, $type) . DS);
+		return array(CAKE . str_replace('/', DS, $type) . DS);
 	}
 
 /**
@@ -512,20 +510,6 @@ class App {
 	}
 
 /**
- * Allows you to modify the object listings that App maintains inside of it
- * Useful for testing
- *
- * @param string $type Type of object listing you are changing
- * @param array $values The values $type should be set to.
- * @return void
- */
-	public static function setObjects($type, $values) {
-		list($plugin, $type) = pluginSplit($type);
-		$cacheLocation = empty($plugin) ? 'app' : $plugin;
-		self::$__objects[$cacheLocation][$type] = $values;
-	}
-
-/**
  * Declares a package for a class. This package location will be used
  * by the automatic class loader if the class is tried to be used
  *
@@ -566,7 +550,7 @@ class App {
 		if (empty($plugin)) {
 			$appLibs = empty(self::$__packages['Lib']) ? APPLIBS : current(self::$__packages['Lib']);
 			$paths[] =  $appLibs . $package . DS;
-			$paths[] = LIBS . $package . DS;
+			$paths[] = CAKE . $package . DS;
 		}
 
 		foreach ($paths as $path) {
@@ -647,6 +631,9 @@ class App {
 		list($plugin, $name) = pluginSplit($name);
 		if (!empty($plugin)) {
 			$plugin = Inflector::camelize($plugin);
+			if (!CakePlugin::loaded($plugin)) {
+				return false;
+			}
 		}
 
 		if (!$specialPackage) {
@@ -683,10 +670,15 @@ class App {
 			$suffix = self::$types[$originalType]['suffix'];
 			$name .= ($suffix == $name) ? '' : $suffix;
 		}
-
 		if ($parent && isset(self::$types[$originalType]['extends'])) {
 			$extends = self::$types[$originalType]['extends'];
-			App::uses($extends, $type);
+			$extendType = $type;
+			if (strpos($extends, '/') !== false) {
+				$parts = explode('/', $extends);
+				$extends = array_pop($parts);
+				$extendType = implode('/', $parts);
+			}
+			App::uses($extends, $extendType);
 			if ($plugin && in_array($originalType, array('controller', 'model'))) {
 				App::uses($plugin . $extends, $plugin . '.' .$type);
 			}
@@ -782,6 +774,7 @@ class App {
 		self::$__map = (array)Cache::read('file_map', '_cake_core_');
 		self::$__objects = (array)Cache::read('object_map', '_cake_core_');
 		register_shutdown_function(array('App', 'shutdown'));
+		self::uses('CakePlugin', 'Core');
 	}
 
 /**

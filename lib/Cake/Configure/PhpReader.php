@@ -34,9 +34,12 @@ class PhpReader implements ConfigReaderInterface {
 /**
  * Constructor for PHP Config file reading.
  *
- * @param string $path The path to read config files from.  Defaults to CONFIGS
+ * @param string $path The path to read config files from.  Defaults to APP . 'Config' . DS
  */
-	public function __construct($path = CONFIGS) {
+	public function __construct($path = null) {
+		if (!$path) {
+			$path = APP . 'Config' . DS;
+		}
 		$this->_path = $path;
 	}
 
@@ -63,7 +66,7 @@ class PhpReader implements ConfigReaderInterface {
 		list($plugin, $key) = pluginSplit($key);
 
 		if ($plugin) {
-			$file = App::pluginPath($plugin) . 'config' . DS . $key;
+			$file = App::pluginPath($plugin) . 'Config' . DS . $key;
 		} else {
 			$file = $this->_path . $key;
 		}
