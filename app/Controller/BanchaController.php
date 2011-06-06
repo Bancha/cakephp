@@ -1,23 +1,26 @@
 <?php
 /**
- * Bancha Controller
+ * Bancha Controller 
  * 
  * This class exports the ExtJS API of all other Controllers for use in ExtJS Frontends
  * 
  * @author Andreas Kern
  *
  */
+// TODO sauberen header einfuegen
+
 class BanchaController extends AppController {
 
 	//var $name = 'Banchas'; //turns html on again
 
 	/**
 	 *  CRUD mapping between cakephp and extjs 
+	 * 	TODO check if the right 
 	 * 
 	 * @var array
 	 */
 	public $map = array(
-			'index' => array('read', 0),
+			'index' => array('read', 0), //TODO read mit param(1) 
 			'add' => array('create', 1), 
 			'edit' => array('update', 1), 
 			'delete' => array('destroy', 1)
@@ -101,6 +104,8 @@ class BanchaController extends AppController {
 
 		$this->set('API', $API);
 		$this->render(null, 'ajax'); //removes the html
+		
+		//TODO add metaData
 	}
 }
 
