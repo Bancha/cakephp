@@ -219,11 +219,11 @@
                         </filterchain>
                 </copy>
                 
-                <-- copy html files to tmp building folder after fixing them with tidy --
+                -- copy html files to tmp building folder after fixing them with tidy --
                 <copy todir="${tmpdir}">
                         <fileset refid="files.source.html"/>
                         
-                        <-- replace all tokens used in the code --
+                        -- replace all tokens used in the code --
                         <filterchain>
                                 <replacetokens begintoken="@@" endtoken="@@">
                                         <-- general settings --
@@ -242,7 +242,7 @@
                                         <token key="db_prefix" value="${db.prefix}" />
                                 </replacetokens>
                                 
-                                <-- fix html output --
+                                -- fix html output --
                                 <tidyfilter encoding="utf8">
                                         <config name="output-html" value="true" /> <-- output format --
                                         <config name="show-errors" value="12" /> <-- number of errors shown --
