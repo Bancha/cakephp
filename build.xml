@@ -60,7 +60,7 @@
                 <exclude name="**/builder/**"/>
         </fileset>
 
-		<!-- a fileset for all html code -->
+        <!-- a fileset for all html code -->
         <fileset dir="${tmpdir}" id="files.tmp.html">
                 <include name="**/*.html"/>
 		        <include name="**/*.htm"/>
@@ -98,7 +98,7 @@
                 <echo msg="Building distritution for deployment:"/>
                 
                 <!-- load properties -->
-                <property file="${general.basedir}/config/production.properties"/>
+                <property file="builder/config/production.properties"/>
                 
                 <!-- test the code -->
                 <phingcall target="test"/>
@@ -135,7 +135,7 @@
                 <echo msg="Building debug distritution:"/>
                 
                 <!-- load properties -->
-                <property file="${general.basedir}/config/debug.properties"/>
+                <property file="builder/config/debug.properties"/>
                 
                 <!-- test the code -->
                 <phingcall target="test"/>
@@ -158,16 +158,40 @@
         <!-- ============================================  -->
         <!-- ============================================  -->
         <target name="test">
+                <echo msg="Testing code..."/>
+                
+                <!-- prepare reports dir -->
+                <available file="${reportsdir}" type="dir" property="report_dir_exists" value="Yes"/>
+                <if>
+                    <isset property="report_dir_exists" />
+                    <then>
+                        <delete dir="${reportsdir}" failonerror="true" verbose="false" includeemptydirs="true"/>
+                    </then>
+                </if>
+                <mkdir dir="${reportsdir}"/>
+
+
                 <echo msg="Starting cake tests...."/>
+				        <!-- start cake tests -->
+				        <exec command="&quot;lib/Cake/Console/cake&quot; testsuite bancha AllTests --strict --log-junit &quot;${reportsdir}/cake_tests.xml&quot;" escape="false" />
+				
+				        <!-- start cake code coverage -->
+				        <exec command="&quot;lib/Cake/Console/cake&quot; testsuite bancha AllTests --strict --coverage-clover &quot;${reportsdir}/cake_code_coverage.xml&quot;" escape="false" />
+          
+                <!-- TODO maybe
+                <phpcpd>
+                        <fileset refid="files.source.php2validate4phpcpd" />
+                        <formatter type="pmd" outfile="${reportsdir}/pmd-cpd.xml"/>
+                </phpcpd>
+                <jsllint haltonfailure="true">
+                        <fileset refid="files.source.js" />
+                </jsllint>
+                  -->
+                
 				
 				
-				<!-- start cake tests -->
-				<exec command="&quot;lib/Cake/Console/lib&quot;  testsuite Bancha AllTests --syntax --strict --log-junit &quot;${reportsdir}/cake_tests.xml&quot;" escape="false" />
 				
-				<!-- start cake code coverage -->
-				<exec command="&quot;lib/Cake/Console/lib&quot;  testsuite Bancha AllTests --syntax --strict --coverage-clover &quot;${reportsdir}/cake_code_coverage.xml&quot;" escape="false" />
-				
-				 <echo msg="All tests executed...."/>
+				         <echo msg="All tests executed...."/>
         </target>
         
         
@@ -201,15 +225,15 @@
 							 replace all tokens used in the code 
                         <filterchain>
                                 <replacetokens begintoken="@@" endtoken="@@">
-                                        <!-- general settings --
+                                        <!- - general settings - ->
                                         <token key="debug_level" value="${debug_level}" />
                                         <token key="build_time" value="${build_time}" />
                                         
-                                        <!-- server settings --
+                                        <!- - server settings - ->
                                         <token key="server_ip" value="${server.ip}" />
                                         <token key="webservice_api_url" value="${webservice.api_url}" />
                                         
-                                        <!-- database configs --
+                                        <!- - database configs - ->
                                         <token key="db_host" value="${db.host}" />
                                         <token key="db_user" value="${db.user}" />
                                         <token key="db_user" value="${db.password}" />
@@ -219,22 +243,22 @@
                         </filterchain>
                 </copy>
                 
-                -- copy html files to tmp building folder after fixing them with tidy --
+                <!- - copy html files to tmp building folder after fixing them with tidy - ->
                 <copy todir="${tmpdir}">
                         <fileset refid="files.source.html"/>
                         
-                        -- replace all tokens used in the code --
+                        <!- - replace all tokens used in the code - ->
                         <filterchain>
                                 <replacetokens begintoken="@@" endtoken="@@">
-                                        <-- general settings --
+                                        <!- - general settings - ->
                                         <token key="debug_level" value="${debug_level}" />
                                         <token key="build_time" value="${build_time}" />
                                         
-                                        <-- server settings --
+                                        <!- - server settings - ->
                                         <token key="server_ip" value="${server.ip}" />
                                         <token key="webservice_api_url" value="${webservice.api_url}" />
                                         
-                                        <-- database configs --
+                                        <!- - database configs - ->
                                         <token key="db_host" value="${db.host}" />
                                         <token key="db_user" value="${db.user}" />
                                         <token key="db_user" value="${db.password}" />
@@ -242,10 +266,10 @@
                                         <token key="db_prefix" value="${db.prefix}" />
                                 </replacetokens>
                                 
-                                -- fix html output --
+                                <!- - fix html output - ->
                                 <tidyfilter encoding="utf8">
-                                        <config name="output-html" value="true" /> <-- output format --
-                                        <config name="show-errors" value="12" /> <-- number of errors shown --
+                                        <config name="output-html" value="true" /> <!- - output format - ->
+                                        <config name="show-errors" value="12" /> <!- - number of errors shown - ->
                                         <config name="error-file" value="${reportsdir}/tidy-report.txt"/>
                                         <config name="keep-time" value="yes"/>
                                         <config name="tidy-mark" value="no"/>
@@ -290,13 +314,13 @@
         <target name="exec-gema-js-file">
             <!-- Replace js stuff -->
 			<!-- TODO Fix path -->
-            <exec checkreturn="true" dir="${gema.path}" command="gema -f &quot;${builderdir}\gema-production-patterns.js&quot; -p &quot;DEBUG_LEVEL=${debug_level}&quot; &quot;${tmpdir}\${file}&quot; &quot;${tmpdir}\${file}&quot;"/>
+            <exec checkreturn="true" dir="${gema.path}" command="gema -f &quot;${builderdir}\config\gema-production-patterns.js&quot; -p &quot;DEBUG_LEVEL=${debug_level}&quot; &quot;${tmpdir}\${file}&quot; &quot;${tmpdir}\${file}&quot;"/>
         </target>
         <target name="exec-gema-html-file">
             <!-- Replace html stuff -->
-            <exec checkreturn="true" dir="C:\Program Files (x86)\Gema" command="gema -f &quot;${builderdir}\gema-production-patterns.html&quot; -p &quot;DEBUG_LEVEL=${debug_level}&quot; &quot;${tmpdir}\${file}&quot; &quot;${tmpdir}\${file}&quot;"/>
+            <exec checkreturn="true" dir="C:\Program Files (x86)\Gema" command="gema -f &quot;${builderdir}\config\gema-production-patterns.html&quot; -p &quot;DEBUG_LEVEL=${debug_level}&quot; &quot;${tmpdir}\${file}&quot; &quot;${tmpdir}\${file}&quot;"/>
             <!-- Then afterwards replace js stuff -->
-            <exec checkreturn="true" dir="C:\Program Files (x86)\Gema" command="gema -f &quot;${builderdir}\gema-production-patterns.js&quot; -p &quot;DEBUG_LEVEL=${debug_level}&quot; &quot;${tmpdir}\${file}&quot; &quot;${tmpdir}\${file}&quot;"/>
+            <exec checkreturn="true" dir="C:\Program Files (x86)\Gema" command="gema -f &quot;${builderdir}\config\gema-production-patterns.js&quot; -p &quot;DEBUG_LEVEL=${debug_level}&quot; &quot;${tmpdir}\${file}&quot; &quot;${tmpdir}\${file}&quot;"/>
         </target>
         
         
@@ -307,7 +331,7 @@
         <!-- ============================================  -->
 		<!-- TODO needed?
         <target name="cakeSubstitutions">
-                <-- susbtitutions for app/config/database.php --
+                <!- - susbtitutions for app/config/database.php - ->
                 <reflexive>
                         <fileset refid="files.tmp.cake.config.database.php"/>
                         <filterchain>
@@ -320,13 +344,13 @@
                                                 replace="'password' => '${db.password}',"/>
                                         <regexp pattern="'database'.*=>.*'.*',"
                                                 replace="'database' => '${db.database}',"/>
-                                        <--<regexp pattern="'encoding'.*=>.*'.*',"
-                                                replace="'encoding' => '${subs.db.encoding}',"/>--
+                                        <!- -<regexp pattern="'encoding'.*=>.*'.*',"
+                                                replace="'encoding' => '${subs.db.encoding}',"/>- ->
                                 </replaceregexp>
                         </filterchain>
                 </reflexive>
 
-                <-- susbtitutions for app/config/core.php --
+                <!- - susbtitutions for app/config/core.php - ->
                 <reflexive>
                         <fileset refid="files.tmp.cake.config.core.php"/>
                         <filterchain>
@@ -338,7 +362,7 @@
                         </filterchain>
                 </reflexive>
 
-                <-- susbtitutions for app/config/bootstrap.php
+                <!- - susbtitutions for app/config/bootstrap.php
                 <reflexive>
                         <fileset refid="files.tmp.cake.config.bootstrap.php"/>
                         <filterchain>
@@ -359,7 +383,7 @@
                                         />
                                 </replaceregexp>
                         </filterchain>
-                </reflexive> --
+                </reflexive> - ->
         </target>
 		-->
         
@@ -389,7 +413,7 @@
                 </if>
 
                 <!-- TODO maybe later
-					 save old logs from cake --
+					 save old logs from cake - ->
                 <available file="${builddir}/app/tmp/logs" type="dir" property="logs_dir_exists" value="Yes"/>
                 <if>
                     <isset property="logs_dir_exists" />
@@ -404,7 +428,7 @@
                     </then>
                 </if>
                 
-                <-- save old logs from js --
+                <!- - save old logs from js - ->
                 <available file="${builddir}/js_log.php" type="file" property="jslog_dir_exists" value="Yes"/>
                 <if>
                     <isset property="jslog_dir_exists" />
@@ -445,7 +469,7 @@
                 
 				<!-- TODO maybe ?
                 <echo msg="Chmod for files..."/>
-                <-- if needed some time...
+                <!- - if needed some time...
                         <chmod file="/home/test" mode="0775" verbose="true" />
                         Supported Nested Tags: fileset
                 -->
@@ -453,7 +477,7 @@
                 <!-- delete tmp folder -->
                 <delete dir="${tmpdir}" failonerror="true" verbose="false" includeemptydirs="true"/>
 
-				<echo msg="Done.">
+                <echo msg="Done." />
         </target>
 
 
@@ -468,7 +492,7 @@
         <target name="selenium" description="Wrapper for Selenium execution">
             
                 <!-- load properties -->
-                <property file="${general.basedir}/builder/production.properties"/>
+                <property file="builder/config/production.properties"/>
                 
 				<!-- TODO -->
                 <phpunit printsummary="true" haltonerror="true" haltonfailure="true" >
@@ -479,40 +503,6 @@
                                 </fileset>
                         </batchtest>
                 </phpunit>
-        </target>
-        
-        
-        <!-- ============================================  -->
-        <!-- ============================================  -->
-        <!--                                               -->
-        <!-- Target: test                                  -->
-        <!-- tests with JslLint and stops on errors        -->
-        <!--                                               -->
-        <!-- ============================================  -->
-        <!-- ============================================  -->
-        <target name="test">
-                <echo msg="Testing code..."/>
-                
-                <!-- prepare reports dir -->
-                <available file="${reportsdir}" type="dir" property="report_dir_exists" value="Yes"/>
-                <if>
-                    <isset property="report_dir_exists" />
-                    <then>
-                        <delete dir="${reportsdir}" failonerror="true" verbose="false" includeemptydirs="true"/>
-                    </then>
-                </if>
-                <mkdir dir="${reportsdir}"/>
-
-                <jsllint haltonfailure="true">
-                        <fileset refid="files.source.js" />
-                </jsllint>
-                
-				<!-- TODO maybe
-                <phpcpd>
-                        <fileset refid="files.source.php2validate4phpcpd" />
-                        <formatter type="pmd" outfile="${reportsdir}/pmd-cpd.xml"/>
-                </phpcpd>
-				-->
         </target>
 
 </project>
