@@ -1,0 +1,518 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<?oxygen RNGSchema="../builder/phing-grammar.rng" type="xml"?>
+<project name="Bancha" default="deploy" basedir="."
+        description="This package creates the JS packages for Bancha">
+
+        <!-- Make the current buildtime available as a property -->
+        <tstamp>
+                <!-- Format is, e.g. 2009-10-03 16:31:15 -->
+                <format property="build_time" pattern="%Y-%m-%d %H:%m:%s"/>
+                <!-- Format is, e.g. Sat, 03 Oct 2009, 16:31 
+                <format property="buildtime" pattern="%a, %d %b %Y, %H:%M"/> -->
+        </tstamp>
+        
+		
+        <!-- ============================================  -->
+        <!-- ============================================  -->
+        <!--                                               -->
+        <!--                  Filesets                     -->
+        <!--                                               -->
+        <!-- ============================================  -->
+        <!-- ============================================  -->
+
+        <!-- a fileset for the source code -->
+        <fileset dir="${sourcedir}" id="files.source.sourcecode">
+                <include name="**/*"/>
+                <exclude name="**/.settings/**"/>
+                <exclude name="**/.project"/>
+                <exclude name="**/.git/**"/>
+                <exclude name="**/builder/**"/>
+        </fileset>
+        
+        <!-- a fileset for all js code -->
+        <fileset dir="${sourcedir}" id="files.source.js">
+                <include name="**/*.js"/>
+                <exclude name="**/.settings/**"/>
+                <exclude name="**/.project"/>
+                <exclude name="**/.git/**"/>
+                <exclude name="**/builder/**"/>
+        </fileset>
+        
+        
+        <!-- a fileset for the source code in the tmp build folder -->
+        <fileset dir="${tmpdir}" id="files.tmp.sourcecode">
+                <include name="**/*"/>
+                <exclude name="**/.settings/**"/>
+                <exclude name="**/.project"/>
+                <exclude name="**/.git/**"/>
+                <exclude name="**/builder/**"/>
+				<!-- need to be copied to the tmp dir for compressing files, 
+					 but should not be deployed -->
+                <exclude name="**/deploy.jsb2"/>
+        </fileset>
+        
+        <!-- a fileset for all js code -->
+        <fileset dir="${tmpdir}" id="files.tmp.js">
+                <include name="**/*.js"/>
+                <exclude name="**/.settings/**"/>
+                <exclude name="**/.project"/>
+                <exclude name="**/.git/**"/>
+                <exclude name="**/builder/**"/>
+        </fileset>
+
+		<!-- a fileset for all html code -->
+        <fileset dir="${tmpdir}" id="files.tmp.html">
+                <include name="**/*.html"/>
+		        <include name="**/*.htm"/>
+                <exclude name="**/.settings/**"/>
+                <exclude name="**/.project"/>
+                <exclude name="**/.git/**"/>
+                <exclude name="**/builder/**"/>
+        </fileset>
+        
+        <!-- a fileset for the source code in the tmp build folder -->
+        <fileset dir="${builddir}" id="files.build.sourcecode">
+                <include name="**/*"/>
+                <exclude name="**/.settings/**"/>
+                <exclude name="**/.svn/**"/>
+                <exclude name="docs/**"/>
+                <exclude name="reports/**"/>
+                <exclude name="**/deploy.jsb2"/> <!-- need to be copied to the tmp dir for compressing files, but should not be deployed -->
+                <exclude name="**/builder/**"/>
+                <exclude name="**/design/*.xds"/>
+                <exclude name="**/*.docx"/>
+        </fileset>
+        
+
+
+
+        <!-- ============================================  -->
+        <!-- ============================================  -->
+        <!--                                               -->
+        <!-- (DEFAULT)  Target: deploy                     -->
+        <!--                                               -->
+        <!-- ============================================  -->
+        <!-- ============================================  -->
+
+        <target name="deploy">
+                <echo msg="Building distritution for deployment:"/>
+                
+                <!-- load properties -->
+                <property file="${general.basedir}/config/production.properties"/>
+                
+                <!-- test the code -->
+                <phingcall target="test"/>
+                
+                <!-- build js -->
+                <phingcall target="build"/>
+                
+                <!-- compress files and delete debug versions -->
+                <echo msg="Compressing files..." />
+                <exec command="java -jar &quot;${builderdir}/lib/JSBuilder2/JSBuilder2.jar&quot; --projectFile &quot;${tmpdir}/deploy.jsb2&quot; --homeDir &quot;${tmpdir}\\&quot; &gt; &quot;${reportsdir}\jsbuilder.txt&quot;" escape="false" />
+                <delete dir="${tmpdir}/js" includeemptydirs="true" failonerror="true" />
+                <delete failonerror="true">
+                    <fileset dir="${tmpdir}">
+                        <include name="*-debug.js" />
+                    </fileset>
+                </delete>
+
+                <!-- deploy files -->
+                <phingcall target="deployToServer"/>
+                
+                <echo msg="Files copied and compressed in ${builddir} directory OK!"/>
+        </target>
+        
+        
+
+        <!-- ============================================  -->
+        <!-- ============================================  -->
+        <!--                                               -->
+        <!-- Target: debug                                 -->
+        <!--                                               -->
+        <!-- ============================================  -->
+        <!-- ============================================  -->
+        <target name="debug">
+                <echo msg="Building debug distritution:"/>
+                
+                <!-- load properties -->
+                <property file="${general.basedir}/config/debug.properties"/>
+                
+                <!-- test the code -->
+                <phingcall target="test"/>
+                
+                <!-- build js -->
+                <phingcall target="build"/>
+                
+                <!-- do some product-spezific stuff -->
+                <phingcall target="debugModifications"/>
+                
+                <echo msg="Files copied and compressed in ${builddir} directory OK!"/>
+        </target>
+        
+        
+        <!-- ============================================  -->
+        <!-- ============================================  -->
+        <!--                                               -->
+        <!-- Target: test                                  -->
+        <!--                                               -->
+        <!-- ============================================  -->
+        <!-- ============================================  -->
+        <target name="test">
+                <echo msg="Starting cake tests...."/>
+				
+				
+				<!-- start cake tests -->
+				<exec command="&quot;lib/Cake/Console/lib&quot;  testsuite Bancha AllTests --syntax --strict --log-junit &quot;${reportsdir}/cake_tests.xml&quot;" escape="false" />
+				
+				<!-- start cake code coverage -->
+				<exec command="&quot;lib/Cake/Console/lib&quot;  testsuite Bancha AllTests --syntax --strict --coverage-clover &quot;${reportsdir}/cake_code_coverage.xml&quot;" escape="false" />
+				
+				 <echo msg="All tests executed...."/>
+        </target>
+        
+        
+        <!-- ============================================  -->
+        <!-- ============================================  -->
+        <!--                                               -->
+        <!-- Target: build                                 -->
+        <!-- copy files to destination, versionize,        -->
+        <!-- and replace tokens                            -->
+        <!--                                               -->
+        <!-- ============================================  -->
+        <!-- ============================================  -->
+        <target name="build">
+                <echo msg="Copying files to tmp build folder..."/>
+                
+                <!-- delete old tmp and create new -->
+                <available file="${tmpdir}" type="dir" property="tmp_dir_exists" value="Yes"/>
+                <if>
+                    <isset property="tmp_dir_exists" />
+                    <then>
+                        <delete dir="${tmpdir}" failonerror="true" verbose="false" includeemptydirs="true"/>
+                    </then>
+                </if>
+                <mkdir dir="${tmpdir}"/>
+                
+                <!-- copy files to tmp building folder -->
+                <copy todir="${tmpdir}">
+                        <fileset refid="files.source.sourcecode"/>
+                        
+                        <!-- TODO for bancha testing?
+							 replace all tokens used in the code 
+                        <filterchain>
+                                <replacetokens begintoken="@@" endtoken="@@">
+                                        <!-- general settings --
+                                        <token key="debug_level" value="${debug_level}" />
+                                        <token key="build_time" value="${build_time}" />
+                                        
+                                        <!-- server settings --
+                                        <token key="server_ip" value="${server.ip}" />
+                                        <token key="webservice_api_url" value="${webservice.api_url}" />
+                                        
+                                        <!-- database configs --
+                                        <token key="db_host" value="${db.host}" />
+                                        <token key="db_user" value="${db.user}" />
+                                        <token key="db_user" value="${db.password}" />
+                                        <token key="db_database" value="${db.database}" />
+                                        <token key="db_prefix" value="${db.prefix}" />
+                                </replacetokens>
+                        </filterchain>
+                </copy>
+                
+                <-- copy html files to tmp building folder after fixing them with tidy --
+                <copy todir="${tmpdir}">
+                        <fileset refid="files.source.html"/>
+                        
+                        <-- replace all tokens used in the code --
+                        <filterchain>
+                                <replacetokens begintoken="@@" endtoken="@@">
+                                        <-- general settings --
+                                        <token key="debug_level" value="${debug_level}" />
+                                        <token key="build_time" value="${build_time}" />
+                                        
+                                        <-- server settings --
+                                        <token key="server_ip" value="${server.ip}" />
+                                        <token key="webservice_api_url" value="${webservice.api_url}" />
+                                        
+                                        <-- database configs --
+                                        <token key="db_host" value="${db.host}" />
+                                        <token key="db_user" value="${db.user}" />
+                                        <token key="db_user" value="${db.password}" />
+                                        <token key="db_database" value="${db.database}" />
+                                        <token key="db_prefix" value="${db.prefix}" />
+                                </replacetokens>
+                                
+                                <-- fix html output --
+                                <tidyfilter encoding="utf8">
+                                        <config name="output-html" value="true" /> <-- output format --
+                                        <config name="show-errors" value="12" /> <-- number of errors shown --
+                                        <config name="error-file" value="${reportsdir}/tidy-report.txt"/>
+                                        <config name="keep-time" value="yes"/>
+                                        <config name="tidy-mark" value="no"/>
+                                </tidyfilter>
+                        </filterchain>
+						-->
+                </copy>
+
+				<!-- TODO how to versionize??? -->
+				
+				
+                <!-- handle js and html makros -->
+                <phingcall target="macros"/>
+                
+        </target>
+        
+        
+        
+        <!-- ============================================  -->
+        <!-- ============================================  -->
+        <!--                                               -->
+        <!-- Target: macros                                -->
+        <!-- Applying all macros for html and js           -->
+        <!--                                               -->
+        <!-- ============================================  -->
+        <!-- ============================================  -->
+        <target name="macros">
+                <echo msg="Applying macros..."/>
+                <!--<echo msg="tmpdir:${tmpdir}"/>-->
+
+                <!-- handle html makros -->
+                <foreach target="exec-gema-html-file" param="file">
+                        <fileset refid="files.tmp.html"/>
+                </foreach>
+                
+                <!-- handle js makros -->
+                <foreach target="exec-gema-js-file" param="file">
+                        <fileset refid="files.tmp.js"/>
+                </foreach>
+        </target>
+        
+        <target name="exec-gema-js-file">
+            <!-- Replace js stuff -->
+			<!-- TODO Fix path -->
+            <exec checkreturn="true" dir="${gema.path}" command="gema -f &quot;${builderdir}\gema-production-patterns.js&quot; -p &quot;DEBUG_LEVEL=${debug_level}&quot; &quot;${tmpdir}\${file}&quot; &quot;${tmpdir}\${file}&quot;"/>
+        </target>
+        <target name="exec-gema-html-file">
+            <!-- Replace html stuff -->
+            <exec checkreturn="true" dir="C:\Program Files (x86)\Gema" command="gema -f &quot;${builderdir}\gema-production-patterns.html&quot; -p &quot;DEBUG_LEVEL=${debug_level}&quot; &quot;${tmpdir}\${file}&quot; &quot;${tmpdir}\${file}&quot;"/>
+            <!-- Then afterwards replace js stuff -->
+            <exec checkreturn="true" dir="C:\Program Files (x86)\Gema" command="gema -f &quot;${builderdir}\gema-production-patterns.js&quot; -p &quot;DEBUG_LEVEL=${debug_level}&quot; &quot;${tmpdir}\${file}&quot; &quot;${tmpdir}\${file}&quot;"/>
+        </target>
+        
+        
+        <!-- ============================================  -->
+        <!-- Target: cakeSubstitutions                     -->
+        <!-- substitute cake variables with current        -->
+        <!-- database data                                 -->
+        <!-- ============================================  -->
+		<!-- TODO needed?
+        <target name="cakeSubstitutions">
+                <-- susbtitutions for app/config/database.php --
+                <reflexive>
+                        <fileset refid="files.tmp.cake.config.database.php"/>
+                        <filterchain>
+                                <replaceregexp>
+                                        <regexp pattern="'host'.*=>.*'.*',"
+                                                replace="'host' => '${db.host}',"/>
+                                        <regexp pattern="'login'.*=>.*'.*',"
+                                                replace="'login' => '${db.user}',"/>
+                                        <regexp pattern="'password'.*=>.*'.*',"
+                                                replace="'password' => '${db.password}',"/>
+                                        <regexp pattern="'database'.*=>.*'.*',"
+                                                replace="'database' => '${db.database}',"/>
+                                        <--<regexp pattern="'encoding'.*=>.*'.*',"
+                                                replace="'encoding' => '${subs.db.encoding}',"/>--
+                                </replaceregexp>
+                        </filterchain>
+                </reflexive>
+
+                <-- susbtitutions for app/config/core.php --
+                <reflexive>
+                        <fileset refid="files.tmp.cake.config.core.php"/>
+                        <filterchain>
+                                <replaceregexp>
+                                        <regexp pattern="Configure::write.*\(.*debug.*,.*\)"
+                                                replace="Configure::write('debug', ${debug_level})"
+                                        />
+                                </replaceregexp>
+                        </filterchain>
+                </reflexive>
+
+                <-- susbtitutions for app/config/bootstrap.php
+                <reflexive>
+                        <fileset refid="files.tmp.cake.config.bootstrap.php"/>
+                        <filterchain>
+                                <replaceregexp>
+                                        <regexp pattern="Configure::write.*\(.*smtp_host.*,.*\)"
+                                                replace="Configure::write('Email.smtp_host', '${subs.smtp.host}')"/>
+                                        <regexp pattern="Configure::write.*\(.*smtp_username.*,.*\)"
+                                                replace="Configure::write('Email.smtp_username', '${subs.smtp.username}')"/>
+                                        <regexp pattern="Configure::write.*\(.*smtp_password.*,.*\)"
+                                                replace="Configure::write('Email.smtp_password', '${subs.smtp.password}')"/>
+                                        <regexp pattern="Configure::write.*\(.*from_address.*,.*\)"
+                                                replace="Configure::write('Email.from_address', '${subs.email.from.address}')"/>
+                                        <regexp pattern="Configure::write.*\(.*from_name.*,.*\)"
+                                                replace="Configure::write('Email.from_name', '${subs.email.from.name}')"/>
+                                        <regexp
+                                                pattern="Configure::write.*\(.*subject_prefix.*,.*\)"
+                                                replace="Configure::write('Email.subject_prefix', '${subs.email.subject.prefix}')"
+                                        />
+                                </replaceregexp>
+                        </filterchain>
+                </reflexive> --
+        </target>
+		-->
+        
+        
+        <!-- ============================================  -->
+        <!-- ============================================  -->
+        <!--                                               -->
+        <!-- Target: deployToServer                        -->
+        <!-- Pushes all files from tmp to the deployment   -->
+        <!-- folder                                        -->
+        <!--                                               -->
+        <!-- ============================================  -->
+        <!-- ============================================  -->
+        <target name="deployToServer">
+                <echo msg="Deploying files..."/>
+                
+                <!-- make a backup of old folder if set -->
+                <if>
+                    <isset property="backupdir" />
+                    <then>
+                        <tar 
+                            destfile="${backupdir}/before-${DSTAMP}_${TSTAMP}.tar" 
+                            basedir="${builddir}" 
+                            compression="gzip" 
+                            includeemptydirs="true" />
+                    </then>
+                </if>
+
+                <!-- TODO maybe later
+					 save old logs from cake --
+                <available file="${builddir}/app/tmp/logs" type="dir" property="logs_dir_exists" value="Yes"/>
+                <if>
+                    <isset property="logs_dir_exists" />
+                    <then>
+                        <echo msg="Saving old logs...."/>
+                        <mkdir dir="${logdir}/before-${version.number}_${DSTAMP}_${TSTAMP}" />
+                        <copy todir="${logdir}/before-${version.number}_${DSTAMP}_${TSTAMP}">
+                                <fileset dir="${builddir}/app/tmp/logs">
+                                        <include name="*"/>
+                                </fileset>
+                        </copy>
+                    </then>
+                </if>
+                
+                <-- save old logs from js --
+                <available file="${builddir}/js_log.php" type="file" property="jslog_dir_exists" value="Yes"/>
+                <if>
+                    <isset property="jslog_dir_exists" />
+                    <then>
+                        <echo msg="Saving old js log...."/>
+                        <mkdir dir="${logdir}/before-${version.number}_${DSTAMP}_${TSTAMP}" />
+                        <copy todir="${logdir}/before-${version.number}_${DSTAMP}_${TSTAMP}">
+                                <fileset dir="${builddir}">
+                                        <include name="**/js_log.php"/>
+                                </fileset>
+                        </copy>
+                    </then>
+                </if>-->
+                
+                <!-- create new build-->
+                <available file="${builddir}" type="dir" property="build_dir_exists" value="Yes"/>
+                <if>
+                    <isset property="build_dir_exists" />
+                    <then>
+                        <delete failonerror="true" verbose="false" includeemptydirs="true">
+                            <fileset dir="${builddir}">
+                                <include name="**/*" />
+                            </fileset>
+                        </delete>
+                    </then>
+                    <else>
+                        <mkdir dir="${builddir}"/>
+                    </else>
+                </if>
+                
+                
+                <!-- copy files -->
+                <echo msg="Copy files..."/>
+                <copy todir="${builddir}">
+                        <fileset refid="files.tmp.sourcecode"/>
+                </copy>
+                
+                
+				<!-- TODO maybe ?
+                <echo msg="Chmod for files..."/>
+                <-- if needed some time...
+                        <chmod file="/home/test" mode="0775" verbose="true" />
+                        Supported Nested Tags: fileset
+                -->
+                
+                <!-- delete tmp folder -->
+                <delete dir="${tmpdir}" failonerror="true" verbose="false" includeemptydirs="true"/>
+
+				<echo msg="Done.">
+        </target>
+
+
+		
+        <!-- ============================================  -->
+        <!-- ============================================  -->
+        <!--                                               -->
+        <!-- Target: selenium                              -->
+        <!--                                               -->
+        <!-- ============================================  -->
+        <!-- ============================================  -->
+        <target name="selenium" description="Wrapper for Selenium execution">
+            
+                <!-- load properties -->
+                <property file="${general.basedir}/builder/production.properties"/>
+                
+				<!-- TODO -->
+                <phpunit printsummary="true" haltonerror="true" haltonfailure="true" >
+                        <formatter type="xml" todir="${reportsdir}" outfile="${selenium.reportsfile}" />
+                        <batchtest>
+                                <fileset dir="${selenium.dir}">
+                                        <include name="**/*Test.php" />
+                                </fileset>
+                        </batchtest>
+                </phpunit>
+        </target>
+        
+        
+        <!-- ============================================  -->
+        <!-- ============================================  -->
+        <!--                                               -->
+        <!-- Target: test                                  -->
+        <!-- tests with JslLint and stops on errors        -->
+        <!--                                               -->
+        <!-- ============================================  -->
+        <!-- ============================================  -->
+        <target name="test">
+                <echo msg="Testing code..."/>
+                
+                <!-- prepare reports dir -->
+                <available file="${reportsdir}" type="dir" property="report_dir_exists" value="Yes"/>
+                <if>
+                    <isset property="report_dir_exists" />
+                    <then>
+                        <delete dir="${reportsdir}" failonerror="true" verbose="false" includeemptydirs="true"/>
+                    </then>
+                </if>
+                <mkdir dir="${reportsdir}"/>
+
+                <jsllint haltonfailure="true">
+                        <fileset refid="files.source.js" />
+                </jsllint>
+                
+				<!-- TODO maybe
+                <phpcpd>
+                        <fileset refid="files.source.php2validate4phpcpd" />
+                        <formatter type="pmd" outfile="${reportsdir}/pmd-cpd.xml"/>
+                </phpcpd>
+				-->
+        </target>
+
+</project>
