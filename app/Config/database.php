@@ -62,9 +62,9 @@ class DATABASE_CONFIG {
 		'datasource' => 'Database/Mysql',
 		'persistent' => false,
 		'host' => 'localhost',
-		'login' => 'user',
-		'password' => 'password',
-		'database' => 'database_name',
+		'login' => 'bancha',
+		'password' => 'bancha',
+		'database' => 'bancha',
 		'prefix' => '',
 	);
 
@@ -72,9 +72,9 @@ class DATABASE_CONFIG {
 		'datasource' => 'Database/Mysql',
 		'persistent' => false,
 		'host' => 'localhost',
-		'login' => 'user',
-		'password' => 'password',
-		'database' => 'test_database_name',
+		'login' => 'bancha',
+		'password' => 'bancha',
+		'database' => 'bancha',
 		'prefix' => '',
 	);
 }
