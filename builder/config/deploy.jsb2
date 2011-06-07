@@ -1,0 +1,13 @@
+{
+    projectName: 'Bancha',
+    deployDir: '.',
+    licenseText: "Bancha\nCopyright(c) 2011 Roland Schütz\nroland@banchaproject.org",
+    pkgs: [{
+        name: 'Bancha All Package',
+        file: 'bancha-all.js',
+        isDebug: false,
+        fileIncludes: [{
+            text: 'Bancha.js',
+            path: 'src/'
+        }]
+}
