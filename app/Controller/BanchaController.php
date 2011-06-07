@@ -1,26 +1,43 @@
 <?php
+
 /**
- * Bancha Controller 
- * 
- * This class exports the ExtJS API of all other Controllers for use in ExtJS Frontends
- * 
- * @author Andreas Kern
+ * Bancha Project : Combining Ext JS and CakePHP (http://banchaproject.org)
+ * Copyright 2011, Roland Schuetz, Kung Wong, Andreas Kern, Florian Eckerstorfer
  *
+ * Licensed under The MIT License
+ * Redistributions of files must retain the above copyright notice.
+ *
+ * @copyright     Copyright 2011 Roland Schuetz, Kung Wong, Andreas Kern, Florian Eckerstorfer
+ * @link          http://banchaproject.org Bancha Project
+ * @since         Bancha v1.0
+ * @license       MIT License (http://www.opensource.org/licenses/mit-license.php)
+ * @author        Florian Eckerstorfer <f.eckerstorfer@gmail.com>
+ * @author        Andreas Kern <andreas.kern@gmail.com>
+ * @author        Roland Schuetz <mail@rolandschuetz.at>
+ * @author        Kung Wong <kung.wong@gmail.com>
  */
-// TODO sauberen header einfuegen
+
+
+/**
+ * Bancha Controller
+ * This class exports the ExtJS API of all other Controllers for use in ExtJS Frontends
+ *
+ * @author Andreas Kern
+ */
 
 class BanchaController extends AppController {
 
 	//var $name = 'Banchas'; //turns html on again
 
 	/**
-	 *  CRUD mapping between cakephp and extjs 
-	 * 	TODO check if the right 
-	 * 
+	 *  CRUD mapping between cakephp and extjs
+	 * 	TODO check if the right arguments are passed
+	 *
 	 * @var array
 	 */
 	public $map = array(
-			'index' => array('read', 0), //TODO read mit param(1) 
+			'index' => array('getAll', 0),
+			'view' => array('read', 1),
 			'add' => array('create', 1), 
 			'edit' => array('update', 1), 
 			'delete' => array('destroy', 1)
@@ -39,73 +56,50 @@ class BanchaController extends AppController {
 		 * @var array
 		 */
 		$API = array();
+		$API['url'] =  'Bancha/router.php';
+		//$API['url'] =  '/bancha';
+    	$API['type'] = "remoting";
+		
 
-		/**
-		 * array for the Controllers in the app/Controller directory
-		 * 
-		 * @var $controllers
-		 */
-		$controllers = array();
-		//find all Controller files in app/Controller except Bancha
-		if ($handle = opendir(APP . DS . 'Controller'))
-		{
-			while (false !== ($file = readdir($handle)))
-			{
-				if(strpos($file, 'Controller') == true) //TODO does not work
-				{
-					//don't recursively include ourselves
-					if($file != 'BanchaController.php')
-					{
-						include($file);
-						array_push($controllers, str_replace('.php', '', $file));
-					}
+		/****** parse Models **********/
+
+		$models = App::objects('Model');
+		$banchaModels = array();
+
+		//load all Models and add those with BanchaBehavior to $banchaModels
+		foreach ($models as $model) {
+			$this->loadModel($model);
+			if (is_array($this->{$model}->actsAs )) {
+				if( in_array( 'Bancha', $this->{$model}->actsAs )) {
+					array_push($banchaModels, $model);
 				}
 			}
-			closedir($handle);
 		}
 
-		// push the interesting methods into the API array
-		foreach($controllers as $cont) {
-			$methods = get_class_methods($cont);
+		//load the MetaData into $API
+		foreach ($banchaModels as $mod) {
+			$API['metaData'][$mod] = $this->{$mod}->extractBanchaMetaData();
+		}
+		/**
+		 * loop through the Controllers and adds the apropriate methods
+		 */
+
+		foreach($banchaModels as $cont) {
+			$cont = Inflector::pluralize($cont);
+			include(APP . DS . 'Controller' . DS . $cont . 'Controller.php');			
+			$methods = get_class_methods($cont . 'Controller');;
 			$cont = str_replace('Controller','',$cont);
 			$cont = Inflector::singularize($cont);
+			$API['actions'][$cont] = array();
 			foreach( $this->map as $key => $value) {
 				if (array_search($key, $methods) !== false) {
-					$API[$cont]['methods'][$value[0]]['len'] = $value[1];
+					array_push($API['actions'][$cont], array('name' => $value[0],'len' => $value[1]));					
 				};
 			}
 		}
 
-		/****** parse Models **********/
-		
-		
-		// TODO implement autoloader (maybe via the schema file)
-		$this->loadModel('User');
-		$this->loadModel('Article');
-		$this->loadModel('Tag');
-		
-		/**
-		 * loop through all models and get their methods
-		 */
-
-		/*
-		 foreach ($this->modelNames as $value) {
-			$tmp = array();
-			echo $value;
-			//print_r($this->{$value});
-			foreach($this->{$value}->methods as $method) {
-			if($method = 'view') {
-			$tmp[$method] = array( "len" => 0);
-			}
-			}
-			array_push( $API, $value["methods"] = $tmp);
-			}
-		 */
-
 		$this->set('API', $API);
 		$this->render(null, 'ajax'); //removes the html
-		
-		//TODO add metaData
 	}
 }
 

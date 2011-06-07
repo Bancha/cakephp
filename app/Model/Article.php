@@ -1,9 +1,15 @@
 <?php
+
 /**
  * Article Model
  *
  */
 class Article extends AppModel {
+	/**
+	 * Behaviors
+	 */
+	
+	public $actsAs = array('Bancha');
 /**
  * Validation rules
  *

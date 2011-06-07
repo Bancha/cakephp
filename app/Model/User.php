@@ -4,6 +4,11 @@
  *
  */
 class User extends AppModel {
+	/**
+	 * Behaviors
+	 */
+	
+	public $actsAs = array('Bancha');
 /**
  * Validation rules
  *
