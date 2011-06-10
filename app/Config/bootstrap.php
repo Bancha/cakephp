@@ -26,7 +26,9 @@
 // Setup a 'default' cache configuration for use in the application.
 Cache::config('default', array('engine' => 'File'));
 CakePlugin::load('Bancha');
-App::uses('plugin','Bnacha');
+//App::uses('Plugin','Bancha');
+App::build(array('behaviors' => array(ROOT . '/plugins/Bancha/Model/Behavior/'))); //TODO use App:: for this 
+
 /**
  * The settings below can be used to set additional paths to models, views and controllers.
  *
