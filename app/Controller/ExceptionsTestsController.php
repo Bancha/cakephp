@@ -19,7 +19,7 @@
 
 /**
  * ExceptionsTestController
- * This throws a exception and simulates an error
+ * This throws a exception and simulates an error; call it with localhost/ExceptionsTests
  *
  * @author Kung Wong
  */
@@ -30,8 +30,11 @@
  */
 class ExceptionsTestsController extends AppController {
 	
+	public function index() {
+		$this->action();
+	}
+	
 	public function action() {
 		throw new Exception('TestException: ');
 	}
-
 }

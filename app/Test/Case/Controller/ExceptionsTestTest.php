@@ -1,12 +1,14 @@
 <?php
 /* ExceptionsTest Test cases generated on: 2011-06-20 22:22:02 : 1308601322*/
-App::uses('ExceptionsTests', 'Controller');
+
+App::uses('ExceptionsTestsController', 'Controller');
+App::load('ExceptionsTestsController');
 
 /**
  * TestExceptionsTest 
  *
  */
-class TestExceptionsTest extends ExceptionsTests {
+class TestExceptionsTest extends ExceptionsTestsController {
 /**
  * Auto render
  *

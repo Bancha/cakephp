@@ -25,30 +25,9 @@
 
 // Setup a 'default' cache configuration for use in the application.
 Cache::config('default', array('engine' => 'File'));
-CakePlugin::load('Bancha');
+
 //App::uses('Plugin','Bancha');
-App::build(array('behaviors' => array(ROOT . '/plugins/Bancha/Model/Behavior/'))); //TODO use App:: for this 
 
-//ASK FLORIAN for including
-//include('C:\Users\Kung\Desktop\Eclipse Workspace\InformatikPraktikum2\cakephp\app\Config\BanchaExceptionHandler.php');
-
-App::uses('BanchaExceptionHandler','Config');
-App::load('BanchaExceptionHandler');
-
-$callback = array('BanchaExceptionHandler', 'handleException');
-
-if (is_callable($callback)) {
-	echo "IS CALLABLE\n";
-        //call_user_func($callback, 'Hello');
-} else {
-	echo "NOT CALLABLE\n";
-}
-
-var_dump(is_callable($callback));
-
-//Configure::write('Exception.handler', $callback);
-
-//set_exception_handler(array('BanchaExceptionHandler', 'handleException'));
 
 /**
  * The settings below can be used to set additional paths to models, views and controllers.
