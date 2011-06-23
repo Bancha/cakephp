@@ -1,0 +1,21 @@
+body {
+    margin-top:40px;
+    margin-left:20px;
+}
+
+#gridpanel {
+    margin-bottom:40px;
+}
+
+.icon-add {
+	background-image:url(../img/icons/add.png) ! important;
+}
+.icon-save {
+	background-image:url(../img/icons/disk.png) ! important;
+}
+.icon-reset {
+	background-image:url(../img/icons/arrow_undo.png) ! important;
+}
+.icon-upload {
+	background-image:url(../img/icons/image_add.png) ! important;
+}
