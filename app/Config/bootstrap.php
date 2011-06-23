@@ -26,7 +26,11 @@
 // Setup a 'default' cache configuration for use in the application.
 Cache::config('default', array('engine' => 'File'));
 
-//App::uses('Plugin','Bancha');
+App::uses('Plugin','Bancha');
+CakePlugin::load('Bancha');
+
+//TODO use App::uses for this
+App::build(array('behaviors' => array(ROOT . '/plugins/Bancha/Model/Behavior/'))); //TODO use App:: for this 
 
 
 /**
