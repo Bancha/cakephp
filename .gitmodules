@@ -1,6 +1,4 @@
 [submodule "plugins/Bancha"]
 	path = plugins/Bancha
 	url = git://github.com/Bancha/Bancha.git
-	update = merge
-	fetchRecurseSubmodules = true
-
+	update = checkout
