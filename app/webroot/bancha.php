@@ -45,7 +45,6 @@
 		define('ROOT', dirname(dirname(dirname(__FILE__))));
 	}
 	
-	echo ROOT . " hrllo\n";
 /**
  * The actual directory name for the "app".
  *
@@ -81,7 +80,7 @@
 			define('CORE_PATH', CAKE_CORE_INCLUDE_PATH . DS);
 		//}
 	}
-	if (!include(CORE_PATH . 'cake' . DS . 'bootstrap.php')) {
+	if (!include(CORE_PATH . 'Cake' . DS . 'bootstrap.php')) {
 		trigger_error("CakePHP core could not be found.  Check the value of CAKE_CORE_INCLUDE_PATH in APP/webroot/index.php.  It should point to the directory containing your " . DS . "cake core directory and your " . DS . "vendors root directory.", E_USER_ERROR);
 	}
 	// load bootstrap of bancha
