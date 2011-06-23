@@ -29,19 +29,19 @@ CakePlugin::load('Bancha');
 //App::uses('Plugin','Bancha');
 App::build(array('behaviors' => array(ROOT . '/plugins/Bancha/Model/Behavior/'))); //TODO use App:: for this 
 
+//ASK FLORIAN for including
 //include('C:\Users\Kung\Desktop\Eclipse Workspace\InformatikPraktikum2\cakephp\app\Config\BanchaExceptionHandler.php');
 
-//FLO FRAGEN ->
-
-//App::uses('BanchaExceptionHandler','Config');
+App::uses('BanchaExceptionHandler','Config');
+App::load('BanchaExceptionHandler');
 
 $callback = array('BanchaExceptionHandler', 'handleException');
 
 if (is_callable($callback)) {
-	echo "MHAHAHAHA";
+	echo "IS CALLABLE\n";
         //call_user_func($callback, 'Hello');
 } else {
-	echo "jaja";
+	echo "NOT CALLABLE\n";
 }
 
 var_dump(is_callable($callback));
