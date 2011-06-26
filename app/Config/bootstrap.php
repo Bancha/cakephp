@@ -26,12 +26,14 @@
 // Setup a 'default' cache configuration for use in the application.
 Cache::config('default', array('engine' => 'File'));
 
-App::uses('Plugin','Bancha');
+//make the Bancha Plugin known to cakephp
 CakePlugin::load('Bancha');
 
-//TODO use App::uses for this
-App::build(array('behaviors' => array(ROOT . '/plugins/Bancha/Model/Behavior/'))); //TODO use App:: for this 
+//import the BanchaController so ExtJS can get the initial API definition
+App::import('Controller', 'Bancha.BanchaExt');
 
+//import the BanchaBehavior, so Models can use it
+App::import('Behavior','Bancha.Bancha');
 
 /**
  * The settings below can be used to set additional paths to models, views and controllers.
