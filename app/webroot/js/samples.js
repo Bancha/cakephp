@@ -12,10 +12,9 @@ Bancha.onModelReady('User', function(userModel) {
     // ... create a full featured users grid
     Ext.create('Ext.grid.Panel', 
         Bancha.scaffold.GridConfig.buildConfig('User', {
-            create: true,
-            update: true,
-            withReset: true,
-            destroy: true
+            // you can overwrite defaults either like this
+            enableDestroy: true
+            // or permanent with Bancha.scaffold.GridConfig.enableDestroy = true;
         }, {
             height: 350,
             width: 650,
@@ -26,22 +25,60 @@ Bancha.onModelReady('User', function(userModel) {
     );
 
     // create form upload
+    // overwrite some defaults for nicer styling
+    Bancha.scaffold.FormConfig.fileuploadfieldDefaults = {
+        buttonText: '',
+        buttonConfig: {
+            iconCls: 'icon-upload'
+        }
+    }
+    /*
+    var panelConfig = Bancha.scaffold.FormConfig.buildConfig('User', {
+            
+        }, {
+            width: 650,
+            frame:true,
+            title: 'Form with upload field',
+            renderTo: 'formpanel',
+            id: 'form',
+            bodyStyle:'padding:5px 5px 0',
+            fieldDefaults: {
+                msgTarget: 'side',
+                labelWidth: 75
+            },
+            defaultType: 'textfield',
+            defaults: {
+                anchor: '100%'
+            }
+        });
+    );
+    
+    // add another item to the form
+    panelConfig.items[] = {
+        xtype: 'container', 
+        data: { avatar: 'none' },// TODO fixsss
+        tpl: '<tpl if="avatar!=\'none\'"><span class="uploaded-image">most recently uploaded image: {avatar}<image src="{avatar}" style="width:100px;" title="most recently uploaded image"></span></tpl>'
+    };
+    
+    // and render it
+    Ext.create('Ext.form.Panel', panelConfig);
+    
+    */
     Ext.create('Ext.form.Panel', {
-        width: 650,
-        frame:true,
-        title: 'Form with upload field',
-        renderTo: 'formpanel',
-        id: 'form',
-        bodyStyle:'padding:5px 5px 0',
-        fieldDefaults: {
-            msgTarget: 'side',
-            labelWidth: 75
-        },
-        defaultType: 'textfield',
-        defaults: {
-            anchor: '100%'
-        },
-
+            width: 650,
+            frame:true,
+            title: 'Form with upload field',
+            renderTo: 'formpanel',
+            id: 'form',
+            bodyStyle:'padding:5px 5px 0',
+            fieldDefaults: {
+                msgTarget: 'side',
+                labelWidth: 75
+            },
+            defaultType: 'textfield',
+            defaults: {
+                anchor: '100%'
+            },
 
         // configs for BasicForm
         api: {
@@ -53,7 +90,9 @@ Bancha.onModelReady('User', function(userModel) {
         items: [{ //TODO use scaffolding
             fieldLabel: 'Name',
             name: 'name',
-            allowBlank:false
+            allowBlank:false,
+            minValue: 3,
+            maxValue: 64
         },{
             fieldLabel: 'User Name',
             name: 'login'
@@ -69,7 +108,7 @@ Bancha.onModelReady('User', function(userModel) {
             fieldLabel: 'Height',
             name: 'height'
         }, {
-            xtype: 'filefield',
+            xtype: 'fileuploadfield',
             emptyText: 'Select an image',
             buttonText: '',
             buttonConfig: {
@@ -107,7 +146,7 @@ Bancha.onModelReady('User', function(userModel) {
     
     
     
-    // ... and some charting
+    // ... and some standard extjs charting
     Ext.create("Ext.panel.Panel", {
         title: 'Column Chart',
         renderTo: 'chart',
