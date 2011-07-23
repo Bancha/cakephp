@@ -11,7 +11,7 @@ Bancha.onModelReady('User', function(userModel) {
 
     // ... create a full featured users grid
     Ext.create('Ext.grid.Panel', 
-        Bancha.scarfold.buildGridPanelConfig('User', { //TODO grid functions richten
+        Bancha.scaffold.GridConfig.buildConfig('User', {
             create: true,
             update: true,
             withReset: true,
@@ -30,7 +30,8 @@ Bancha.onModelReady('User', function(userModel) {
         width: 650,
         frame:true,
         title: 'Form with upload field',
-        renderTo: 'form',
+        renderTo: 'formpanel',
+        id: 'form',
         bodyStyle:'padding:5px 5px 0',
         fieldDefaults: {
             msgTarget: 'side',
@@ -41,7 +42,15 @@ Bancha.onModelReady('User', function(userModel) {
             anchor: '100%'
         },
 
-        items: [{ //TODO use scarfolding
+
+        // configs for BasicForm
+        api: {
+            // The server-side method to call for load() requests
+            load: Bancha.getStubsNamespace().User.read,
+            // The server-side must mark the submit handler as a 'formHandler'
+            submit: Bancha.getStubsNamespace().User.submits
+        },
+        items: [{ //TODO use scaffolding
             fieldLabel: 'Name',
             name: 'name',
             allowBlank:false
@@ -71,7 +80,7 @@ Bancha.onModelReady('User', function(userModel) {
         }, {
             xtype: 'container', 
             data: { avatar: 'none' },// TODO fixsss
-            renderTpl: 'most recently uploaded image: {avatar}<image src="{avatar}" style="width:100px;" title="most recently uploaded image">'
+            tpl: '<tpl if="avatar!=\'none\'"><span class="uploaded-image">most recently uploaded image: {avatar}<image src="{avatar}" style="width:100px;" title="most recently uploaded image"></span></tpl>'
         }],
 
         buttons: [{
@@ -86,7 +95,6 @@ Bancha.onModelReady('User', function(userModel) {
                 var form = this.up('form').getForm();
                 if(form.isValid()){
                     form.submit({
-                        url: 'file-upload.php',
                         waitMsg: 'Uploading your photo...',
                         success: function(fp, o) {
                             msg('Success', 'Processed file "' + o.result.file + '" on the server');
