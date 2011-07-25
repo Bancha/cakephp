@@ -4,6 +4,10 @@ Ext.ns('Bancha'); Bancha.REMOTE_API = {
     "type":"remoting",
     "actions":{
         "User":[{
+            "name":"submit",
+            "formHandler": true,
+            "len":1
+        },{
             "name":"create",
             "len":1
         },{

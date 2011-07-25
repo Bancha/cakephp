@@ -28,6 +28,9 @@
                 <exclude name="**/.git/**"/>
                 <exclude name="**/builder/**"/>
                 <exclude name="**/docs/**"/>
+                <exclude name="**/production/**"/>
+                <exclude name="**/build.xml"/>
+                <exclude name="**/production-tmp/**"/>
         </fileset>
         
         <!-- a fileset for all js code -->
@@ -40,7 +43,7 @@
         </fileset>
         
         <!-- api docs bancha style -->
-        <fileset dir="${sourcedir}/docs/resources" id="files.source.docRessources">
+        <fileset dir="${sourcedir}/docs/resources" id="files.source.jsDocRessources">
                 <include name="**/*"/>
         </fileset>
         
@@ -104,6 +107,7 @@
                 
                 <!-- load properties -->
                 <property file="builder/config/production.properties"/>
+                <property file="builder/config/ftp.properties"/>
                 
                 <!-- test the code -->
                 <phingcall target="test"/>
@@ -181,11 +185,10 @@
 
                 <echo msg="Starting cake tests...."/>
 				        <!-- start cake tests -->
-				        <!-- TODO tests sollten durchlaufen 
-				        <exec checkreturn="true" command="&quot;app/Console/cake&quot; testsuite bancha AllTests - -strict - -log-junit &quot;${reportsdir}/cake_tests.xml&quot;" escape="false" />
+				        <exec checkreturn="true" command="&quot;app/Console/cake&quot; testsuite bancha AllTests --strict --log-junit &quot;${reportsdir}/cake_tests.xml&quot;" escape="false" />
 				
-				        ! - - start cake code coverage - -
-				        <exec checkreturn="true" command="&quot;app/Console/cake&quot; testsuite bancha AllTests - -strict - -coverage-clover &quot;${reportsdir}/cake_code_coverage.xml&quot;" escape="false" /> -->
+				        <!-- start cake code coverage -->
+				        <exec checkreturn="true" command="&quot;app/Console/cake&quot; testsuite bancha AllTests - -strict - -coverage-clover &quot;${reportsdir}/cake_code_coverage.xml&quot;" escape="false" /> 
           
                 <!-- TODO maybe
                 <phpcpd>
@@ -407,16 +410,45 @@
         <!-- ============================================  -->
 
         <target name="docs">
-                <echo msg="Building API docs for js"/>
+                <echo msg="Building API docs for JS"/>
+                
+                <!-- add the docs index to the folder -->
+                <copy file="${sourcedir}/docs/index.html" tofile="${tmpdir}/docs/index.html" overwrite="true" />
                 
                 <!-- build the docs with jsduck -->
                 <!-- see: https://github.com/senchalabs/jsduck -->
+                
+                <!-- api docs -->
                 <mkdir dir="${tmpdir}/docs/js"/>
-                <exec command="&quot;builder/lib/jsduck-2.0.pre2.exe&quot; &quot;${sourcedir}/plugins/Bancha/lib/Bancha/vendors/js/Bancha.js&quot; --output &quot;${tmpdir}/docs/js&quot; --ignore-global --external Ext.Base --external Ext.data.Model --title &quot;Bancha JavaScript API Documentation&quot; --footer &quot;Bancha JavaScript API Documentation from &lt;a href='http://banchaproject.org/'&gt;. Generated with &lt;a href='https://github.com/senchalabs/jsduck'&gt;JSDuck&lt;/a&gt;&quot;" escape="false" />
+                <exec command="&quot;builder/lib/jsduck-2.0.pre2.exe&quot; &quot;${sourcedir}/plugins/Bancha/lib/Bancha/vendors/js/Bancha.js&quot; --output &quot;${tmpdir}/docs/js&quot; --ignore-global --external Ext.Base --external Ext.data.Model --title &quot;Bancha JavaScript API Documentation&quot; --footer &quot;Bancha JavaScript API Documentation. See &lt;a href='http://banchaproject.org/'&gt;http://banchaproject.org&lt;a&gt;. Generated with &lt;a href='https://github.com/senchalabs/jsduck'&gt;JSDuck&lt;/a&gt;&quot;" escape="false" />
                 <!-- add Bancha styling -->
                 <copy todir="${tmpdir}/docs/js/resources" overwrite="true">
-                        <fileset refid="files.source.docRessources"/>
+                        <fileset refid="files.source.jsDocRessources"/>
                 </copy>
+                <copy file="${sourcedir}/docs/jsdoc-index.html" tofile="${tmpdir}/docs/js/index.html" overwrite="true" />
+                
+                <!-- api docs for dev with private functions -->
+                <mkdir dir="${tmpdir}/docs/js-internal"/>
+                <exec command="&quot;builder/lib/jsduck-2.0.pre2.exe&quot; &quot;${sourcedir}/plugins/Bancha/lib/Bancha/vendors/js/Bancha.js&quot; --output &quot;${tmpdir}/docs/js-internal&quot; --ignore-global --external Ext.Base --external Ext.data.Model --title &quot;Bancha JavaScript API Documentation for Bancha Developers&quot; --footer &quot;Bancha JavaScript API Documentation including private functions. See &lt;a href='http://banchaproject.org/'&gt;http://banchaproject.org&lt;a&gt;. Generated with &lt;a href='https://github.com/senchalabs/jsduck'&gt;JSDuck&lt;/a&gt;&quot; --private-classes --private" escape="false" />
+                <!-- add Bancha styling -->
+                <copy todir="${tmpdir}/docs/js-internal/resources" overwrite="true">
+                        <fileset refid="files.source.jsDocRessources"/>
+                </copy>
+                <copy file="${sourcedir}/docs/jsdoc-index.html" tofile="${tmpdir}/docs/js-internal/index.html" overwrite="true" />
+                
+                <echo msg="Building API docs for PHP"/>
+                
+                <!-- build docs with phpDocumentor -->
+                <phpdoc title="Bancha PHP API Documentation"
+                    destdir="${tmpdir}/docs/php"
+                    output="HTML:frames:earthli">
+                    <fileset dir="${sourcedir}/plugins/Bancha/Lib">
+                        <include name="**/*.php" />
+                    </fileset>
+                    <projdocfileset dir=".">
+                        <include name="README" />
+                    </projdocfileset>
+                </phpdoc>
                 
                 <echo msg="All API Docs created!"/>
         </target>
@@ -500,6 +532,19 @@
                         <fileset refid="files.tmp.sourcecode"/>
                 </copy>
                 
+                
+                <!-- upload files to the server -->
+                <echo msg="Upload docs to server..."/>
+                <ftpdeploy
+                    host="${ftp.destination.host}"
+                    port="${ftp.destination.port}"
+                    username="${ftp.destination.username}"
+                    password="${ftp.destination.password}"
+                    mode="${ftp.destination.mode}"
+                    dir="docs"
+                    clearfirst="true">
+                    <fileset dir="${builddir}/docs" />
+                </ftpdeploy>
                 
 				<!-- TODO maybe ?
                 <echo msg="Chmod for files..."/>

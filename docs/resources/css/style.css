@@ -65,7 +65,7 @@ pre, code, kbd, samp, tt { font-family: "Menlo", "Courier New", Courier, monospa
 /* line 199, ../sass/style.scss */
 #container nav.bc a { color: #aaaaaa; }
 /* line 201, ../sass/style.scss */
-#container h1 { font-family: "klavika-web-1", "klavika-web-2", sans-serif; letter-spacing: -1px; padding-bottom: 5px; padding-top: 2px; border-bottom: 1px #f1f1f1; font-size: 2.3em; color: #744; }
+#container h1 { font-family: "Droid Serif", sans-serif; letter-spacing: -1px; padding-bottom: 5px; padding-top: 2px; border-bottom: 1px #f1f1f1; font-size: 2.3em; color: #744; }
 /* line 209, ../sass/style.scss */
 #container h1 a { color: #744; }
 /* line 211, ../sass/style.scss */
@@ -266,7 +266,7 @@ pre, code, kbd, samp, tt { font-family: "Menlo", "Courier New", Courier, monospa
 /* line 515, ../sass/style.scss */
 #api-guide { top: 10px; padding-right: 10px; font-size: 14px; }
 /* line 519, ../sass/style.scss */
-#api-guide h1 { background: url(../images/doc-m.png) no-repeat -5px 0; padding: 5px 0 10px 55px; font-family: "klavika-web-1", "klavika-web-2", sans-serif; letter-spacing: -1px; margin-bottom: 16px; font-size: 2.3em; color: #744; }
+#api-guide h1 { background: url(../images/doc-m.png) no-repeat -5px 0; padding: 5px 0 10px 55px; font-family: "Droid Serif", sans-serif; letter-spacing: -1px; margin-bottom: 16px; font-size: 2.3em; color: #744; }
 /* line 527, ../sass/style.scss */
 #api-guide h2 { font-family: Helvetica Neue, Helvetica, Arial, sans-serif; letter-spacing: -1px; line-height: 20px; border-bottom: 1px solid #f1f1f1; font-size: 20px; font-weight: bold; color: #314e64; margin: 30px 0 15px; padding-bottom: 5px; }
 /* line 537, ../sass/style.scss */

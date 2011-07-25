@@ -124,7 +124,7 @@ a:hover { color: #0464bb; }
 #footer #footer-content { display: block !important; }
 
 /* line 262, ../sass/viewport.scss */
-#center-container h1 { font-family: "klavika-web-1", "klavika-web-2", sans-serif; letter-spacing: -1px; padding-bottom: 5px; padding-top: 2px; border-bottom: 1px #f1f1f1; font-size: 2.3em; color: #744; }
+#center-container h1 { font-family: "Droid Serif", sans-serif; letter-spacing: -1px; padding-bottom: 5px; padding-top: 2px; border-bottom: 1px #f1f1f1; font-size: 2.3em; color: #744; }
 /* line 270, ../sass/viewport.scss */
 #center-container h1 a { color: #744; }
 /* line 272, ../sass/viewport.scss */
@@ -280,7 +280,7 @@ a:hover { color: #0464bb; }
 /* line 500, ../sass/viewport.scss */
 #guide { padding-right: 10px; font-size: 14px; }
 /* line 503, ../sass/viewport.scss */
-#guide h1 { background: url(../images/doc-m.png) no-repeat -5px -5px; padding: 10px 0 10px 55px; font-family: "klavika-web-1", "klavika-web-2", sans-serif; letter-spacing: -1px; margin-bottom: 16px; font-size: 2.3em; color: #744; }
+#guide h1 { background: url(../images/doc-m.png) no-repeat -5px -5px; padding: 10px 0 10px 55px; font-family: "Droid Serif", sans-serif; letter-spacing: -1px; margin-bottom: 16px; font-size: 2.3em; color: #744; }
 /* line 511, ../sass/viewport.scss */
 #guide h2 { font-family: "Helvetica Neue", Helvetica, Arial, "Lucida Grande", sans-serif; letter-spacing: -1px; line-height: 20px; border-bottom: 1px solid #f1f1f1; font-size: 20px; font-weight: bold; color: #314e64; margin: 30px 0 15px; padding-bottom: 5px; }
 /* line 513, ../sass/viewport.scss */
@@ -289,7 +289,7 @@ a:hover { color: #0464bb; }
 #guide hr { display: none; }
 
 /* line 519, ../sass/viewport.scss */
-#failure h1 { padding: 10px 0; font-family: "klavika-web-1", "klavika-web-2", sans-serif; letter-spacing: -1px; margin-bottom: 16px; font-size: 2.3em; color: #744; }
+#failure h1 { padding: 10px 0; font-family: "Droid Serif", sans-serif; letter-spacing: -1px; margin-bottom: 16px; font-size: 2.3em; color: #744; }
 /* line 526, ../sass/viewport.scss */
 #failure p { margin: 0 0 0.8em; }
 
