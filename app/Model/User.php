@@ -22,7 +22,7 @@ class User extends AppModel {
             'decimal' => array(
                 'rule' => array('decimal', 0)
             ),
-	   )
+	   ),
 	   'name' => array(
             'notempty' => array(
                 'rule' => array('notempty')

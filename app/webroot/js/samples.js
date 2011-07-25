@@ -1,3 +1,6 @@
+/*jslint browser: true, vars: false, plusplus: true, white: true, sloppy: true */
+/*global Ext, Bancha */
+
 // API and Bancha is already included,
 // now load sample dependencies
 Ext.require([
@@ -10,140 +13,76 @@ Ext.require([
 Bancha.onModelReady('User', function(userModel) {
 
     // ... create a full featured users grid
-    Ext.create('Ext.grid.Panel', 
-        Bancha.scaffold.GridConfig.buildConfig('User', {
-            // you can overwrite defaults either like this
-            enableDestroy: true
-            // or permanent with Bancha.scaffold.GridConfig.enableDestroy = true;
-        }, {
-            height: 350,
-            width: 650,
-            frame: true,
-            title: 'User Grid',
-            renderTo: 'gridpanel'
-        })
-    );
+    Bancha.scaffold.Grid.createPanel('User', {
+        // you can overwrite defaults either like this
+        enableDestroy: true
+        // or permanent with Bancha.scaffold.Grid.enableDestroy = true;
+    }, {
+        height: 350,
+        width: 650,
+        frame: true,
+        title: 'User Grid',
+        renderTo: 'gridpanel'
+    });
 
     // create form upload
     // overwrite some defaults for nicer styling
-    Bancha.scaffold.FormConfig.fileuploadfieldDefaults = {
+    Bancha.scaffold.Form.fileuploadfieldDefaults = {
         buttonText: '',
         buttonConfig: {
             iconCls: 'icon-upload'
         }
-    }
-    /*
-    var panelConfig = Bancha.scaffold.FormConfig.buildConfig('User', {
-            
-        }, {
-            width: 650,
-            frame:true,
-            title: 'Form with upload field',
-            renderTo: 'formpanel',
-            id: 'form',
-            bodyStyle:'padding:5px 5px 0',
-            fieldDefaults: {
-                msgTarget: 'side',
-                labelWidth: 75
-            },
-            defaultType: 'textfield',
-            defaults: {
-                anchor: '100%'
-            }
-        });
-    );
-    
-    // add another item to the form
-    panelConfig.items[] = {
-        xtype: 'container', 
-        data: { avatar: 'none' },// TODO fixsss
-        tpl: '<tpl if="avatar!=\'none\'"><span class="uploaded-image">most recently uploaded image: {avatar}<image src="{avatar}" style="width:100px;" title="most recently uploaded image"></span></tpl>'
     };
     
-    // and render it
-    Ext.create('Ext.form.Panel', panelConfig);
-    
-    */
-    Ext.create('Ext.form.Panel', {
-            width: 650,
-            frame:true,
-            title: 'Form with upload field',
-            renderTo: 'formpanel',
-            id: 'form',
-            bodyStyle:'padding:5px 5px 0',
-            fieldDefaults: {
-                msgTarget: 'side',
-                labelWidth: 75
-            },
-            defaultType: 'textfield',
-            defaults: {
-                anchor: '100%'
-            },
-
-        // configs for BasicForm
-        api: {
-            // The server-side method to call for load() requests
-            load: Bancha.getStubsNamespace().User.read,
-            // The server-side must mark the submit handler as a 'formHandler'
-            submit: Bancha.getStubsNamespace().User.submits
-        },
-        items: [{ //TODO use scaffolding
-            fieldLabel: 'Name',
-            name: 'name',
-            allowBlank:false,
-            minValue: 3,
-            maxValue: 64
-        },{
-            fieldLabel: 'User Name',
-            name: 'login'
-        },{
-            fieldLabel: 'Email',
-            name: 'email'
-        }, {
-            xtype: 'numberfield',
-            fieldLabel: 'Weight',
-            name: 'weight'
-        }, {
-            xtype: 'numberfield',
-            fieldLabel: 'Height',
-            name: 'height'
-        }, {
-            xtype: 'fileuploadfield',
-            emptyText: 'Select an image',
-            buttonText: '',
-            buttonConfig: {
-                iconCls: 'icon-upload'
-            },
-            fieldLabel: 'Avatar',
-            name: 'avatar'
-        }, {
-            xtype: 'container', 
-            data: { avatar: 'none' },// TODO fixsss
-            tpl: '<tpl if="avatar!=\'none\'"><span class="uploaded-image">most recently uploaded image: {avatar}<image src="{avatar}" style="width:100px;" title="most recently uploaded image"></span></tpl>'
-        }],
-
-        buttons: [{
-            text: 'reset',
-            handler: function() {
-                this.up('form').getForm().reset();
-            }
-        },{
-            text: 'Save', // TODO attach meaning
-            formBind: true,
-            handler: function(){
-                var form = this.up('form').getForm();
-                if(form.isValid()){
-                    form.submit({
-                        waitMsg: 'Uploading your photo...',
-                        success: function(fp, o) {
-                            msg('Success', 'Processed file "' + o.result.file + '" on the server');
+    Bancha.scaffold.Form.createPanel('User', false, {
+        afterBuild: function(formConfig) {
+            // change the order, so that the avatar field is the last element
+            formConfig.items.push(formConfig.items.splice(5,1)[0]);
+            
+            // add another item after the avatar field
+            formConfig.items.push({ //TODO add support for this to display the image
+                xtype: 'component', 
+                data: { avatar: 'none' },// TODO fixsss
+                tpl: '<tpl if="avatar!=\'none\'"><span class="uploaded-image">most recently uploaded image: {avatar}<image src="{avatar}" style="width:100px;" title="most recently uploaded image"></span></tpl>'
+            });
+            
+            // add another button
+            formConfig.buttons.unshift({
+                text: 'Load Record 1',
+                iconCls: 'icon-load', // TODO css
+                handler: Bancha.scaffold.Form.scopeButtonHandler(function() {
+                    var formPanel = this.getPanel(),
+                        form = this.getForm();
+                    // load the form // scopeButtonHandler allows to get the form with this.getForm()
+                    form.load({
+                        params: {
+                            data: { id:1 }
                         }
                     });
-                }
-            }
-        }]
-    });
-    
+                    // change the header title
+                    formPanel.setTitle('Form with upload field - Change Record 1');
+                },formConfig.id)
+            });
+            
+            return formConfig;
+        } //eo afterBuild
+    }, {
+        // some additional styles
+        width: 650,
+        frame:true,
+        title: 'Form with upload field - Create a new User',
+        renderTo: 'formpanel',
+        id: 'form',
+        bodyStyle:'padding:5px 5px 0',
+        fieldDefaults: {
+            msgTarget: 'side',
+            labelWidth: 75
+        },
+        defaultType: 'textfield',
+        defaults: {
+            anchor: '100%'
+        }
+    }); // eo create
     
     
     // ... and some standard extjs charting
@@ -203,6 +142,7 @@ Bancha.onModelReady('User', function(userModel) {
             }]
         }
      });
-    // TODO Add Chart sample
-    // http://dev.sencha.com/deploy/ext-4.0.0/examples/charts/Column.html
+
 });
+
+// eof
