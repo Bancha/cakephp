@@ -25,3 +25,6 @@ p {
 .icon-upload {
 	background-image:url(../img/icons/image_add.png) ! important;
 }
+.icon-edit-user {
+	background-image:url(../img/icons/user_edit.png) ! important;
+}

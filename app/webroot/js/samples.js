@@ -49,7 +49,7 @@ Bancha.onModelReady('User', function(userModel) {
             // add another button
             formConfig.buttons.unshift({
                 text: 'Load Record 1',
-                iconCls: 'icon-load', // TODO css
+                iconCls: 'icon-edit-user', // TODO css
                 handler: Bancha.scaffold.Form.scopeButtonHandler(function() {
                     var formPanel = this.getPanel(),
                         form = this.getForm();
