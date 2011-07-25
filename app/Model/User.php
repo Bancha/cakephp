@@ -14,46 +14,75 @@ class User extends AppModel {
  *
  * @var array
  */
-	public $validate = array(
-		'name' => array(
-			'notempty' => array(
-				'rule' => array('notempty'),
-				//'message' => 'Your custom message here',
-				//'allowEmpty' => false,
-				//'required' => false,
-				//'last' => false, // Stop validation after this rule
-				//'on' => 'create', // Limit validation to 'create' or 'update' operations
-			),
+	public $validate = array( // TODO example for validation rule "url" missing
+	   'id' => array(
+            'numeric' => array(
+                'rule' => array('numeric')
+            ),
+            'decimal' => array(
+                'rule' => array('decimal', 0)
+            ),
+	   )
+	   'name' => array(
+            'notempty' => array(
+                'rule' => array('notempty')
+            ),
+            'minLength' => array(
+                'rule' => array('minLength',3),
+            ),
+            'maxLength' => array(
+                'rule' => array('maxLength',64),
+            ),
 		),
 		'login' => array(
-			'notempty' => array(
-				'rule' => array('notempty'),
-				//'message' => 'Your custom message here',
-				//'allowEmpty' => false,
-				//'required' => false,
-				//'last' => false, // Stop validation after this rule
-				//'on' => 'create', // Limit validation to 'create' or 'update' operations
-			),
+            'isUnique' => array( // this has to be checked by the server (so there's nothing onthe frontend for this
+                'rule' => array('isUnique'),
+		        'message' => "Login is already taken."
+            ),
+            'minLength' => array(
+                'rule' => array('minLength', 3),
+                'required' => true, // this one is slick
+            ),
+            'maxLength' => array(
+                'rule' => array('maxLength',64),
+            ),
+            'alphaNumeric' => array(
+                'rule' => array('alphaNumeric')
+            ),
 		),
-		'email' => array(
-			'email' => array(
-				'rule' => array('email'),
-				//'message' => 'Your custom message here',
-				//'allowEmpty' => false,
-				//'required' => false,
-				//'last' => false, // Stop validation after this rule
-				//'on' => 'create', // Limit validation to 'create' or 'update' operations
-			),
-		),
-		'avatar' => array(
-			'notempty' => array(
-				'rule' => array('notempty'),
-				//'message' => 'Your custom message here',
-				//'allowEmpty' => false,
-				//'required' => false,
-				//'last' => false, // Stop validation after this rule
-				//'on' => 'create', // Limit validation to 'create' or 'update' operations
-			),
+        'email' => array(
+            'email' => array(
+                'rule' => array('email'),
+                'required' => true,
+            ),
+        ),
+        'created' => array(
+            'created' => array(
+                'rule' => array('date'),
+            ),
+        ),
+        'weight' => array(
+            'decimal' => array(
+                'rule' => array('decimal', 2)
+            ),
+        ),
+        'height' => array(
+            'decimal' => array(
+                'rule' => array('decimal', 0)
+            ),
+            'range' => array(
+                'rule' => array('range', 50, 300),
+                'message' => 'Please enter a value between 50 and 300cm.'
+            )
+        ),
+        'avatar' => array(
+            'file' => array( // this validation rule forces Bancha.scaffold in the frontend to render a fileuploadfield
+                 'rule' => array('file')
+             ),
+            'extension' => array(
+                 'rule' => array('extension', array('gif', 'jpeg', 'png', 'jpg')),
+                 'message' => 'Please supply a valid image.'
+             ),
 		),
 	);
 
