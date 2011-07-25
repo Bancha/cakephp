@@ -10,10 +10,10 @@ class AppSchema extends CakeSchema {
 
 	var $articles = array(
 		'id' => array('type' => 'integer', 'null' => false, 'default' => NULL, 'collate' => NULL, 'key' => 'primary', 'collate' => NULL, 'comment' => ''),
-		'title' => array('type' => 'string', 'null' => false, 'default' => NULL,'collate' => NULL,  'length' => 64, 'comment' => ''),
-		'date' => array('type' => 'datetime', 'null' => false, 'default' => NULL, 'collate' => NULL, 'comment' => ''),
-		'body' => array('type' => 'text', 'null' => false, 'default' => NULL,'collate' => NULL,  'comment' => ''),
-		'published' => array('type' => 'boolean', 'null' => false, 'default' => false,'collate' => NULL,  'comment' => ''),
+		'title' => array('type' => 'string', 'null' => true, 'default' => NULL,'collate' => NULL,  'length' => 64, 'comment' => ''),
+		'date' => array('type' => 'datetime', 'null' => true, 'default' => NULL, 'collate' => NULL, 'comment' => ''),
+		'body' => array('type' => 'text', 'null' => true, 'default' => NULL,'collate' => NULL,  'comment' => ''),
+		'published' => array('type' => 'boolean', 'null' => true, 'default' => false,'collate' => NULL,  'comment' => ''),
 		'user_id' => array('type' => 'integer', 'null' => false, 'default' => NULL, 'collate' => NULL, 'comment' => ''),
 		'indexes' => array('PRIMARY' => array('column' => 'id', 'unique' => 1)),
 		'tableParameters' => array('charset' => 'utf8', 'collate' => 'utf8_general_ci', 'engine' => 'InnoDB')
@@ -31,14 +31,14 @@ class AppSchema extends CakeSchema {
 		'tableParameters' => array('charset' => 'utf8', 'collate' => 'utf8_general_ci', 'engine' => 'InnoDB')
 	);
 	var $users = array(
-		'id' => array('type' => 'integer', 'null' => false, 'default' => NULL, 'key' => 'primary', 'collate' => NULL, 'comment' => ''),
-		'name' => array('type' => 'string', 'null' => false, 'default' => NULL, 'length' => 64, 'collate' => NULL, 'comment' => ''),
-		'login' => array('type' => 'string', 'null' => false, 'default' => NULL, 'length' => 64, 'collate' => NULL, 'comment' => ''),
-		'created' => array('type' => 'datetime', 'null' => false, 'default' => NULL, 'collate' => NULL, 'comment' => ''),
-		'email' => array('type' => 'string', 'null' => false, 'default' => NULL, 'length' => 64, 'collate' => NULL, 'comment' => ''),
-		'avatar' => array('type' => 'string', 'null' => false, 'default' => NULL, 'length' => 64, 'collate' => NULL, 'comment' => ''),
+		'id' => array('type' => 'integer', 'null' => true, 'default' => NULL, 'key' => 'primary', 'collate' => NULL, 'comment' => ''),
+		'name' => array('type' => 'string', 'null' => true, 'default' => NULL, 'length' => 64, 'collate' => NULL, 'comment' => ''),
+		'login' => array('type' => 'string', 'null' => true, 'default' => NULL, 'length' => 64, 'collate' => NULL, 'comment' => ''),
+		'created' => array('type' => 'datetime', 'null' => true, 'default' => NULL, 'collate' => NULL, 'comment' => ''),
+		'email' => array('type' => 'string', 'null' => true, 'default' => NULL, 'length' => 64, 'collate' => NULL, 'comment' => ''),
+		'avatar' => array('type' => 'string', 'null' => true, 'default' => NULL, 'length' => 64, 'collate' => NULL, 'comment' => ''),
 		'weight' => array('type' => 'float', 'null' => true, 'default' => NULL, 'collate' => NULL, 'comment' => ''),
-		'heigth' => array('type' => 'float', 'null' => true, 'default' => NULL, 'collate' => NULL, 'comment' => ''),
+		'heigth' => array('type' => 'integer', 'null' => true, 'default' => NULL, 'collate' => NULL, 'comment' => ''),
 		'indexes' => array('PRIMARY' => array('column' => 'id', 'unique' => 1)),
 		'tableParameters' => array('charset' => 'utf8', 'collate' => 'utf8_general_ci', 'engine' => 'InnoDB')
 	);
