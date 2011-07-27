@@ -30,7 +30,7 @@ Cache::config('default', array('engine' => 'File'));
 CakePlugin::load('Bancha');
 
 //import the BanchaController so ExtJS can get the initial API definition
-App::import('Controller', 'Bancha.BanchaExt');
+App::import('Controller', 'Bancha.Bancha');
 
 //import the BanchaBehavior, so Models can use it
 App::import('Behavior','Bancha.Bancha');
