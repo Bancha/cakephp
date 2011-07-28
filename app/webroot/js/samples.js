@@ -4,6 +4,7 @@
 // API and Bancha is already included,
 // now load sample dependencies
 Ext.require([
+    'Ext.from.*',
     'Ext.grid.*'
 ]);
 
@@ -13,20 +14,38 @@ Ext.require([
 Bancha.onModelReady('User', function(userModel) {
 
     // ... create a full featured users grid
-    Bancha.scaffold.Grid.createPanel('User', {
-        // you can overwrite defaults either like this
-        enableDestroy: true
-        // or permanent with Bancha.scaffold.Grid.enableDestroy = true;
-    }, {
+    Ext.create('Ext.grid.Panel', {
+        scaffold: 'User', // model name
+        
+        // basic scaffold configs con be set directly
+        enableCreate : true,
+        enableUpdate : true,
+        enableDestroy: true,
+        enableReset  : true,
+        
+        // advanced confgis can be set here
+        scaffoldConfig: {
+            datecolumnDefaults: {
+                format: 'm/d/Y'
+            },
+            // use the same store for multiple grids
+            oneStorePerModel :true
+        },
+        
+        // some additional styles
         height: 350,
         width: 650,
         frame: true,
         title: 'User Grid',
         renderTo: 'gridpanel'
     });
+    // PS: Actually all "changed" scaffold configs are already defaults
+    // (expect scaffold:'User' of course)
 
-    // create form upload
-    // overwrite some defaults for nicer styling
+    /*
+     * create form upload
+     */
+    // For all created forms overwrite file upload defaults for nicer styling
     Bancha.scaffold.Form.fileuploadfieldDefaults = {
         buttonText: '',
         buttonConfig: {
@@ -34,39 +53,51 @@ Bancha.onModelReady('User', function(userModel) {
         }
     };
     
-    Bancha.scaffold.Form.createPanel('User', false, {
-        afterBuild: function(formConfig) {
-            // change the order, so that the avatar field is the last element
-            formConfig.items.push(formConfig.items.splice(5,1)[0]);
-            
-            // add another item after the avatar field
-            formConfig.items.push({ //TODO add support for this to display the image
-                xtype: 'component', 
-                data: { avatar: 'none' },// TODO fixsss
-                tpl: '<tpl if="avatar!=\'none\'"><span class="uploaded-image">most recently uploaded image: {avatar}<image src="{avatar}" style="width:100px;" title="most recently uploaded image"></span></tpl>'
-            });
-            
-            // add another button
-            formConfig.buttons.unshift({
-                text: 'Load Record 1',
-                iconCls: 'icon-edit-user', // TODO css
-                handler: Bancha.scaffold.Form.scopeButtonHandler(function() {
-                    var formPanel = this.getPanel(),
-                        form = this.getForm();
-                    // load the form // scopeButtonHandler allows to get the form with this.getForm()
-                    form.load({
-                        params: {
-                            data: { id:1 }
-                        }
-                    });
-                    // change the header title
-                    formPanel.setTitle('Form with upload field - Change Record 1');
-                },formConfig.id)
-            });
-            
-            return formConfig;
-        } //eo afterBuild
-    }, {
+    Ext.create('Ext.form.Panel', {
+        scaffold: 'User',
+        
+        // basic scaffold configs con be set directly
+        loadBanchaRecord: false,
+        enableReset: true,
+        
+        // advanced confgis can be set here
+        scaffoldConfig: {
+            // we're using the after interceptor for bigger changes
+            afterBuild: function(formConfig) {
+                // change the order, so that the avatar field is the last element
+                formConfig.items.push(formConfig.items.splice(5,1)[0]);
+                
+                // add another item after the avatar field
+                formConfig.items.push({ //TODO add support for this to display the image
+                    xtype: 'component', 
+                    data: { avatar: 'none' },// TODO fixsss
+                    tpl: '<tpl if="avatar!=\'none\'"><span class="uploaded-image">most recently uploaded image: {avatar}<image src="{avatar}" style="width:100px;" title="most recently uploaded image"></span></tpl>'
+                });
+                console.info(formConfig);
+                // add another button
+                formConfig.buttons.unshift({
+                    text: 'Load Record 1',
+                    iconCls: 'icon-edit-user', // TODO css
+                    handler: function() {
+                        var formPanel = this.getPanel(),
+                            form = this.getForm();
+                        // load the form // scopeButtonHandler allows to get the form with this.getForm()
+                        form.load({
+                            params: {
+                                data: { id:1 }
+                            }
+                        });
+                        // change the header title
+                        formPanel.setTitle('Form with upload field - Change Record 1');
+                    },
+                    scope: this.buildButtonScope(formConfig.id) // this is currently not very elegant, we will solve thsi in future releases
+                });
+                
+                return formConfig;
+            } //eo afterBuild
+        }, // eo scaffoldConfig
+        
+        
         // some additional styles
         width: 650,
         frame:true,

@@ -4,9 +4,12 @@ body {
     margin-bottom:5px;
 }
 
-p {
-    margin-top:60px;
-    margin-bottom:3px;
+.wrapper > p {
+    margin:60px auto 3px auto;
+}
+.x-panel {
+    margin:0 auto 0 auto;
+    text-align:center;
 }
 
 .uploaded-image {
@@ -27,4 +30,25 @@ p {
 }
 .icon-edit-user {
 	background-image:url(../img/icons/user_edit.png) ! important;
+}
+
+
+
+
+
+
+/* footer */
+.wrapper {
+    min-height: 100%;
+    height: auto !important;
+    height: 100%;
+    margin: 0 auto -30px auto;
+}
+.footer, .push {
+    height: 30px;
+    clear: both;
+    font-size: 13px;
+    color: black;
+    text-align: right;
+	margin-right:15px;
 }
