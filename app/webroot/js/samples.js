@@ -53,7 +53,7 @@ Bancha.onModelReady('User', function(userModel) {
         }
     };
     
-    Ext.create('Ext.form.Panel', {
+    Bancha.A = Ext.create('Ext.form.Panel', {
         scaffold: 'User',
         
         // basic scaffold configs con be set directly
@@ -78,18 +78,20 @@ Bancha.onModelReady('User', function(userModel) {
                     text: 'Load Record 1',
                     iconCls: 'icon-edit-user', // TODO css
                     handler: function() {
-                        var formPanel = this.getPanel(),
-                            form = this.getForm();
-                        // load the form // scopeButtonHandler allows to get the form with this.getForm()
+                        var formPanel = this.getPanel(), // scopeButtonHandler enables this
+                            form = this.getForm(); // scopeButtonHandler enables this
+                        
+                        // load the form
                         form.load({
                             params: {
                                 data: { id:1 }
                             }
                         });
+                        
                         // change the header title
                         formPanel.setTitle('Form with upload field - Change Record 1');
                     },
-                    scope: this.buildButtonScope(formConfig.id) // this is currently not very elegant, we will solve thsi in future releases
+                    scope: this.buildButtonScope(formConfig.id) // this is currently not very elegant, we will solve this in future releases
                 });
                 
                 return formConfig;
