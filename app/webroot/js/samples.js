@@ -73,7 +73,6 @@ Bancha.onModelReady('User', function(userModel) {
                     data: { avatar: 'none' },// TODO fixsss
                     tpl: '<tpl if="avatar!=\'none\'"><span class="uploaded-image">most recently uploaded image: {avatar}<image src="{avatar}" style="width:100px;" title="most recently uploaded image"></span></tpl>'
                 });
-                console.info(formConfig);
                 // add another button
                 formConfig.buttons.unshift({
                     text: 'Load Record 1',
@@ -94,7 +93,28 @@ Bancha.onModelReady('User', function(userModel) {
                 });
                 
                 return formConfig;
-            } //eo afterBuild
+            }, //eo afterBuild
+            // we augment the save function so that it displays the uploaded image after saving
+            onSave: function() {
+                var form = this.getForm(),
+                    msg;
+                if(form.isValid()){
+                    msg = form.hasUpload() ? 'Uploading files...' : 'Saving data..';
+                    form.submit({
+                        waitMsg: msg,
+                        success: function(form, action) {
+                            Ext.MessageBox.alert('Success', action.result.msg);
+                            // update image
+                            this.items.items[6].update(this.getForm().getRecord().data);
+                        },
+                        failure: function(form, action) {
+                            Ext.MessageBox.alert('Failed', action.result.msg);
+                            // update image
+                            this.items.items[6].update({ avatar: 'none' });
+                        }
+                    });
+                }
+            } //eo onSave
         }, // eo scaffoldConfig
         
         
