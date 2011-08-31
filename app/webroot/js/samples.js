@@ -53,7 +53,7 @@ Bancha.onModelReady('User', function(userModel) {
         }
     };
     
-    Ext.create('Ext.form.Panel', {
+    Bancha.A = Ext.create('Ext.form.Panel', {
         scaffold: 'User',
         
         // basic scaffold configs con be set directly
@@ -82,7 +82,7 @@ Bancha.onModelReady('User', function(userModel) {
                             form = this.getForm(); // scopeButtonHandler enables this
                         
                         // load the form
-                        form.load({
+                        formPanel.load({
                             params: {
                                 data: { id:1 }
                             }
