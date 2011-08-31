@@ -30,3 +30,9 @@
  * ...and connect the rest of 'Pages' controller's urls.
  */
 	Router::connect('/pages/*', array('controller' => 'pages', 'action' => 'display'));
+
+
+/*
+ * Bancha needs to be able to deliver javascript files
+ */
+    Router::parseExtensions('js');
