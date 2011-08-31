@@ -13,9 +13,14 @@ class UsersController extends AppController {
  */
 	public function index() {
 		$this->User->recursive = 0;
-		$this->set('users', $this->paginate());
-	}
-
+		$this->paginate = array(
+			'limit' => 2,
+		);
+		$users = $this->paginate();
+		$this->set('users', $users);
+		return $users;
+    }
+	
 /**
  * view method
  *
@@ -28,6 +33,7 @@ class UsersController extends AppController {
 			throw new NotFoundException(__('Invalid user'));
 		}
 		$this->set('user', $this->User->read(null, $id));
+		return $this->User->read(null, $id);
 	}
 
 /**
@@ -39,12 +45,13 @@ class UsersController extends AppController {
 		if ($this->request->is('post')) {
 			$this->User->create();
 			if ($this->User->save($this->request->data)) {
-				$this->Session->setFlash(__('The user has been saved'));
-				$this->redirect(array('action' => 'index'));
+				//$this->Session->setFlash(__('The user has been saved'));
+				//$this->redirect(array('action' => 'index'));
 			} else {
 				$this->Session->setFlash(__('The user could not be saved. Please, try again.'));
 			}
 		}
+		return $this->User;
 	}
 
 /**
@@ -54,20 +61,31 @@ class UsersController extends AppController {
  * @return void
  */
 	public function edit($id = null) {
+		//print_r($this);
+		
 		$this->User->id = $id;
 		if (!$this->User->exists()) {
 			throw new NotFoundException(__('Invalid user'));
 		}
+		
+		//$this->request->data = $this->request->data[0]['data'];
+		
+		return array("User" => array($this->request->data[0]['data']));
+		$tmp = $this->User->save($this->request->data['data']);//fix
+		print_r($tmp);
+		return $tmp;
+	
 		if ($this->request->is('post') || $this->request->is('put')) {
 			if ($this->User->save($this->request->data)) {
-				$this->Session->setFlash(__('The user has been saved'));
-				$this->redirect(array('action' => 'index'));
+				//$this->Session->setFlash(__('The user has been saved'));
+				//$this->redirect(array('action' => 'index'));
 			} else {
-				$this->Session->setFlash(__('The user could not be saved. Please, try again.'));
+				//$this->Session->setFlash(__('The user could not be saved. Please, try again.'));
 			}
 		} else {
 			$this->request->data = $this->User->read(null, $id);
 		}
+		return $this->User->save($this->request->data);
 	}
 
 /**
@@ -85,10 +103,12 @@ class UsersController extends AppController {
 			throw new NotFoundException(__('Invalid user'));
 		}
 		if ($this->User->delete()) {
-			$this->Session->setFlash(__('User deleted'));
-			$this->redirect(array('action'=>'index'));
+			//$this->Session->setFlash(__('User deleted'));
+			//$this->redirect(array('action'=>'index'));
 		}
-		$this->Session->setFlash(__('User was not deleted'));
-		$this->redirect(array('action' => 'index'));
+		//$this->Session->setFlash(__('User was not deleted'));
+		//$this->redirect(array('action' => 'index'));
+		return $id;
 	}
+	
 }
