@@ -110,5 +110,23 @@ class UsersController extends AppController {
 		//$this->redirect(array('action' => 'index'));
 		return $id;
 	}
-	
+
+
+    // TODO We need a way here to expose controller functions
+// This is not yet used
+/**
+ * fancy method needs long to answer (for consistency tests)
+ * @return Integer
+ */
+    public function fancyCalculation() {
+        sleep(5);
+        return 2+3;
+    }
+/**
+ * fast method answer very fast (for consistency tests)
+ * @return Integer
+ */
+    public function fastCalculation() {
+        return 2+3;
+    }
 }
