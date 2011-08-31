@@ -1,4 +1,3 @@
-/app/Config
 app/Config/database.php
 /app/tmp
 /plugins
