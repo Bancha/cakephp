@@ -53,7 +53,7 @@ Bancha.onModelReady('User', function(userModel) {
         }
     };
     
-    Bancha.A = Ext.create('Ext.form.Panel', {
+    Ext.create('Ext.form.Panel', {
         scaffold: 'User',
         
         // basic scaffold configs con be set directly
