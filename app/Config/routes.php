@@ -33,6 +33,7 @@
 
 
 /*
- * Bancha needs to be able to deliver javascript files
+ * Bancha needs to be able to deliver the Bancha API definition as javascript file
  */
     Router::parseExtensions('js');
+    Router::connect('/Bancha.js?models=*', array('controller' => 'Bancha', 'action' => 'index'));
