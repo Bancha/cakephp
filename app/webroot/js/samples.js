@@ -139,6 +139,7 @@ Bancha.onModelReady('User', function(userModel) {
     
     
     // ... and some standard extjs charting
+	// yes, there's nothing you have to do bancha-specific, just normal ext ;-)
     Ext.create("Ext.panel.Panel", {
         title: 'Column Chart',
         renderTo: 'chart',
