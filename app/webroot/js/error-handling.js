@@ -6,7 +6,13 @@ Ext.Error.handle = function(err) {
 };
 
 Ext.direct.Manager.on('exception', function(err){
-	Ext.Msg.alert('Server-Error:'+err.message,"Where:<br />"+err.where+"<br /><br />trace:<br />"+err.trace);
+	if(err.code==="parse") {
+		// parse error
+		Ext.Msg.alert('Server-Response can not be decoded',err.data.msg);
+	} else {
+		// exception from server
+		Ext.Msg.alert('Server-Error: '+err.message,"Where:<br />"+err.where+"<br /><br />trace:<br />"+err.trace);
+	}
 });
 
 // eof
