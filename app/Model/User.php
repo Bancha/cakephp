@@ -15,12 +15,10 @@ class User extends AppModel {
  * @var array
  */
 	public $validate = array( // TODO example for validation rule "url" missing
-	   'id' => array(
-            'numeric' => array(
-                'rule' => array('numeric')
-            ),
-            'decimal' => array(
-                'rule' => array('decimal', 0)
+	   'id' => array(	
+           'numeric' => array(
+               'rule' => array('numeric'),
+               'precision' => 0
             ),
 	   ),
 	   'name' => array(
@@ -62,13 +60,15 @@ class User extends AppModel {
             ),
         ),
         'weight' => array(
-            'decimal' => array(
-                'rule' => array('decimal', 2)
+            'numeric' => array(
+                'rule' => array('numeric'),
+                'precision' => 2
             ),
         ),
         'height' => array(
-            'decimal' => array(
-                'rule' => array('decimal', 0)
+            'numeric' => array(
+                'rule' => array('numeric'),
+                'precision' => 0
             ),
             'range' => array(
                 'rule' => array('range', 50, 300),
@@ -81,6 +81,7 @@ class User extends AppModel {
              ),
             'extension' => array(
                  'rule' => array('extension', array('gif', 'jpeg', 'png', 'jpg')),
+				 'allowEmpty' => true,
                  'message' => 'Please supply a valid image.'
              ),
 		),
