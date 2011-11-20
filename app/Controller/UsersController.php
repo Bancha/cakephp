@@ -13,12 +13,9 @@ class UsersController extends AppController {
  */
 	public function index() {
 		$this->User->recursive = 0;
-		$this->paginate = array(
-			'limit' => 2,
-		);
-		$users = $this->paginate();
-		$this->set('users', $users);
-		return $users;
+		$users = $this->paginate();				// added
+		$this->set('users', $users);			// modified
+		return $users;							// added
     }
 	
 /**
@@ -33,8 +30,10 @@ class UsersController extends AppController {
 			throw new NotFoundException(__('Invalid user'));
 		}
 		$this->set('user', $this->User->read(null, $id));
-		return $this->User->read(null, $id);
+		return $this->User->data;										// added
 	}
+
+
 
 /**
  * add method
@@ -44,14 +43,16 @@ class UsersController extends AppController {
 	public function add() {
 		if ($this->request->is('post')) {
 			$this->User->create();
+			
+			if($this->request->params['isBancha']) return $this->User->saveFieldsAndReturn($this->request->data);	 // added
+			
 			if ($this->User->save($this->request->data)) {
-				//$this->Session->setFlash(__('The user has been saved'));
-				//$this->redirect(array('action' => 'index'));
+				$this->Session->setFlash(__('The user has been saved'));
+				$this->redirect(array('action' => 'index'));
 			} else {
 				$this->Session->setFlash(__('The user could not be saved. Please, try again.'));
 			}
 		}
-		return $this->User;
 	}
 
 /**
@@ -61,31 +62,23 @@ class UsersController extends AppController {
  * @return void
  */
 	public function edit($id = null) {
-		//print_r($this);
-		
 		$this->User->id = $id;
 		if (!$this->User->exists()) {
 			throw new NotFoundException(__('Invalid user'));
 		}
-		
-		//$this->request->data = $this->request->data[0]['data'];
-		
-		return array("User" => array($this->request->data[0]['data']));
-		$tmp = $this->User->save($this->request->data['data']);//fix
-		print_r($tmp);
-		return $tmp;
+	
+		if($this->request->params['isBancha']) return $this->User->saveFieldsAndReturn($this->request->data);	 // added
 	
 		if ($this->request->is('post') || $this->request->is('put')) {
-			if ($this->User->save($this->request->data)) {
-				//$this->Session->setFlash(__('The user has been saved'));
-				//$this->redirect(array('action' => 'index'));
+			if ($this->User->save($this->request->data['0']['data'])) {
+				$this->Session->setFlash(__('The user has been saved'));
+				$this->redirect(array('action' => 'index'));
 			} else {
-				//$this->Session->setFlash(__('The user could not be saved. Please, try again.'));
+				$this->Session->setFlash(__('The user could not be saved. Please, try again.'));
 			}
 		} else {
 			$this->request->data = $this->User->read(null, $id);
 		}
-		return $this->User->save($this->request->data);
 	}
 
 /**
@@ -102,13 +95,15 @@ class UsersController extends AppController {
 		if (!$this->User->exists()) {
 			throw new NotFoundException(__('Invalid user'));
 		}
+		
+		if($this->request->params['isBancha']) return $this->User->deleteAndReturn();	 // added
+		
 		if ($this->User->delete()) {
-			//$this->Session->setFlash(__('User deleted'));
-			//$this->redirect(array('action'=>'index'));
+			$this->Session->setFlash(__('User deleted'));
+			$this->redirect(array('action'=>'index'));
 		}
-		//$this->Session->setFlash(__('User was not deleted'));
-		//$this->redirect(array('action' => 'index'));
-		return $id;
+		$this->Session->setFlash(__('User was not deleted'));
+		$this->redirect(array('action' => 'index'));
 	}
 
 
@@ -118,15 +113,15 @@ class UsersController extends AppController {
  * fancy method needs long to answer (for consistency tests)
  * @return Integer
  */
-    public function fancyCalculation() {
-        sleep(5);
-        return 2+3;
-    }
+//    public function fancyCalculation() {
+//        sleep(5);
+//        return 2+3;
+//    }
 /**
  * fast method answer very fast (for consistency tests)
  * @return Integer
  */
-    public function fastCalculation() {
-        return 2+3;
-    }
+//    public function fastCalculation() {
+//        return 2+3;
+//    }
 }
