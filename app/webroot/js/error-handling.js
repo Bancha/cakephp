@@ -11,7 +11,8 @@ Ext.direct.Manager.on('exception', function(err){
 		Ext.Msg.alert('Server-Response can not be decoded',err.data.msg);
 	} else {
 		// exception from server
-		Ext.Msg.alert('Server-Error: '+err.message,"Where:<br />"+err.where+"<br /><br />trace:<br />"+err.trace);
+		Ext.Msg.alert('Exception from Server',"<br/><b>Exception: "+err.message+"</b><br /><br />"+
+			((err.where) ? err.where+"<br /><br />Trace:<br />"+err.trace : "<i>Turn on the debug mode in cakephp to see the trace.</i>"));
 	}
 });
 
