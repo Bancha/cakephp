@@ -57,6 +57,7 @@ class User extends AppModel {
         'created' => array(
             'created' => array(
                 'rule' => array('date'),
+				'allowEmpty' => true,
             ),
         ),
         'weight' => array(
