@@ -23,24 +23,13 @@ Bancha.onModelReady('User', function(userModel) {
         enableDestroy: true,
         enableReset  : true,
         
-        // advanced confgis can be set here
-        scaffoldConfig: {
-            datecolumnDefaults: {
-                format: 'm/d/Y'
-            },
-            // use the same store for multiple grids
-            oneStorePerModel :true
-        },
-        
         // some additional styles
         height: 350,
         width: 650,
         frame: true,
-        title: 'User Grid',
+        title: 'User Grid with full CRUD support',
         renderTo: 'gridpanel'
     });
-    // PS: Actually all "changed" scaffold configs are already defaults
-    // (expect scaffold:'User' of course)
 
     /*
      * create form upload
@@ -53,15 +42,17 @@ Bancha.onModelReady('User', function(userModel) {
         }
     };
     
-    Bancha.A = Ext.create('Ext.form.Panel', {
-        scaffold: 'User',
+    Ext.create('Ext.form.Panel', {
         
         // basic scaffold configs con be set directly
         loadBanchaRecord: false,
         enableReset: true,
         
-        // advanced confgis can be set here
-        scaffoldConfig: {
+        // model name and advanced configs can be set here
+        scaffold: {
+			// model name
+			target: 'User',
+			
             // we're using the after interceptor for bigger changes
             afterBuild: function(formConfig) {
                 // change the order, so that the avatar field is the last element

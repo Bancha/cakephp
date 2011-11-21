@@ -10,11 +10,10 @@ Ext.require([
 
 // when Bancha is ready, the model meta data is loaded
 // from the server and the model is created....
-Bancha.onModelReady('User', function() {
+Bancha.onModelReady('Article', function() {
 
     // ... create a simple grid showing paging support
     Ext.create('Ext.grid.Panel', {
-        scaffold: 'User',
         
         // we don't need an editable grid for this example
         enableCreate: false,
@@ -22,13 +21,17 @@ Bancha.onModelReady('User', function() {
         enableDestroy: false,
         
         // configure scaffolding
-        scaffoldConfig: {
+        scaffold: {
+			// model name
+	        target: 'Article',
+	
             // configure paging
             storeDefaults: {
                 autoLoad: true,
-                pageSize: 50,
+                pageSize: 10,
                 remoteSort: true
             },
+
             // add a paging bar
             afterBuild: function(config) {
                 // paging bar on the bottom
@@ -43,10 +46,10 @@ Bancha.onModelReady('User', function() {
         },
         
         // add some styling
-        height: 350,
-        width: 650,
+        height: 300,
+        width: 620,
         frame: true,
-        title: 'User Grid with Paging',
+        title: 'Article Grid with Paging',
         renderTo: 'gridpanel'
     });
 

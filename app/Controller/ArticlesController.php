@@ -12,8 +12,10 @@ class ArticlesController extends AppController {
  * @return void
  */
 	public function index() {
-		$this->Article->recursive = 0;
-		$this->set('articles', $this->paginate());
+		$this->Article->recursive = -1; // modified, cause we don't need associated data
+		$articles = $this->paginate();																// added
+		$this->set('articles', $articles);															// modified
+		return array_merge($this->request['paging']['Article'],array('records'=>$articles)); 		// added
 	}
 
 /**
@@ -28,6 +30,7 @@ class ArticlesController extends AppController {
 			throw new NotFoundException(__('Invalid article'));
 		}
 		$this->set('article', $this->Article->read(null, $id));
+		return $this->Article->data;																// added
 	}
 
 /**
@@ -38,6 +41,9 @@ class ArticlesController extends AppController {
 	public function add() {
 		if ($this->request->is('post')) {
 			$this->Article->create();
+			
+			if($this->request->params['isBancha']) return $this->Article->saveFieldsAndReturn($this->request->data);	 // added
+			
 			if ($this->Article->save($this->request->data)) {
 				$this->Session->setFlash(__('The article has been saved'));
 				$this->redirect(array('action' => 'index'));
@@ -61,6 +67,9 @@ class ArticlesController extends AppController {
 		if (!$this->Article->exists()) {
 			throw new NotFoundException(__('Invalid article'));
 		}
+		
+		if($this->request->params['isBancha']) return $this->Article->saveFieldsAndReturn($this->request->data);	 // added
+		
 		if ($this->request->is('post') || $this->request->is('put')) {
 			if ($this->Article->save($this->request->data)) {
 				$this->Session->setFlash(__('The article has been saved'));
@@ -90,6 +99,9 @@ class ArticlesController extends AppController {
 		if (!$this->Article->exists()) {
 			throw new NotFoundException(__('Invalid article'));
 		}
+		
+		if($this->request->params['isBancha']) return $this->Article->deleteAndReturn();	 // added
+		
 		if ($this->Article->delete()) {
 			$this->Session->setFlash(__('Article deleted'));
 			$this->redirect(array('action'=>'index'));

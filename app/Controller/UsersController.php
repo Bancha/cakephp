@@ -13,9 +13,9 @@ class UsersController extends AppController {
  */
 	public function index() {
 		$this->User->recursive = 0;
-		$users = $this->paginate();				// added
-		$this->set('users', $users);			// modified
-		return $users;							// added
+		$users = $this->paginate();														// added
+		$this->set('users', $users);													// modified
+		return array_merge($this->request['paging']['User'],array('records'=>$users)); 	// added
     }
 	
 /**
@@ -30,7 +30,7 @@ class UsersController extends AppController {
 			throw new NotFoundException(__('Invalid user'));
 		}
 		$this->set('user', $this->User->read(null, $id));
-		return $this->User->data;										// added
+		return $this->User->data;															// added
 	}
 
 
