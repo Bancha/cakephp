@@ -58,16 +58,10 @@ Bancha.onModelReady('User', function(userModel) {
                 // change the order, so that the avatar field is the last element
                 formConfig.items.push(formConfig.items.splice(5,1)[0]);
                 
-                // add another item after the avatar field
-                formConfig.items.push({ //TODO add support for this to display the image
-                    xtype: 'component', 
-                    data: { avatar: 'none' },// TODO fixsss
-                    tpl: '<tpl if="avatar!=\'none\'"><span class="uploaded-image">most recently uploaded image: {avatar}<image src="{avatar}" style="width:100px;" title="most recently uploaded image"></span></tpl>'
-                });
                 // add another button
                 formConfig.buttons.unshift({
                     text: 'Load Record 1',
-                    iconCls: 'icon-edit-user', // TODO css
+                    iconCls: 'icon-edit-user',
                     handler: function() {
                         var formPanel = this.getPanel(), // scopeButtonHandler enables this
                             form = this.getForm(); // scopeButtonHandler enables this
@@ -86,28 +80,7 @@ Bancha.onModelReady('User', function(userModel) {
                 });
                 
                 return formConfig;
-            }, //eo afterBuild
-            // we augment the save function so that it displays the uploaded image after saving
-            onSave: function() {
-                var form = this.getForm(),
-                    msg;
-                if(form.isValid()){
-                    msg = form.hasUpload() ? 'Uploading files...' : 'Saving data..';
-                    form.submit({
-                        waitMsg: msg,
-                        success: function(form, action) {
-                            Ext.MessageBox.alert('Success', action.result.msg);
-                            // update image
-                            this.items.items[6].update(this.getForm().getRecord().data);
-                        },
-                        failure: function(form, action) {
-                            Ext.MessageBox.alert('Failed', action.result.msg);
-                            // update image
-                            this.items.items[6].update({ avatar: 'none' });
-                        }
-                    });
-                }
-            } //eo onSave
+            } //eo afterBuild
         }, // eo scaffoldConfig
         
         
