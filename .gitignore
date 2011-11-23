@@ -3,3 +3,5 @@ app/Config/database.php
 /plugins
 /vendors
 .DS_Store
+
+app/Config/database.php
