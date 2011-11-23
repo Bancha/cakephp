@@ -1,6 +1,7 @@
 This is the development playground for Bancha developers. It's a fork of Cake PHP 2.0 + Bancha as a submodule.
 
-You should ignore all branches other than [testproject-bancha](https://github.com/Bancha/cakephp/tree/testproject-bancha).
+You should ignore all branches other than testproject-bancha:
+https://github.com/Bancha/cakephp/tree/testproject-bancha
 
 
 
