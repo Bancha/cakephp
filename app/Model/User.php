@@ -76,6 +76,7 @@ class User extends AppModel {
                 'message' => 'Please enter a value between 50 and 300cm.'
             )
         ),
+		/** add again when file upload works
         'avatar' => array(
             'file' => array( // this validation rule forces Bancha.scaffold in the frontend to render a fileuploadfield
                  'rule' => array('file')
@@ -85,7 +86,7 @@ class User extends AppModel {
 				 'allowEmpty' => true,
                  'message' => 'Please supply a valid image.'
              ),
-		),
+		),*/
 	);
 
 	//The Associations below have been created with all possible keys, those that are not needed can be removed
