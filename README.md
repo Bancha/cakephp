@@ -22,7 +22,7 @@ Done.
 
 For more information go to http://banchaproject.org 
 
-Updates via Twitter http://twitter.com/banchaproject
+Updates via Twitter http://twitter.com/#!/banchaproject
 
 -------------------------
 
