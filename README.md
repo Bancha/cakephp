@@ -1,4 +1,4 @@
-Bancha Development playground
+Bancha Development Playground
 =============================
 
 This is the development playground for Bancha developers. It's a fork of Cake PHP 2.0 + Bancha as a submodule.
@@ -20,9 +20,10 @@ Done.
 
 
 
-For more information go to http://banchaproject.org
+For more information go to http://banchaproject.org 
+
 Updates via Twitter http://twitter.com/banchaproject
 
 -------------------------
 
-This package is not for production use. It includes multiple licences, everything works under GNU General Public License version 3 as far as we know, some parts also under MIT Licence.
+_This package is not for production use. It includes multiple licences, everything works under GNU General Public License version 3 as far as we know, some parts also under MIT Licence._
