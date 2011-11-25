@@ -4,4 +4,10 @@ app/Config/database.php
 /vendors
 .DS_Store
 
-app/Config/database.php
+
+app/webroot/js/ext-all.js
+app/webroot/js/ext-all-dev.js
+app/webroot/js/Bancha.js
+
+app/webroot/css/resources/css
+app/webroot/css/resources/themes
