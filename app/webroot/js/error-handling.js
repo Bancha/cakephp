@@ -1,7 +1,7 @@
 /*jslint browser: true, vars: false, plusplus: true, white: true, sloppy: true */
 /*global Ext, Bancha */
 
-// catch any error in ExtJS/Bancha stack or application
+// catch every debug exception thrown from either ExtJS or Bancha
 Ext.Error.handle = function(err) {
     Ext.Msg.alert('Error', err.msg);
 };
