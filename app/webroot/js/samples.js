@@ -45,7 +45,7 @@ Bancha.onModelReady('User', function(userModel) {
     Ext.create('Ext.form.Panel', {
         
         // basic scaffold configs con be set directly
-        loadBanchaRecord: false,
+        banchaLoadRecord: false,
         enableReset: true,
         
         // model name and advanced configs can be set here
