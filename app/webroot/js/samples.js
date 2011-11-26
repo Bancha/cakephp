@@ -53,7 +53,7 @@ Bancha.onModelReady('User', function(userModel) {
 			// model name
 			target: 'User',
 			
-            // we're using the after interceptor for bigger changes
+            // we're using the after interceptor for more complex changes
             afterBuild: function(formConfig) {
                 // change the order, so that the avatar field is the last element
                 formConfig.items.push(formConfig.items.splice(5,1)[0]);
@@ -63,18 +63,18 @@ Bancha.onModelReady('User', function(userModel) {
                     text: 'Load Record 1',
                     iconCls: 'icon-edit-user',
                     handler: function() {
-                        var formPanel = this.getPanel(), // scopeButtonHandler enables this
+                        var panel = this.getPanel(), // scopeButtonHandler enables this
                             form = this.getForm(); // scopeButtonHandler enables this
                         
                         // load the form
-                        formPanel.load({
+                        panel.load({
                             params: {
-                                data: { id:1 }
+                                data: { data: { id:1 } }
                             }
                         });
                         
                         // change the header title
-                        formPanel.setTitle('Form with upload field - Change Record 1');
+                        panel.setTitle('Form with upload field - Change Record 1');
                     },
                     scope: this.buildButtonScope(formConfig.id) // this is currently not very elegant, we will solve this in future releases
                 });
