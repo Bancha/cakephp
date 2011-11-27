@@ -72,7 +72,7 @@ class User extends AppModel {
                 'precision' => 0
             ),
             'range' => array(
-                'rule' => array('range', 50, 300),
+                'rule' => array('range', 49, 301),
                 'message' => 'Please enter a value between 50 and 300cm.'
             )
         ),
