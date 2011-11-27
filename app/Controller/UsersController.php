@@ -88,6 +88,15 @@ class UsersController extends AppController {
  * @return void
  */
 	public function delete($id = null) {
+		
+		// for the samples don't allow to 
+		if($id == 1) {
+			if($this->request->params['isBancha']) {
+				return array('success'=>false,'message'=>__('It is forbidden to delete record 1, since it\'s used in the form example below.'));
+			} else {
+				throw new NotFoundException(__('It is forbidden to delete record 1, since it\'s used in the form example below.'));
+			}
+		}
 		if (!$this->request->is('post')) {
 			throw new MethodNotAllowedException();
 		}
