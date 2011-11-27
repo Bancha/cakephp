@@ -91,6 +91,18 @@
                 <exclude name="**/*.docx"/>
         </fileset>
         
+        <fileset dir="${builddir}/docs" id="files.build.docs.part1">
+                <include name="**/*"/>
+                <exclude name="js/**"/>
+                <exclude name="js-internal/**"/>
+        </fileset>
+        <fileset dir="${builddir}/docs" id="files.build.docs.part2">
+                <include name="js/**"/>
+        </fileset>
+        <fileset dir="${builddir}/docs" id="files.build.docs.part3">
+                <include name="js-internal/**"/>
+        </fileset>
+        
 
 
 
@@ -429,7 +441,7 @@
                 
                 <!-- api docs for dev with private functions -->
                 <mkdir dir="${tmpdir}/docs/js-internal"/>
-                <exec command="&quot;builder/lib/jsduck-2.0.pre2.exe&quot; &quot;${sourcedir}/plugins/Bancha/lib/Bancha/vendors/js/Bancha.js&quot; --output &quot;${tmpdir}/docs/js-internal&quot; --ignore-global --external Ext.Base --external Ext.data.Model --title &quot;Bancha JavaScript API Documentation for Bancha Developers&quot; --footer &quot;Bancha JavaScript API Documentation including private functions. See &lt;a href='http://banchaproject.org/'&gt;http://banchaproject.org&lt;a&gt;. Generated with &lt;a href='https://github.com/senchalabs/jsduck'&gt;JSDuck&lt;/a&gt;&quot; --private-classes --private" escape="false" />
+                <exec command="&quot;builder/lib/jsduck-2.0.pre2.exe&quot; &quot;${sourcedir}/plugins/Bancha/lib/Bancha/vendors/js/Bancha.js&quot; --output &quot;${tmpdir}/docs/js-internal&quot; --ignore-global --external Ext.Base --external Ext.data.Model --title &quot;Bancha JavaScript API Documentation for Bancha Developers&quot; --footer &quot;Bancha JavaScript API Documentation including private functions. See &lt;a href='http://banchaproject.org/'&gt;http://banchaproject.org&lt;a&gt;. Generated with &lt;a href='https://github.com/senchalabs/jsduck'&gt;JSDuck&lt;/a&gt;&quot; --private-classes" escape="false" />
                 <!-- add Bancha styling -->
                 <copy todir="${tmpdir}/docs/js-internal/resources" overwrite="true">
                         <fileset refid="files.source.jsDocRessources"/>
