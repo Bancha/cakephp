@@ -198,10 +198,10 @@
                 <echo msg="Starting cake tests...."/>
 				        <!-- start cake tests -->
 				        <exec checkreturn="true" command="&quot;app/Console/cake&quot; testsuite bancha AllTests --strict --log-junit &quot;${reportsdir}/cake_tests.xml&quot;" escape="false" />
-				
-				        <!-- start cake code coverage -->
-				        <exec checkreturn="true" command="&quot;app/Console/cake&quot; testsuite bancha AllTests - -strict - -coverage-clover &quot;${reportsdir}/cake_code_coverage.xml&quot;" escape="false" /> 
-          
+
+						<!-- start cake code coverage -->
+						<exec checkreturn="true" command="&quot;app/Console/cake&quot; testsuite bancha AllTests --strict --coverage-clover &quot;${reportsdir}/cake_code_coverage.xml&quot;" escape="false" /> 
+		
                 <!-- TODO maybe
                 <phpcpd>
                         <fileset refid="files.source.php2validate4phpcpd" />
