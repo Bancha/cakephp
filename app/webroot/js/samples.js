@@ -31,17 +31,7 @@ Bancha.onModelReady('User', function(userModel) {
         renderTo: 'gridpanel'
     });
 
-    /*
-     * create form upload
-     */
-    // For all created forms overwrite file upload defaults for nicer styling
-    Bancha.scaffold.Form.fileuploadfieldDefaults = {
-        buttonText: '',
-        buttonConfig: {
-            iconCls: 'icon-upload'
-        }
-    };
-    
+    // and a form panel
     Ext.create('Ext.form.Panel', {
         
         // basic scaffold configs con be set directly
@@ -50,13 +40,11 @@ Bancha.onModelReady('User', function(userModel) {
         
         // model name and advanced configs can be set here
         scaffold: {
-			// model name
-			target: 'User',
-			
+            // model name
+            target: 'User',
+            
             // we're using the after interceptor for more complex changes
             afterBuild: function(formConfig) {
-                // change the order, so that the avatar field is the last element
-                formConfig.items.push(formConfig.items.splice(5,1)[0]);
                 
                 // add another button
                 formConfig.buttons.unshift({
@@ -103,7 +91,7 @@ Bancha.onModelReady('User', function(userModel) {
     
     
     // ... and some standard extjs charting
-	// yes, there's nothing you have to do bancha-specific, just normal ext ;-)
+    // yes, there's nothing you have to do bancha-specific, just normal ext ;-)
     Ext.create("Ext.panel.Panel", {
         title: 'Column Chart',
         renderTo: 'chart',
