@@ -13,7 +13,7 @@ Sample-Project Setup:
 1. Download [ExtJS 4](http://www.sencha.com/products/extjs/download/).
 1. Copy the Bancha JS _plugins/Bancha/Lib/vendors/js/Bancha.js_ into _app/webroot/js/_
 1. Place _ext-all.js_ and _ext-all-dev.js_ into _app/webroot/js/_ and the ExtJS ressources folder into _app/webroot/css/_
-1. Configure your app/Config/database.php, then go in you console inside _app/_ and execute _"./Console/cake" schema create_
+1. Configure your _app/Config/database.php_, then go in you console inside _app/_ and execute _"./Console/cake" schema create_
 
 Done.
 
