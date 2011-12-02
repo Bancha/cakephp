@@ -4,7 +4,7 @@
 // API and Bancha is already included,
 // now load sample dependencies
 Ext.require([
-    'Ext.from.*',
+    'Ext.form.*',
     'Ext.grid.*'
 ]);
 
