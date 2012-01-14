@@ -5,25 +5,25 @@
  * PHP 5
  *
  * CakePHP(tm) : Rapid Development Framework (http://cakephp.org)
- * Copyright 2005-2010, Cake Software Foundation, Inc. (http://cakefoundation.org)
+ * Copyright 2005-2011, Cake Software Foundation, Inc. (http://cakefoundation.org)
  *
  * Licensed under The MIT License
  * Redistributions of files must retain the above copyright notice.
  *
- * @copyright     Copyright 2005-2010, Cake Software Foundation, Inc. (http://cakefoundation.org)
+ * @copyright     Copyright 2005-2011, Cake Software Foundation, Inc. (http://cakefoundation.org)
  * @link          http://cakephp.org CakePHP(tm) Project
- * @package       cake.console.libs.tasks
  * @since         CakePHP(tm) v 1.2
  * @license       MIT License (http://www.opensource.org/licenses/mit-license.php)
  */
 
+App::uses('AppShell', 'Console/Command');
 App::uses('Controller', 'Controller');
 App::uses('BakeTask', 'Console/Command/Task');
 
 /**
  * Task class for creating and updating view files.
  *
- * @package       cake.console.shells.tasks
+ * @package       Cake.Console.Command.Task
  */
 class ViewTask extends BakeTask {
 
@@ -31,7 +31,6 @@ class ViewTask extends BakeTask {
  * Tasks to be loaded by this Task
  *
  * @var array
- * @access public
  */
 	public $tasks = array('Project', 'Controller', 'DbConfig', 'Template');
 
@@ -39,7 +38,6 @@ class ViewTask extends BakeTask {
  * path to View directory
  *
  * @var array
- * @access public
  */
 	public $path = null;
 
@@ -47,7 +45,6 @@ class ViewTask extends BakeTask {
  * Name of the controller being used
  *
  * @var string
- * @access public
  */
 	public $controllerName = null;
 
@@ -55,7 +52,6 @@ class ViewTask extends BakeTask {
  * The template file to use
  *
  * @var string
- * @access public
  */
 	public $template = null;
 
@@ -63,7 +59,6 @@ class ViewTask extends BakeTask {
  * Actions to use for scaffolding
  *
  * @var array
- * @access public
  */
 	public $scaffoldActions = array('index', 'view', 'add', 'edit');
 
@@ -72,13 +67,13 @@ class ViewTask extends BakeTask {
  * actions will not emit errors when doing bakeActions()
  *
  * @var array
- * @access public
  */
 	public $noTemplateActions = array('delete');
 
 /**
  * Override initialize
  *
+ * @return void
  */
 	public function initialize() {
 		$this->path = current(App::path('View'));
@@ -87,6 +82,7 @@ class ViewTask extends BakeTask {
 /**
  * Execution method always used for tasks
  *
+ * @return mixed
  */
 	public function execute() {
 		parent::execute();
@@ -120,7 +116,7 @@ class ViewTask extends BakeTask {
 			return $this->bake($action, true);
 		}
 
-		$vars = $this->__loadController();
+		$vars = $this->_loadController();
 		$methods = $this->_methodsToBake();
 
 		foreach ($methods as $method) {
@@ -148,7 +144,7 @@ class ViewTask extends BakeTask {
 		}
 		$adminRoute = $this->Project->getPrefix();
 		foreach ($methods as $i => $method) {
-			if ($adminRoute && isset($this->params['admin'])) {
+			if ($adminRoute && !empty($this->params['admin'])) {
 				if ($scaffoldActions) {
 					$methods[$i] = $adminRoute . $method;
 					continue;
@@ -182,7 +178,7 @@ class ViewTask extends BakeTask {
 			$this->controllerName = $this->_controllerName($model);
 			App::uses($model, 'Model');
 			if (class_exists($model)) {
-				$vars = $this->__loadController();
+				$vars = $this->_loadController();
 				if (!$actions) {
 					$actions = $this->_methodsToBake();
 				}
@@ -195,6 +191,7 @@ class ViewTask extends BakeTask {
 /**
  * Handles interactive baking
  *
+ * @return void
  */
 	protected function _interactive() {
 		$this->hr();
@@ -223,7 +220,7 @@ class ViewTask extends BakeTask {
 		$wannaDoAdmin = $this->in(__d('cake_console', "Would you like to create the views for admin routing?"), array('y','n'), 'n');
 
 		if (strtolower($wannaDoScaffold) == 'y' || strtolower($wannaDoAdmin) == 'y') {
-			$vars = $this->__loadController();
+			$vars = $this->_loadController();
 			if (strtolower($wannaDoScaffold) == 'y') {
 				$actions = $this->scaffoldActions;
 				$this->bakeActions($actions, $vars);
@@ -253,9 +250,8 @@ class ViewTask extends BakeTask {
  *	'belongsTo', 'hasOne', 'hasMany', 'hasAndBelongsToMany'
  *
  * @return array Returns an variables to be made available to a view template
- * @access private
  */
-	private function __loadController() {
+	protected function _loadController() {
 		if (!$this->controllerName) {
 			$this->err(__d('cake_console', 'Controller not found'));
 		}
@@ -285,7 +281,7 @@ class ViewTask extends BakeTask {
 			$singularHumanName = $this->_singularHumanName($this->controllerName);
 			$schema = $modelObj->schema(true);
 			$fields = array_keys($schema);
-			$associations = $this->__associations($modelObj);
+			$associations = $this->_associations($modelObj);
 		} else {
 			$primaryKey = $displayField = null;
 			$singularVar = Inflector::variable(Inflector::singularize($this->controllerName));
@@ -303,6 +299,7 @@ class ViewTask extends BakeTask {
  * Bake a view file for each of the supplied actions
  *
  * @param array $actions Array of actions to make files for.
+ * @param array $vars
  * @return void
  */
 	public function bakeActions($actions, $vars) {
@@ -331,7 +328,7 @@ class ViewTask extends BakeTask {
 		$this->hr();
 		$this->out(__d('cake_console', 'Controller Name: %s', $this->controllerName));
 		$this->out(__d('cake_console', 'Action Name:     %s', $action));
-		$this->out(__d('cake_console', 'Path:            %s', $this->params['app'] . DS . $this->controllerName . DS . Inflector::underscore($action) . ".ctp"));
+		$this->out(__d('cake_console', 'Path:            %s', $this->getPath() . $this->controllerName . DS . Inflector::underscore($action) . ".ctp"));
 		$this->hr();
 		$looksGood = $this->in(__d('cake_console', 'Look okay?'), array('y','n'), 'y');
 		if (strtolower($looksGood) == 'y') {
@@ -371,7 +368,7 @@ class ViewTask extends BakeTask {
  */
 	public function getContent($action, $vars = null) {
 		if (!$vars) {
-			$vars = $this->__loadController();
+			$vars = $this->_loadController();
 		}
 
 		$this->Template->set('action', $action);
@@ -396,6 +393,10 @@ class ViewTask extends BakeTask {
 		}
 		if (!empty($this->template) && $action != $this->template) {
 			return $this->template;
+		}
+		$themePath = $this->Template->getThemePath();
+		if (file_exists($themePath . 'views' . DS . $action . '.ctp')) {
+			return $action;
 		}
 		$template = $action;
 		$prefixes = Configure::read('Routing.prefixes');
@@ -444,19 +445,20 @@ class ViewTask extends BakeTask {
 /**
  * Returns associations for controllers models.
  *
- * @return  array $associations
- * @access private
+ * @param Model $model
+ * @return array $associations
  */
-	private function __associations($model) {
+	protected function _associations($model) {
 		$keys = array('belongsTo', 'hasOne', 'hasMany', 'hasAndBelongsToMany');
 		$associations = array();
 
 		foreach ($keys as $key => $type) {
 			foreach ($model->{$type} as $assocKey => $assocData) {
+				list($plugin, $modelClass) = pluginSplit($assocData['className']);
 				$associations[$type][$assocKey]['primaryKey'] = $model->{$assocKey}->primaryKey;
 				$associations[$type][$assocKey]['displayField'] = $model->{$assocKey}->displayField;
 				$associations[$type][$assocKey]['foreignKey'] = $assocData['foreignKey'];
-				$associations[$type][$assocKey]['controller'] = Inflector::pluralize(Inflector::underscore($assocData['className']));
+				$associations[$type][$assocKey]['controller'] = Inflector::pluralize(Inflector::underscore($modelClass));
 				$associations[$type][$assocKey]['fields'] =  array_keys($model->{$assocKey}->schema(true));
 			}
 		}

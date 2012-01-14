@@ -4,20 +4,20 @@ App::uses('CakeRoute', 'Routing/Route');
 
 /**
  * Redirect route will perform an immediate redirect.  Redirect routes
- * are useful when you want to have Routing layer redirects occur in your 
+ * are useful when you want to have Routing layer redirects occur in your
  * application, for when URLs move.
  *
  * PHP5
  *
  * CakePHP(tm) : Rapid Development Framework (http://cakephp.org)
- * Copyright 2005-2010, Cake Software Foundation, Inc. (http://cakefoundation.org)
+ * Copyright 2005-2011, Cake Software Foundation, Inc. (http://cakefoundation.org)
  *
  * Licensed under The MIT License
  * Redistributions of files must retain the above copyright notice.
  *
- * @copyright     Copyright 2005-2010, Cake Software Foundation, Inc. (http://cakefoundation.org)
+ * @copyright     Copyright 2005-2011, Cake Software Foundation, Inc. (http://cakefoundation.org)
  * @link          http://cakephp.org CakePHP(tm) Project
- * @package       cake.libs.route
+ * @package       Cake.Routing.Route
  * @since         CakePHP(tm) v 2.0
  * @license       MIT License (http://www.opensource.org/licenses/mit-license.php)
  */
@@ -38,11 +38,18 @@ class RedirectRoute extends CakeRoute {
 	public $redirect;
 
 /**
+ * Flag for disabling exit() when this route parses a url.
+ *
+ * @var boolean
+ */
+	public $stop = true;
+
+/**
  * Constructor
  *
  * @param string $template Template string with parameter placeholders
  * @param array $defaults Array of defaults for the route.
- * @param string $params Array of parameters and additional options for the Route
+ * @param array $options Array of additional options for the Route
  */
 	public function __construct($template, $defaults = array(), $options = array()) {
 		parent::__construct($template, $defaults, $options);
@@ -79,6 +86,7 @@ class RedirectRoute extends CakeRoute {
 		$this->response->header(array('Location' => Router::url($redirect, true)));
 		$this->response->statusCode($status);
 		$this->response->send();
+		$this->_stop();
 	}
 
 /**
@@ -89,5 +97,18 @@ class RedirectRoute extends CakeRoute {
  */
 	public function match($url) {
 		return false;
+	}
+
+/**
+ * Stop execution of the current script.  Wraps exit() making
+ * testing easier.
+ *
+ * @param integer|string $status see http://php.net/exit for values
+ * @return void
+ */
+	protected function _stop($code = 0) {
+		if ($this->stop) {
+			exit($code);
+		}
 	}
 }

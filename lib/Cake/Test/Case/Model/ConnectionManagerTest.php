@@ -2,17 +2,16 @@
 /**
  * Connection Manager tests
  *
- *
  * PHP 5
  *
- * Copyright 2005-2010, Cake Software Foundation, Inc. (http://cakefoundation.org)
+ * Copyright 2005-2011, Cake Software Foundation, Inc. (http://cakefoundation.org)
  *
  * Licensed under The MIT License
  * Redistributions of files must retain the above copyright notice
  *
- * @copyright     Copyright 2005-2010, Cake Software Foundation, Inc. (http://cakefoundation.org)
+ * @copyright     Copyright 2005-2011, Cake Software Foundation, Inc. (http://cakefoundation.org)
  * @link          http://book.cakephp.org/view/1196/Testing CakePHP(tm) Tests
- * @package       cake.tests.cases.libs
+ * @package       Cake.Test.Case.Model
  * @since         CakePHP(tm) v 1.2.0.5550
  * @license       MIT License (http://www.opensource.org/licenses/mit-license.php)
  */
@@ -21,7 +20,7 @@ App::uses('ConnectionManager', 'Model');
 /**
  * ConnectionManagerTest
  *
- * @package       cake.tests.cases.models
+ * @package       Cake.Test.Case.Model
  */
 class ConnectionManagerTest extends CakeTestCase {
 
@@ -32,15 +31,15 @@ class ConnectionManagerTest extends CakeTestCase {
  * @return void
  */
 	public function tearDown() {
+		parent::tearDown();
 		CakePlugin::unload();
 	}
 /**
  * testEnumConnectionObjects method
  *
- * @access public
  * @return void
  */
-	function testEnumConnectionObjects() {
+	public function testEnumConnectionObjects() {
 		$sources = ConnectionManager::enumConnectionObjects();
 		$this->assertTrue(count($sources) >= 1);
 
@@ -51,15 +50,25 @@ class ConnectionManagerTest extends CakeTestCase {
 /**
  * testGetDataSource method
  *
- * @access public
  * @return void
  */
-	function testGetDataSource() {
+	public function testGetDataSource() {
+		App::build(array(
+			'Model/Datasource' => array(
+				CAKE . 'Test' . DS . 'test_app' . DS . 'Model' . DS . 'Datasource' . DS
+			)
+		));
+
+		$name = 'test_get_datasource';
+		$config = array('datasource' => 'Test2Source');
+
+		$connection = ConnectionManager::create($name, $config);
 		$connections = ConnectionManager::enumConnectionObjects();
 		$this->assertTrue((bool)(count(array_keys($connections) >= 1)));
 
-		$source = ConnectionManager::getDataSource(key($connections));
+		$source = ConnectionManager::getDataSource('test_get_datasource');
 		$this->assertTrue(is_object($source));
+		ConnectionManager::drop('test_get_datasource');
 	}
 
 /**
@@ -75,35 +84,33 @@ class ConnectionManagerTest extends CakeTestCase {
 /**
  * testGetPluginDataSource method
  *
- * @access public
  * @return void
  */
-	function testGetPluginDataSource() {
+	public function testGetPluginDataSource() {
 		App::build(array(
 			'plugins' => array(CAKE . 'Test' . DS . 'test_app' . DS . 'Plugin' . DS)
-		));
+		), App::RESET);
 		CakePlugin::load('TestPlugin');
 		$name = 'test_source';
 		$config = array('datasource' => 'TestPlugin.TestSource');
 		$connection = ConnectionManager::create($name, $config);
 
 		$this->assertTrue(class_exists('TestSource'));
-		$this->assertEqual($connection->configKeyName, $name);
-		$this->assertEqual($connection->config, $config);
+		$this->assertEquals($connection->configKeyName, $name);
+		$this->assertEquals($connection->config, $config);
 
-		App::build();
+		ConnectionManager::drop($name);
 	}
 
 /**
  * testGetPluginDataSourceAndPluginDriver method
  *
- * @access public
  * @return void
  */
-	function testGetPluginDataSourceAndPluginDriver() {
+	public function testGetPluginDataSourceAndPluginDriver() {
 		App::build(array(
 			'plugins' => array(CAKE . 'Test' . DS . 'test_app' . DS . 'Plugin' . DS)
-		));
+		), App::RESET);
 		CakePlugin::load('TestPlugin');
 		$name = 'test_plugin_source_and_driver';
 		$config = array('datasource' => 'TestPlugin.Database/TestDriver');
@@ -112,19 +119,18 @@ class ConnectionManagerTest extends CakeTestCase {
 
 		$this->assertTrue(class_exists('TestSource'));
 		$this->assertTrue(class_exists('TestDriver'));
-		$this->assertEqual($connection->configKeyName, $name);
-		$this->assertEqual($connection->config, $config);
+		$this->assertEquals($connection->configKeyName, $name);
+		$this->assertEquals($connection->config, $config);
 
-		App::build();
+		ConnectionManager::drop($name);
 	}
 
 /**
  * testGetLocalDataSourceAndPluginDriver method
  *
- * @access public
  * @return void
  */
-	function testGetLocalDataSourceAndPluginDriver() {
+	public function testGetLocalDataSourceAndPluginDriver() {
 		App::build(array(
 			'plugins' => array(CAKE . 'Test' . DS . 'test_app' . DS . 'Plugin' . DS)
 		));
@@ -136,18 +142,17 @@ class ConnectionManagerTest extends CakeTestCase {
 
 		$this->assertTrue(class_exists('DboSource'));
 		$this->assertTrue(class_exists('DboDummy'));
-		$this->assertEqual($connection->configKeyName, $name);
+		$this->assertEquals($connection->configKeyName, $name);
 
-		App::build();
+		ConnectionManager::drop($name);
 	}
 
 /**
  * testGetPluginDataSourceAndLocalDriver method
  *
- * @access public
  * @return void
  */
-	function testGetPluginDataSourceAndLocalDriver() {
+	public function testGetPluginDataSourceAndLocalDriver() {
 		App::build(array(
 			'plugins' => array(CAKE . 'Test' . DS . 'test_app' . DS . 'Plugin' . DS),
 			'Model/Datasource/Database' => array(
@@ -162,51 +167,46 @@ class ConnectionManagerTest extends CakeTestCase {
 
 		$this->assertTrue(class_exists('TestSource'));
 		$this->assertTrue(class_exists('TestLocalDriver'));
-		$this->assertEqual($connection->configKeyName, $name);
-		$this->assertEqual($connection->config, $config);
-		App::build();
+		$this->assertEquals($connection->configKeyName, $name);
+		$this->assertEquals($connection->config, $config);
+		ConnectionManager::drop($name);
 	}
 
 /**
  * testSourceList method
  *
- * @access public
  * @return void
  */
-	function testSourceList() {
+	public function testSourceList() {
+		ConnectionManager::getDataSource('test');
 		$sources = ConnectionManager::sourceList();
 		$this->assertTrue(count($sources) >= 1);
-
-		$connections = array('default', 'test', 'test');
-		$this->assertTrue(count(array_intersect($sources, $connections)) >= 1);
+		$this->assertTrue(in_array('test', array_keys($sources)));
 	}
 
 /**
  * testGetSourceName method
  *
- * @access public
  * @return void
  */
-	function testGetSourceName() {
+	public function testGetSourceName() {
 		$connections = ConnectionManager::enumConnectionObjects();
-		$name = key($connections);
-		$source = ConnectionManager::getDataSource($name);
+		$source = ConnectionManager::getDataSource('test');
 		$result = ConnectionManager::getSourceName($source);
 
-		$this->assertEqual($result, $name);
+		$this->assertEquals('test', $result);
 
 		$source = new StdClass();
 		$result = ConnectionManager::getSourceName($source);
-		$this->assertEqual($result, null);
+		$this->assertNull($result);
 	}
 
 /**
  * testLoadDataSource method
  *
- * @access public
  * @return void
  */
-	function testLoadDataSource() {
+	public function testLoadDataSource() {
 		$connections = array(
 			array('classname' => 'Mysql', 'filename' =>  'Mysql', 'package' => 'Database'),
 			array('classname' => 'Postgres', 'filename' =>  'Postgres', 'package' => 'Database'),
@@ -216,7 +216,7 @@ class ConnectionManagerTest extends CakeTestCase {
 		foreach ($connections as $connection) {
 			$exists = class_exists($connection['classname']);
 			$loaded = ConnectionManager::loadDataSource($connection);
-			$this->assertEqual($loaded, !$exists, "Failed loading the {$connection['classname']} datasource");
+			$this->assertEquals($loaded, !$exists, "Failed loading the {$connection['classname']} datasource");
 		}
 	}
 
@@ -224,7 +224,7 @@ class ConnectionManagerTest extends CakeTestCase {
  * testLoadDataSourceException() method
  *
  * @return void
- * @expectedException MissingDatasourceFileException
+ * @expectedException MissingDatasourceException
  */
 	public function testLoadDataSourceException() {
 		$connection = array('classname' => 'NonExistentDataSource', 'filename' => 'non_existent');
@@ -234,49 +234,47 @@ class ConnectionManagerTest extends CakeTestCase {
 /**
  * testCreateDataSource method
  *
- * @access public
  * @return void
  */
-	function testCreateDataSourceWithIntegrationTests() {
+	public function testCreateDataSourceWithIntegrationTests() {
 		$name = 'test_created_connection';
 
 		$connections = ConnectionManager::enumConnectionObjects();
 		$this->assertTrue((bool)(count(array_keys($connections) >= 1)));
 
-		$source = ConnectionManager::getDataSource(key($connections));
+		$source = ConnectionManager::getDataSource('test');
 		$this->assertTrue(is_object($source));
 
 		$config = $source->config;
 		$connection = ConnectionManager::create($name, $config);
 
 		$this->assertTrue(is_object($connection));
-		$this->assertEqual($name, $connection->configKeyName);
-		$this->assertEqual($name, ConnectionManager::getSourceName($connection));
+		$this->assertEquals($name, $connection->configKeyName);
+		$this->assertEquals($name, ConnectionManager::getSourceName($connection));
 
 		$source = ConnectionManager::create(null, array());
-		$this->assertEqual($source, null);
+		$this->assertEquals($source, null);
 
 		$source = ConnectionManager::create('another_test', array());
-		$this->assertEqual($source, null);
+		$this->assertEquals($source, null);
 
 		$config = array('classname' => 'DboMysql', 'filename' => 'dbo' . DS . 'dbo_mysql');
 		$source = ConnectionManager::create(null, $config);
-		$this->assertEqual($source, null);
+		$this->assertEquals($source, null);
 	}
 
 /**
  * testConnectionData method
  *
- * @access public
  * @return void
  */
-	function testConnectionData() {
+	public function testConnectionData() {
 		App::build(array(
 			'plugins' => array(CAKE . 'Test' . DS . 'test_app' . DS . 'Plugin' . DS),
 			'Model/Datasource' => array(
 				CAKE . 'Test' . DS . 'test_app' . DS . 'Model' . DS . 'Datasource' . DS
 			)
-		));
+		), App::RESET);
 		CakePlugin::loadAll();
 		$expected = array(
 		    'datasource' => 'Test2Source'
@@ -284,40 +282,46 @@ class ConnectionManagerTest extends CakeTestCase {
 
 		ConnectionManager::create('connection1', array('datasource' => 'Test2Source'));
 		$connections = ConnectionManager::enumConnectionObjects();
-		$this->assertEqual($expected, $connections['connection1']);
+		$this->assertEquals($expected, $connections['connection1']);
+		ConnectionManager::drop('connection1');
 
 		ConnectionManager::create('connection2', array('datasource' => 'Test2Source'));
 		$connections = ConnectionManager::enumConnectionObjects();
-		$this->assertEqual($expected, $connections['connection2']);
+		$this->assertEquals($expected, $connections['connection2']);
+		ConnectionManager::drop('connection2');
 
 		ConnectionManager::create('connection3', array('datasource' => 'TestPlugin.TestSource'));
 		$connections = ConnectionManager::enumConnectionObjects();
 		$expected['datasource'] = 'TestPlugin.TestSource';
-		$this->assertEqual($expected, $connections['connection3']);
+		$this->assertEquals($expected, $connections['connection3']);
+		ConnectionManager::drop('connection3');
 
 		ConnectionManager::create('connection4', array('datasource' => 'TestPlugin.TestSource'));
 		$connections = ConnectionManager::enumConnectionObjects();
-		$this->assertEqual($expected, $connections['connection4']);
+		$this->assertEquals($expected, $connections['connection4']);
+		ConnectionManager::drop('connection4');
 
 		ConnectionManager::create('connection5', array('datasource' => 'Test2OtherSource'));
 		$connections = ConnectionManager::enumConnectionObjects();
 		$expected['datasource'] = 'Test2OtherSource';
-
-		$this->assertEqual($expected, $connections['connection5']);
+		$this->assertEquals($expected, $connections['connection5']);
+		ConnectionManager::drop('connection5');
 
 		ConnectionManager::create('connection6', array('datasource' => 'Test2OtherSource'));
 		$connections = ConnectionManager::enumConnectionObjects();
-		$this->assertEqual($expected, $connections['connection6']);
+		$this->assertEquals($expected, $connections['connection6']);
+		ConnectionManager::drop('connection6');
 
 		ConnectionManager::create('connection7', array('datasource' => 'TestPlugin.TestOtherSource'));
 		$connections = ConnectionManager::enumConnectionObjects();
 		$expected['datasource'] = 'TestPlugin.TestOtherSource';
-
-		$this->assertEqual($expected, $connections['connection7']);
+		$this->assertEquals($expected, $connections['connection7']);
+		ConnectionManager::drop('connection7');
 
 		ConnectionManager::create('connection8', array('datasource' => 'TestPlugin.TestOtherSource'));
 		$connections = ConnectionManager::enumConnectionObjects();
-		$this->assertEqual($expected, $connections['connection8']);
+		$this->assertEquals($expected, $connections['connection8']);
+		ConnectionManager::drop('connection8');
 	}
 
 /**
@@ -333,7 +337,7 @@ class ConnectionManagerTest extends CakeTestCase {
 		));
 		ConnectionManager::create('droppable', array('datasource' => 'Test2Source'));
 		$connections = ConnectionManager::enumConnectionObjects();
-		$this->assertEqual(array('datasource' => 'Test2Source'), $connections['droppable']);
+		$this->assertEquals(array('datasource' => 'Test2Source'), $connections['droppable']);
 
 		$this->assertTrue(ConnectionManager::drop('droppable'));
 		$connections = ConnectionManager::enumConnectionObjects();

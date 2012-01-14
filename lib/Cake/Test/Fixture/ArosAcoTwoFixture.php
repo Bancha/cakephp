@@ -5,14 +5,14 @@
  * PHP 5
  *
  * CakePHP(tm) Tests <http://book.cakephp.org/view/1196/Testing>
- * Copyright 2005-2010, Cake Software Foundation, Inc. (http://cakefoundation.org)
+ * Copyright 2005-2011, Cake Software Foundation, Inc. (http://cakefoundation.org)
  *
  * Licensed under The MIT License
  * Redistributions of files must retain the above copyright notice
  *
- * @copyright     Copyright 2005-2010, Cake Software Foundation, Inc. (http://cakefoundation.org)
+ * @copyright     Copyright 2005-2011, Cake Software Foundation, Inc. (http://cakefoundation.org)
  * @link          http://book.cakephp.org/view/1196/Testing CakePHP(tm) Tests
- * @package       cake.tests.fixtures
+ * @package       Cake.Test.Fixture
  * @since         CakePHP(tm) v 1.2.0.4667
  * @license       MIT License (http://www.opensource.org/licenses/mit-license.php)
  */
@@ -20,7 +20,7 @@
 /**
  * Short description for class.
  *
- * @package       cake.tests.fixtures
+ * @package       Cake.Test.Fixture
  */
 class ArosAcoTwoFixture extends CakeTestFixture {
 
@@ -28,7 +28,6 @@ class ArosAcoTwoFixture extends CakeTestFixture {
  * name property
  *
  * @var string 'ArosAcoTwo'
- * @access public
  */
 	public $name = 'ArosAcoTwo';
 
@@ -36,7 +35,6 @@ class ArosAcoTwoFixture extends CakeTestFixture {
  * fields property
  *
  * @var array
- * @access public
  */
 	public $fields = array(
 		'id' => array('type' => 'integer', 'key' => 'primary'),
@@ -52,28 +50,27 @@ class ArosAcoTwoFixture extends CakeTestFixture {
  * records property
  *
  * @var array
- * @access public
  */
 	public $records = array(
-		array('id' => 1, 'aro_id' => '1', 'aco_id' => '1', '_create' => '-1',  '_read' => '-1', '_update' => '-1', '_delete' => '-1'),
-		array('id' => 2, 'aro_id' => '2', 'aco_id' => '1', '_create' => '0',  '_read' => '1', '_update' => '1', '_delete' => '1'),
-		array('id' => 3, 'aro_id' => '3', 'aco_id' => '2', '_create' => '0',  '_read' => '1', '_update' => '0', '_delete' => '0'),
-		array('id' => 4, 'aro_id' => '4', 'aco_id' => '2', '_create' => '1',  '_read' => '1', '_update' => '0', '_delete' => '-1'),
-		array('id' => 5, 'aro_id' => '4', 'aco_id' => '6', '_create' => '1',  '_read' => '1', '_update' => '0', '_delete' => '0'),
-		array('id' => 6, 'aro_id' => '5', 'aco_id' => '1', '_create' => '1',  '_read' => '1', '_update' => '1', '_delete' => '1'),
-		array('id' => 7, 'aro_id' => '6', 'aco_id' => '3', '_create' => '-1',  '_read' => '1', '_update' => '-1', '_delete' => '-1'),
-		array('id' => 8, 'aro_id' => '6', 'aco_id' => '4', '_create' => '-1',  '_read' => '1', '_update' => '-1', '_delete' => '1'),
-		array('id' => 9, 'aro_id' => '6', 'aco_id' => '6', '_create' => '-1',  '_read' => '1', '_update' => '1', '_delete' => '-1'),
-		array('id' => 10, 'aro_id' => '7', 'aco_id' => '2', '_create' => '-1',  '_read' => '-1', '_update' => '-1', '_delete' => '-1'),
-		array('id' => 11, 'aro_id' => '7', 'aco_id' => '7', '_create' => '1',  '_read' => '1', '_update' => '1', '_delete' => '0'),
-		array('id' => 12, 'aro_id' => '7', 'aco_id' => '8', '_create' => '1',  '_read' => '1', '_update' => '1', '_delete' => '0'),
-		array('id' => 13, 'aro_id' => '7', 'aco_id' => '9', '_create' => '1',  '_read' => '1', '_update' => '1', '_delete' => '1'),
-		array('id' => 14, 'aro_id' => '7', 'aco_id' => '10', '_create' => '0',  '_read' => '0', '_update' => '0', '_delete' => '1'),
-		array('id' => 15, 'aro_id' => '8', 'aco_id' => '10', '_create' => '1',  '_read' => '1', '_update' => '1', '_delete' => '1'),
-		array('id' => 16, 'aro_id' => '8', 'aco_id' => '2', '_create' => '-1',  '_read' => '-1', '_update' => '-1', '_delete' => '-1'),
-		array('id' => 17, 'aro_id' => '9', 'aco_id' => '4', '_create' => '1',  '_read' => '1', '_update' => '1', '_delete' => '-1'),
-		array('id' => 18, 'aro_id' => '9', 'aco_id' => '9', '_create' => '0',  '_read' => '0', '_update' => '1', '_delete' => '1'),
-		array('id' => 19, 'aro_id' => '10', 'aco_id' => '9', '_create' => '1',  '_read' => '1', '_update' => '1', '_delete' => '1'),
-		array('id' => 20, 'aro_id' => '10', 'aco_id' => '10', '_create' => '-1',  '_read' => '-1', '_update' => '-1', '_delete' => '-1'),
+		array('aro_id' => '1', 'aco_id' => '1', '_create' => '-1',  '_read' => '-1', '_update' => '-1', '_delete' => '-1'),
+		array('aro_id' => '2', 'aco_id' => '1', '_create' => '0',  '_read' => '1', '_update' => '1', '_delete' => '1'),
+		array('aro_id' => '3', 'aco_id' => '2', '_create' => '0',  '_read' => '1', '_update' => '0', '_delete' => '0'),
+		array('aro_id' => '4', 'aco_id' => '2', '_create' => '1',  '_read' => '1', '_update' => '0', '_delete' => '-1'),
+		array('aro_id' => '4', 'aco_id' => '6', '_create' => '1',  '_read' => '1', '_update' => '0', '_delete' => '0'),
+		array('aro_id' => '5', 'aco_id' => '1', '_create' => '1',  '_read' => '1', '_update' => '1', '_delete' => '1'),
+		array('aro_id' => '6', 'aco_id' => '3', '_create' => '-1',  '_read' => '1', '_update' => '-1', '_delete' => '-1'),
+		array('aro_id' => '6', 'aco_id' => '4', '_create' => '-1',  '_read' => '1', '_update' => '-1', '_delete' => '1'),
+		array('aro_id' => '6', 'aco_id' => '6', '_create' => '-1',  '_read' => '1', '_update' => '1', '_delete' => '-1'),
+		array('aro_id' => '7', 'aco_id' => '2', '_create' => '-1',  '_read' => '-1', '_update' => '-1', '_delete' => '-1'),
+		array('aro_id' => '7', 'aco_id' => '7', '_create' => '1',  '_read' => '1', '_update' => '1', '_delete' => '0'),
+		array('aro_id' => '7', 'aco_id' => '8', '_create' => '1',  '_read' => '1', '_update' => '1', '_delete' => '0'),
+		array('aro_id' => '7', 'aco_id' => '9', '_create' => '1',  '_read' => '1', '_update' => '1', '_delete' => '1'),
+		array('aro_id' => '7', 'aco_id' => '10', '_create' => '0',  '_read' => '0', '_update' => '0', '_delete' => '1'),
+		array('aro_id' => '8', 'aco_id' => '10', '_create' => '1',  '_read' => '1', '_update' => '1', '_delete' => '1'),
+		array('aro_id' => '8', 'aco_id' => '2', '_create' => '-1',  '_read' => '-1', '_update' => '-1', '_delete' => '-1'),
+		array('aro_id' => '9', 'aco_id' => '4', '_create' => '1',  '_read' => '1', '_update' => '1', '_delete' => '-1'),
+		array('aro_id' => '9', 'aco_id' => '9', '_create' => '0',  '_read' => '0', '_update' => '1', '_delete' => '1'),
+		array('aro_id' => '10', 'aco_id' => '9', '_create' => '1',  '_read' => '1', '_update' => '1', '_delete' => '1'),
+		array('aro_id' => '10', 'aco_id' => '10', '_create' => '-1',  '_read' => '-1', '_update' => '-1', '_delete' => '-1'),
 	);
 }

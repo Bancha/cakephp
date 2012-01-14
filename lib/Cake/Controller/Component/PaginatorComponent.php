@@ -5,14 +5,14 @@
  * PHP 5
  *
  * CakePHP(tm) : Rapid Development Framework (http://cakephp.org)
- * Copyright 2005-2010, Cake Software Foundation, Inc. (http://cakefoundation.org)
+ * Copyright 2005-2011, Cake Software Foundation, Inc. (http://cakefoundation.org)
  *
  * Licensed under The MIT License
  * Redistributions of files must retain the above copyright notice.
  *
- * @copyright     Copyright 2005-2010, Cake Software Foundation, Inc. (http://cakefoundation.org)
+ * @copyright     Copyright 2005-2011, Cake Software Foundation, Inc. (http://cakefoundation.org)
  * @link          http://cakephp.org CakePHP(tm) Project
- * @package       cake.libs.controller.components
+ * @package       Cake.Controller.Component
  * @since         CakePHP(tm) v 2.0
  * @license       MIT License (http://www.opensource.org/licenses/mit-license.php)
  */
@@ -49,7 +49,8 @@
  *
  * This would allow you to have different pagination settings for `Comment` and `Post` models.
  *
- * @package       cake.libs.controller.components
+ * @package       Cake.Controller.Component
+ * @link http://book.cakephp.org/2.0/en/core-libraries/components/pagination.html
  */
 class PaginatorComponent extends Component {
 
@@ -101,9 +102,10 @@ class PaginatorComponent extends Component {
  *
  * @param mixed $object Model to paginate (e.g: model instance, or 'Model', or 'Model.InnerModel')
  * @param mixed $scope Additional find conditions to use while paginating
- * @param array $whitelist List of allowed fields for ordering.  This allows you to prevent ordering 
+ * @param array $whitelist List of allowed fields for ordering.  This allows you to prevent ordering
  *   on non-indexed, or undesirable columns.
  * @return array Model query results
+ * @throws MissingModelException
  */
 	public function paginate($object = null, $scope = array(), $whitelist = array()) {
 		if (is_array($object)) {
@@ -153,21 +155,8 @@ class PaginatorComponent extends Component {
 			$extra['type'] = $type;
 		}
 
-		if ($object->hasMethod('paginateCount')) {
-			$count = $object->paginateCount($conditions, $recursive, $extra);
-		} else {
-			$parameters = compact('conditions');
-			if ($recursive != $object->recursive) {
-				$parameters['recursive'] = $recursive;
-			}
-			$count = $object->find('count', array_merge($parameters, $extra));
-		}
-		$pageCount = intval(ceil($count / $limit));
-
-		if ($page === 'last' || $page >= $pageCount) {
-			$options['page'] = $page = $pageCount;
-		} elseif (intval($page) < 1) {
-			$options['page'] = $page = 1;
+		if (intval($page) < 1) {
+			$page = 1;
 		}
 		$page = $options['page'] = (int)$page;
 
@@ -184,6 +173,17 @@ class PaginatorComponent extends Component {
 		}
 		$defaults = $this->getDefaults($object->alias);
 		unset($defaults[0]);
+
+		if ($object->hasMethod('paginateCount')) {
+			$count = $object->paginateCount($conditions, $recursive, $extra);
+		} else {
+			$parameters = compact('conditions');
+			if ($recursive != $object->recursive) {
+				$parameters['recursive'] = $recursive;
+			}
+			$count = $object->find('count', array_merge($parameters, $extra));
+		}
+		$pageCount = intval(ceil($count / $limit));
 
 		$paging = array(
 			'page' => $page,
@@ -309,7 +309,7 @@ class PaginatorComponent extends Component {
 	}
 
 /**
- * Validate that the desired sorting can be performed on the $object.  Only fields or 
+ * Validate that the desired sorting can be performed on the $object.  Only fields or
  * virtualFields can be sorted on.  The direction param will also be sanitized.  Lastly
  * sort + direction keys will be converted into the model friendly order key.
  *
@@ -332,33 +332,34 @@ class PaginatorComponent extends Component {
 			}
 			$options['order'] = array($options['sort'] => $direction);
 		}
-		
+
 		if (!empty($whitelist)) {
 			$field = key($options['order']);
 			if (!in_array($field, $whitelist)) {
 				$options['order'] = null;
 			}
 		}
-	
+
 		if (!empty($options['order']) && is_array($options['order'])) {
-			$alias = $object->alias ;
-			$key = $field = key($options['order']);
+			$order = array();
+			foreach ($options['order'] as $key => $value) {
+				$field = $key;
+				$alias = $object->alias;
+				if (strpos($key, '.') !== false) {
+					list($alias, $field) = explode('.', $key);
+				}
 
-			if (strpos($key, '.') !== false) {
-				list($alias, $field) = explode('.', $key);
+				if ($object->hasField($field)) {
+					$order[$alias . '.' . $field] = $value;
+				} elseif ($object->hasField($key, true)) {
+					$order[$field] = $value;
+				} elseif (isset($object->{$alias}) && $object->{$alias}->hasField($field, true)) {
+					$order[$alias . '.' . $field] = $value;
+				}
 			}
-			$value = $options['order'][$key];
-			unset($options['order'][$key]);
-
-			if ($object->hasField($field)) {
-				$options['order'][$alias . '.' . $field] = $value;
-			} elseif ($object->hasField($field, true)) {
-				$options['order'][$field] = $value;
-			} elseif (isset($object->{$alias}) && $object->{$alias}->hasField($field)) {
-				$options['order'][$alias . '.' . $field] = $value;
-			}
+			$options['order'] = $order;
 		}
-	
+
 		return $options;
 	}
 

@@ -5,25 +5,25 @@
  * PHP 5
  *
  * CakePHP(tm) : Rapid Development Framework (http://cakephp.org)
- * Copyright 2005-2010, Cake Software Foundation, Inc.
+ * Copyright 2005-2011, Cake Software Foundation, Inc.
  *
  * Licensed under The MIT License
  * Redistributions of files must retain the above copyright notice.
  *
- * @copyright     Copyright 2005-2010, Cake Software Foundation, Inc. (http://cakefoundation.org)
+ * @copyright     Copyright 2005-2011, Cake Software Foundation, Inc. (http://cakefoundation.org)
  * @link          http://cakephp.org CakePHP(tm) Project
- * @package       cake.console.shells.tasks
  * @since         CakePHP(tm) v 1.2
  * @license       MIT License (http://www.opensource.org/licenses/mit-license.php)
  */
 
+App::uses('AppShell', 'Console/Command');
 App::uses('BakeTask', 'Console/Command/Task');
 App::uses('AppModel', 'Model');
 
 /**
  * Task class for creating and updating controller files.
  *
- * @package       cake.console.shells.tasks
+ * @package       Cake.Console.Command.Task
  */
 class ControllerTask extends BakeTask {
 
@@ -31,7 +31,6 @@ class ControllerTask extends BakeTask {
  * Tasks to be loaded by this Task
  *
  * @var array
- * @access public
  */
 	public $tasks = array('Model', 'Test', 'Template', 'DbConfig', 'Project');
 
@@ -39,13 +38,13 @@ class ControllerTask extends BakeTask {
  * path to Controller directory
  *
  * @var array
- * @access public
  */
 	public $path = null;
 
 /**
  * Override initialize
  *
+ * @return void
  */
 	public function initialize() {
 		$this->path = current(App::path('Controller'));
@@ -54,6 +53,7 @@ class ControllerTask extends BakeTask {
 /**
  * Execution method always used for tasks
  *
+ * @return void
  */
 	public function execute() {
 		parent::execute();
@@ -206,6 +206,10 @@ class ControllerTask extends BakeTask {
 /**
  * Confirm a to be baked controller with the user
  *
+ * @param string $controllerName
+ * @param string $useDynamicScaffold
+ * @param array $helpers
+ * @param array $components
  * @return void
  */
 	public function confirmController($controllerName, $useDynamicScaffold, $helpers, $components) {
@@ -216,7 +220,7 @@ class ControllerTask extends BakeTask {
 		$this->out(__d('cake_console', "Controller Name:\n\t%s", $controllerName));
 
 		if (strtolower($useDynamicScaffold) == 'y') {
-			$this->out("var \$scaffold;");
+			$this->out("public \$scaffold;");
 		}
 
 		$properties = array(
@@ -265,7 +269,6 @@ class ControllerTask extends BakeTask {
  * @param string $admin Admin route to use
  * @param boolean $wannaUseSession Set to true to use sessions, false otherwise
  * @return string Baked actions
- * @access private
  */
 	public function bakeActions($controllerName, $admin = null, $wannaUseSession = true) {
 		$currentModelName = $modelImport = $this->_modelName($controllerName);
@@ -288,7 +291,8 @@ class ControllerTask extends BakeTask {
 		$displayField = $modelObj->displayField;
 		$primaryKey = $modelObj->primaryKey;
 
-		$this->Template->set(compact('plugin', 'admin', 'controllerPath', 'pluralName', 'singularName',
+		$this->Template->set(compact(
+			'plugin', 'admin', 'controllerPath', 'pluralName', 'singularName',
 			'singularHumanName', 'pluralHumanName', 'modelObj', 'wannaUseSession', 'currentModelName',
 			'displayField', 'primaryKey'
 		));
@@ -299,11 +303,10 @@ class ControllerTask extends BakeTask {
 /**
  * Assembles and writes a Controller file
  *
- * @param string $controllerName Controller name
+ * @param string $controllerName Controller name already pluralized and correctly cased.
  * @param string $actions Actions to add, or set the whole controller to use $scaffold (set $actions to 'scaffold')
  * @param array $helpers Helpers to use in controller
  * @param array $components Components to use in controller
- * @param array $uses Models to use in controller
  * @return string Baked controller
  */
 	public function bake($controllerName, $actions = '', $helpers = null, $components = null) {
@@ -311,12 +314,15 @@ class ControllerTask extends BakeTask {
 
 		$isScaffold = ($actions === 'scaffold') ? true : false;
 
-		$this->Template->set('plugin', Inflector::camelize($this->plugin));
+		$this->Template->set(array(
+			'plugin' => $this->plugin,
+			'pluginPath' => empty($this->plugin) ? '' : $this->plugin . '.'
+		));
 		$this->Template->set(compact('controllerName', 'actions', 'helpers', 'components', 'isScaffold'));
 		$contents = $this->Template->generate('classes', 'controller');
 
 		$path = $this->getPath();
-		$filename = $path . $this->_controllerName($controllerName) . 'Controller.php';
+		$filename = $path . $controllerName . 'Controller.php';
 		if ($this->createFile($filename, $contents)) {
 			return $contents;
 		}
@@ -364,7 +370,7 @@ class ControllerTask extends BakeTask {
  * Common code for property choice handling.
  *
  * @param string $prompt A yes/no question to precede the list
- * @param sting $example A question for a comma separated list, with examples.
+ * @param string $example A question for a comma separated list, with examples.
  * @return array Array of values for property.
  */
 	protected function _doPropertyChoices($prompt, $example) {
@@ -382,7 +388,6 @@ class ControllerTask extends BakeTask {
  * Outputs and gets the list of possible controllers from database
  *
  * @param string $useDbConfig Database configuration name
- * @param boolean $interactive Whether you are using listAll interactively and want options output.
  * @return array Set of controllers
  */
 	public function listAll($useDbConfig = null) {
@@ -466,6 +471,7 @@ class ControllerTask extends BakeTask {
 /**
  * Displays help contents
  *
+ * @return void
  */
 	public function help() {
 		$this->hr();
@@ -476,6 +482,11 @@ class ControllerTask extends BakeTask {
 		$this->out("<name>");
 		$this->out("\tName of the controller to bake. Can use Plugin.name");
 		$this->out("\tas a shortcut for plugin baking.");
+		$this->out();
+		$this->out('Params:');
+		$this->out();
+		$this->out('-connection <config>');
+		$this->out("\tset db config <config>. uses 'default' if none is specified");
 		$this->out();
 		$this->out('Commands:');
 		$this->out();

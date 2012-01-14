@@ -7,24 +7,29 @@
  * PHP 5
  *
  * CakePHP(tm) Tests <http://book.cakephp.org/view/1196/Testing>
- * Copyright 2005-2010, Cake Software Foundation, Inc. (http://cakefoundation.org)
+ * Copyright 2005-2011, Cake Software Foundation, Inc. (http://cakefoundation.org)
  *
  * Licensed under The MIT License
  * Redistributions of files must retain the above copyright notice
  *
- * @copyright     Copyright 2005-2010, Cake Software Foundation, Inc. (http://cakefoundation.org)
+ * @copyright     Copyright 2005-2011, Cake Software Foundation, Inc. (http://cakefoundation.org)
  * @link          http://book.cakephp.org/view/1196/Testing CakePHP(tm) Tests
- * @package       cake.console.shells
  * @since         CakePHP(tm) v 1.2.0.4433
  * @license       MIT License (http://www.opensource.org/licenses/mit-license.php)
  */
 
-App::uses('Shell', 'Console');
+App::uses('AppShell', 'Console/Command');
 App::uses('CakeTestSuiteDispatcher', 'TestSuite');
 App::uses('CakeTestSuiteCommand', 'TestSuite');
 App::uses('CakeTestLoader', 'TestSuite');
 
-class TestsuiteShell extends Shell {
+/**
+ * Provides a CakePHP wrapper around PHPUnit.
+ * Adds in CakePHP's fixtures and gives access to plugin, app and core test cases
+ *
+ * @package       Cake.Console.Command
+ */
+class TestsuiteShell extends AppShell {
 
 /**
  * Dispatcher object for the run.
@@ -151,6 +156,8 @@ class TestsuiteShell extends Shell {
 			'default' => false
 		))->addOption('fixture', array(
 			'help' => __d('cake_console', 'Choose a custom fixture manager.'),
+		))->addOption('debug', array(
+			'help' => __d('cake_console', 'Enable full output of testsuite. (supported in PHPUnit 3.6.0 and greater)'),
 		));
 
 		return $parser;
@@ -160,6 +167,7 @@ class TestsuiteShell extends Shell {
  * Initialization method installs PHPUnit and loads all plugins
  *
  * @return void
+ * @throws Exception
  */
 	public function initialize() {
 		$this->_dispatcher = new CakeTestSuiteDispatcher();
@@ -174,7 +182,7 @@ class TestsuiteShell extends Shell {
  *
  * @return array Array of params for CakeTestDispatcher
  */
-	protected function parseArgs() {
+	protected function _parseArgs() {
 		if (empty($this->args)) {
 			return;
 		}
@@ -206,7 +214,7 @@ class TestsuiteShell extends Shell {
  *
  * @return array Array of params for CakeTestDispatcher
  */
-	protected function runnerOptions() {
+	protected function _runnerOptions() {
 		$options = array();
 		$params = $this->params;
 		unset($params['help']);
@@ -238,23 +246,23 @@ class TestsuiteShell extends Shell {
 		$this->out(__d('cake_console', 'CakePHP Test Shell'));
 		$this->hr();
 
-		$args = $this->parseArgs();
+		$args = $this->_parseArgs();
 
 		if (empty($args['case'])) {
 			return $this->available();
 		}
 
-		$this->run($args, $this->runnerOptions());
+		$this->_run($args, $this->_runnerOptions());
 	}
 
 /**
  * Runs the test case from $runnerArgs
  *
- * @param array $runnerArgs list of arguments as obtained from parseArgs()
- * @param array $options list of options as constructed by runnerOptions()
+ * @param array $runnerArgs list of arguments as obtained from _parseArgs()
+ * @param array $options list of options as constructed by _runnerOptions()
  * @return void
  */
-	protected function run($runnerArgs, $options = array()) {
+	protected function _run($runnerArgs, $options = array()) {
 		restore_error_handler();
 		restore_error_handler();
 
@@ -268,7 +276,7 @@ class TestsuiteShell extends Shell {
  * @return void
  */
 	public function available() {
-		$params = $this->parseArgs();
+		$params = $this->_parseArgs();
 		$testCases = CakeTestLoader::generateTestList($params);
 		$app = $params['app'];
 		$plugin = $params['plugin'];
@@ -302,14 +310,14 @@ class TestsuiteShell extends Shell {
 			if (is_numeric($choice)  && isset($cases[$choice])) {
 				$this->args[0] = $category;
 				$this->args[1] = $cases[$choice];
-				$this->run($this->parseArgs(), $this->runnerOptions());
+				$this->_run($this->_parseArgs(), $this->_runnerOptions());
 				break;
 			}
 
 			if (is_string($choice) && in_array($choice, $cases)) {
 				$this->args[0] = $category;
 				$this->args[1] = $choice;
-				$this->run($this->parseArgs(), $this->runnerOptions());
+				$this->_run($this->_parseArgs(), $this->_runnerOptions());
 				break;
 			}
 

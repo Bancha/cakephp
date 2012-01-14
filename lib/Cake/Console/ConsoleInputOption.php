@@ -5,14 +5,13 @@
  * PHP 5
  *
  * CakePHP(tm) : Rapid Development Framework (http://cakephp.org)
- * Copyright 2005-2010, Cake Software Foundation, Inc. (http://cakefoundation.org)
+ * Copyright 2005-2011, Cake Software Foundation, Inc. (http://cakefoundation.org)
  *
  * Licensed under The MIT License
  * Redistributions of files must retain the above copyright notice.
  *
- * @copyright     Copyright 2005-2010, Cake Software Foundation, Inc. (http://cakefoundation.org)
+ * @copyright     Copyright 2005-2011, Cake Software Foundation, Inc. (http://cakefoundation.org)
  * @link          http://cakephp.org CakePHP(tm) Project
- * @package       cake.console.libs
  * @since         CakePHP(tm) v 2.0
  * @license       MIT License (http://www.opensource.org/licenses/mit-license.php)
  */
@@ -22,7 +21,7 @@
  * ConsoleOptionParser creates these when you use addOption()
  *
  * @see ConsoleOptionParser::addOption()
- * @package cake.console.libs
+ * @package       Cake.Console
  */
 class ConsoleInputOption {
 /**
@@ -76,6 +75,7 @@ class ConsoleInputOption {
  * @param boolean $boolean Whether this option is a boolean option.  Boolean options don't consume extra tokens
  * @param string $default The default value for this option.
  * @param array $choices Valid choices for this option.
+ * @throws ConsoleException
  */
 	public function __construct($name, $short = null, $help = '', $boolean = false, $default = '', $choices = array()) {
 		if (is_array($name) && isset($name['name'])) {
@@ -89,6 +89,11 @@ class ConsoleInputOption {
 			$this->_boolean = $boolean;
 			$this->_default = $default;
 			$this->_choices = $choices;
+		}
+		if (strlen($this->_short) > 1) {
+			throw new ConsoleException(
+				__d('cake_console', 'Short options must be one letter.')
+			);
 		}
 	}
 
@@ -113,8 +118,8 @@ class ConsoleInputOption {
 /**
  * Generate the help for this this option.
  *
- * @param int $width The width to make the name of the option.
- * @return string 
+ * @param integer $width The width to make the name of the option.
+ * @return string
  */
 	public function help($width = 0) {
 		$default = $short = '';
@@ -172,7 +177,9 @@ class ConsoleInputOption {
 /**
  * Check that a value is a valid choice for this option.
  *
+ * @param string $value
  * @return boolean
+ * @throws ConsoleException
  */
 	public function validChoice($value) {
 		if (empty($this->_choices)) {
@@ -190,7 +197,7 @@ class ConsoleInputOption {
 /**
  * Append the option's xml into the parent.
  *
- * @param SimpleXmlElement The parent element.
+ * @param SimpleXmlElement $parent The parent element.
  * @return SimpleXmlElement The parent with this option appended.
  */
 	public function xml(SimpleXmlElement $parent) {

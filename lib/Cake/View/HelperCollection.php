@@ -4,18 +4,18 @@
  * and constructing helper class objects.
  *
  * CakePHP(tm) : Rapid Development Framework (http://cakephp.org)
- * Copyright 2005-2010, Cake Software Foundation, Inc. (http://cakefoundation.org)
+ * Copyright 2005-2011, Cake Software Foundation, Inc. (http://cakefoundation.org)
  *
  * Licensed under The MIT License
  * Redistributions of files must retain the above copyright notice.
  *
- * @copyright     Copyright 2005-2010, Cake Software Foundation, Inc. (http://cakefoundation.org)
+ * @copyright     Copyright 2005-2011, Cake Software Foundation, Inc. (http://cakefoundation.org)
  * @link          http://cakephp.org CakePHP(tm) Project
- * @package       cake.libs.view
+ * @package       Cake.View
  * @since         CakePHP(tm) v 2.0
  * @license       MIT License (http://www.opensource.org/licenses/mit-license.php)
  */
- 
+
 App::uses('ObjectCollection', 'Utility');
 
 class HelperCollection extends ObjectCollection {
@@ -30,7 +30,7 @@ class HelperCollection extends ObjectCollection {
 /**
  * Constructor
  *
- * @return void
+ * @param View $view
  */
 	public function __construct(View $view) {
 		$this->_View = $view;
@@ -38,7 +38,7 @@ class HelperCollection extends ObjectCollection {
 
 /**
  * Loads/constructs a helper.  Will return the instance in the registry if it already exists.
- * By setting `$enable` to false you can disable callbacks for a helper.  Alternatively you 
+ * By setting `$enable` to false you can disable callbacks for a helper.  Alternatively you
  * can set `$settings['enabled'] = false` to disable callbacks.  This alias is provided so that when
  * declaring $helpers arrays you can disable callbacks on helpers.
  *
@@ -51,11 +51,11 @@ class HelperCollection extends ObjectCollection {
  * );
  * }}}
  * All calls to the `Html` helper would use `AliasedHtml` instead.
- * 
+ *
  * @param string $helper Helper name to load
  * @param array $settings Settings for the helper.
  * @return Helper A helper object, Either the existing loaded helper or a new one.
- * @throws MissingHelperFileException, MissingHelperClassException when the helper could not be found
+ * @throws MissingHelperException when the helper could not be found
  */
 	public function load($helper, $settings = array()) {
 		if (is_array($settings) && isset($settings['className'])) {
@@ -66,16 +66,16 @@ class HelperCollection extends ObjectCollection {
 		if (!isset($alias)) {
 			$alias = $name;
 		}
-		
+
 		if (isset($this->_loaded[$alias])) {
 			return $this->_loaded[$alias];
 		}
 		$helperClass = $name . 'Helper';
 		App::uses($helperClass, $plugin . 'View/Helper');
 		if (!class_exists($helperClass)) {
-			throw new MissingHelperClassException(array(
+			throw new MissingHelperException(array(
 				'class' => $helperClass,
-				'file' => $helperClass . '.php'
+				'plugin' => substr($plugin, 0, -1)
 			));
 		}
 		$this->_loaded[$alias] = new $helperClass($this->_View, $settings);

@@ -5,30 +5,30 @@
  * PHP 5
  *
  * CakePHP(tm) : Rapid Development Framework (http://cakephp.org)
- * Copyright 2005-2010, Cake Software Foundation, Inc. (http://cakefoundation.org)
+ * Copyright 2005-2011, Cake Software Foundation, Inc. (http://cakefoundation.org)
  *
  * Licensed under The MIT License
  * Redistributions of files must retain the above copyright notice.
  *
- * @copyright     Copyright 2005-2010, Cake Software Foundation, Inc. (http://cakefoundation.org)
+ * @copyright     Copyright 2005-2011, Cake Software Foundation, Inc. (http://cakefoundation.org)
  * @link          http://cakephp.org CakePHP(tm) Project
- * @package       cake.console.shells
  * @since         CakePHP(tm) v 1.2.0.5669
  * @license       MIT License (http://www.opensource.org/licenses/mit-license.php)
  */
 
+App::uses('AppShell', 'Console/Command');
+
 /**
  * Shell for I18N management.
  *
- * @package       cake.console.shells
+ * @package       Cake.Console.Command
  */
-class I18nShell extends Shell {
+class I18nShell extends AppShell {
 
 /**
  * Contains database source to use
  *
  * @var string
- * @access public
  */
 	public $dataSource = 'default';
 
@@ -36,13 +36,13 @@ class I18nShell extends Shell {
  * Contains tasks to load and instantiate
  *
  * @var array
- * @access public
  */
 	public $tasks = array('DbConfig', 'Extract');
 
 /**
  * Override startup of the Shell
  *
+ * @return mixed
  */
 	public function startup() {
 		$this->_welcome();
@@ -61,6 +61,7 @@ class I18nShell extends Shell {
 /**
  * Override main() for help message hook
  *
+ * @return void
  */
 	public function main() {
 		$this->out(__d('cake_console', '<info>I18n Shell</info>'));
@@ -94,6 +95,7 @@ class I18nShell extends Shell {
 /**
  * Initialize I18N database.
  *
+ * @return void
  */
 	public function initdb() {
 		$this->dispatchShell('schema create i18n');

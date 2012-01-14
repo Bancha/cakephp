@@ -5,17 +5,19 @@
  * PHP 5
  *
  * CakePHP(tm) : Rapid Development Framework (http://cakephp.org)
- * Copyright 2005-2010, Cake Software Foundation, Inc. (http://cakefoundation.org)
+ * Copyright 2005-2011, Cake Software Foundation, Inc. (http://cakefoundation.org)
  *
  * Licensed under The MIT License
  * Redistributions of files must retain the above copyright notice.
  *
- * @copyright     Copyright 2005-2010, Cake Software Foundation, Inc. (http://cakefoundation.org)
+ * @copyright     Copyright 2005-2011, Cake Software Foundation, Inc. (http://cakefoundation.org)
  * @link          http://cakephp.org CakePHP(tm) Project
- * @package       cake.libs
+ * @package       Cake.Core
  * @since         CakePHP(tm) v 1.0.0.2363
  * @license       MIT License (http://www.opensource.org/licenses/mit-license.php)
  */
+
+App::uses('Set', 'Utility');
 
 /**
  * Configuration class. Used for managing runtime configuration information.
@@ -24,8 +26,8 @@
  * as methods for loading additional configuration files or storing runtime configuration
  * for future use.
  *
- * @package       cake.libs
- * @link          http://book.cakephp.org/view/924/The-Configuration-Class
+ * @package       Cake.Core
+ * @link          http://book.cakephp.org/2.0/en/development/configuration.html#configure-class
  */
 class Configure {
 
@@ -51,12 +53,13 @@ class Configure {
  * Bootstrapping includes the following steps:
  *
  * - Setup App array in Configure.
- * - Include app/config/core.php.
+ * - Include app/Config/core.php.
  * - Configure core cache configurations.
  * - Load App cache files.
- * - Include app/config/bootstrap.php.
+ * - Include app/Config/bootstrap.php.
  * - Setup error/exception handlers.
  *
+ * @param boolean $boot
  * @return void
  */
 	public static function bootstrap($boot = true) {
@@ -72,7 +75,7 @@ class Configure {
 			if (!include(APP . 'Config' . DS . 'core.php')) {
 				trigger_error(__d('cake_dev', "Can't find application core file. Please create %score.php, and make sure it is readable by PHP.", APP . 'Config' . DS), E_USER_ERROR);
 			}
-
+			App::$bootstrapping = false;
 			App::init();
 			App::build();
 			if (!include(APP . 'Config' . DS . 'bootstrap.php')) {
@@ -110,7 +113,7 @@ class Configure {
  * ));
  * }}}
  *
- * @link http://book.cakephp.org/view/926/write
+ * @link http://book.cakephp.org/2.0/en/development/configuration.html#Configure::write
  * @param array $config Name of var to write
  * @param mixed $value Value to set for var
  * @return boolean True if write was successful
@@ -163,7 +166,7 @@ class Configure {
  * Configure::read('Name.key'); will return only the value of Configure::Name[key]
  * }}}
  *
- * @link http://book.cakephp.org/view/927/read
+ * @linkhttp://book.cakephp.org/2.0/en/development/configuration.html#Configure::read
  * @param string $var Variable to obtain.  Use '.' to access array elements.
  * @return mixed value stored in configure, or null.
  */
@@ -209,7 +212,7 @@ class Configure {
  * Configure::delete('Name.key'); will delete only the Configure::Name[key]
  * }}}
  *
- * @link http://book.cakephp.org/view/928/delete
+ * @link http://book.cakephp.org/2.0/en/development/configuration.html#Configure::delete
  * @param string $var the var to be deleted
  * @return void
  */
@@ -244,6 +247,7 @@ class Configure {
 /**
  * Gets the names of the configured reader objects.
  *
+ * @param string $name
  * @return array Array of the configured reader objects.
  */
 	public static function configured($name = null) {
@@ -283,7 +287,10 @@ class Configure {
  *
  * `Configure::load('setup', 'default');`
  *
- * @link http://book.cakephp.org/view/929/load
+ * If using `default` config and no reader has been configured for it yet,
+ * one will be automatically created using PhpReader
+ *
+ * @link http://book.cakephp.org/2.0/en/development/configuration.html#Configure::load
  * @param string $key name of configuration resource to load.
  * @param string $config Name of the configured reader to use to read the resource identified by $key.
  * @param boolean $merge if config files should be merged instead of simply overridden
@@ -292,7 +299,12 @@ class Configure {
  */
 	public static function load($key, $config = 'default', $merge = true) {
 		if (!isset(self::$_readers[$config])) {
-			return false;
+			if ($config === 'default') {
+				App::uses('PhpReader', 'Configure');
+				self::$_readers[$config] = new PhpReader();
+			} else {
+				return false;
+			}
 		}
 		$values = self::$_readers[$config]->read($key);
 
@@ -313,12 +325,11 @@ class Configure {
  *
  * Usage `Configure::version();`
  *
- * @link http://book.cakephp.org/view/930/version
  * @return string Current version of CakePHP
  */
 	public static function version() {
 		if (!isset(self::$_values['Cake']['version'])) {
-			require(CAKE . 'Config' . DS . 'config.php');
+			require CAKE . 'Config' . DS . 'config.php';
 			self::write($config);
 		}
 		return self::$_values['Cake']['version'];
@@ -361,7 +372,7 @@ class Configure {
 /**
  * An interface for creating objects compatible with Configure::load()
  *
- * @package cake.libs
+ * @package       Cake.Core
  */
 interface ConfigReaderInterface {
 /**
@@ -372,5 +383,5 @@ interface ConfigReaderInterface {
  * @param string $key
  * @return array An array of data to merge into the runtime configuration
  */
-	function read($key);
+	public function read($key);
 }

@@ -5,22 +5,21 @@
  * PHP 5
  *
  * CakePHP(tm) : Rapid Development Framework (http://cakephp.org)
- * Copyright 2005-2010, Cake Software Foundation, Inc. (http://cakefoundation.org)
+ * Copyright 2005-2011, Cake Software Foundation, Inc. (http://cakefoundation.org)
  *
  * Licensed under The MIT License
  * Redistributions of files must retain the above copyright notice.
  *
- * @copyright     Copyright 2005-2010, Cake Software Foundation, Inc. (http://cakefoundation.org)
+ * @copyright     Copyright 2005-2011, Cake Software Foundation, Inc. (http://cakefoundation.org)
  * @link          http://cakephp.org CakePHP(tm) Project
- * @package       cake.console.libs
  * @since         CakePHP(tm) v 2.0
  * @license       MIT License (http://www.opensource.org/licenses/mit-license.php)
  */
 /**
  * Object wrapper for outputting information from a shell application.
  * Can be connected to any stream resource that can be used with fopen()
- * 
- * Can generate colorized output on consoles that support it. There are a few 
+ *
+ * Can generate colorized output on consoles that support it. There are a few
  * built in styles
  *
  * - `error` Error messages.
@@ -41,7 +40,7 @@
  * See ConsoleOutput::styles() to learn more about defining your own styles.  Nested styles are not supported
  * at this time.
  *
- * @package cake.console.libs
+ * @package       Cake.Console
  */
 class ConsoleOutput {
 /**
@@ -142,7 +141,7 @@ class ConsoleOutput {
  *
  * Checks for a pretty console environment. Ansicon allows pretty consoles
  * on windows, and is supported.
- * 
+ *
  * @param string $stream The identifier of the stream to write output to.
  */
 	public function __construct($stream = 'php://stdout') {
@@ -179,7 +178,8 @@ class ConsoleOutput {
 			return $text;
 		}
 		if ($this->_outputAs == self::PLAIN) {
-			return strip_tags($text);
+			$tags = implode('|', array_keys(self::$_styles));
+			return preg_replace('#</?(?:' . $tags . ')>#', '', $text);
 		}
 		return preg_replace_callback(
 			'/<(?<tag>[a-z0-9-_]+)>(?<text>.*?)<\/(\1)>/ims', array($this, '_replaceTags'), $text
@@ -249,7 +249,7 @@ class ConsoleOutput {
  * @return mixed If you are getting styles, the style or null will be returned. If you are creating/modifying
  *   styles true will be returned.
  */
-	function styles($style = null, $definition = null) {
+	public function styles($style = null, $definition = null) {
 		if ($style === null && $definition === null) {
 			return self::$_styles;
 		}
@@ -266,8 +266,8 @@ class ConsoleOutput {
 
 /**
  * Get/Set the output type to use.  The output type how formatting tags are treated.
- * 
- * @param int $type The output type to use.  Should be one of the class constants.
+ *
+ * @param integer $type The output type to use.  Should be one of the class constants.
  * @return mixed Either null or the value if getting.
  */
 	public function outputAs($type = null) {
@@ -280,7 +280,6 @@ class ConsoleOutput {
 /**
  * clean up and close handles
  *
- * @return void
  */
 	public function __destruct() {
 		fclose($this->_output);

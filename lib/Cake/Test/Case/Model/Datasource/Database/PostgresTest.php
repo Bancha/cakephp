@@ -5,14 +5,14 @@
  * PHP 5
  *
  * CakePHP(tm) : Rapid Development Framework (http://cakephp.org)
- * Copyright 2005-2010, Cake Software Foundation, Inc. (http://cakefoundation.org)
+ * Copyright 2005-2011, Cake Software Foundation, Inc. (http://cakefoundation.org)
  *
  * Licensed under The MIT License
  * Redistributions of files must retain the above copyright notice.
  *
- * @copyright     Copyright 2005-2010, Cake Software Foundation, Inc. (http://cakefoundation.org)
+ * @copyright     Copyright 2005-2011, Cake Software Foundation, Inc. (http://cakefoundation.org)
  * @link          http://cakephp.org CakePHP(tm) Project
- * @package       cake.libs
+ * @package       Cake.Test.Case.Model.Datasource.Database
  * @since         CakePHP(tm) v 1.2.0
  * @license       MIT License (http://www.opensource.org/licenses/mit-license.php)
  */
@@ -26,7 +26,7 @@ require_once dirname(dirname(dirname(__FILE__))) . DS . 'models.php';
 /**
  * DboPostgresTestDb class
  *
- * @package       cake.tests.cases.libs.model.datasources
+ * @package       Cake.Test.Case.Model.Datasource.Database
  */
 class DboPostgresTestDb extends Postgres {
 
@@ -34,7 +34,6 @@ class DboPostgresTestDb extends Postgres {
  * simulated property
  *
  * @var array
- * @access public
  */
 	public $simulated = array();
 
@@ -42,10 +41,9 @@ class DboPostgresTestDb extends Postgres {
  * execute method
  *
  * @param mixed $sql
- * @access protected
  * @return void
  */
-	function _execute($sql, $params = array()) {
+	function _execute($sql, $params = array(), $prepareOptions = array()) {
 		$this->simulated[] = $sql;
 		return null;
 	}
@@ -53,10 +51,9 @@ class DboPostgresTestDb extends Postgres {
 /**
  * getLastQuery method
  *
- * @access public
  * @return void
  */
-	function getLastQuery() {
+	public function getLastQuery() {
 		return $this->simulated[count($this->simulated) - 1];
 	}
 }
@@ -64,7 +61,7 @@ class DboPostgresTestDb extends Postgres {
 /**
  * PostgresTestModel class
  *
- * @package       cake.tests.cases.libs.model.datasources
+ * @package       Cake.Test.Case.Model.Datasource.Database
  */
 class PostgresTestModel extends Model {
 
@@ -72,7 +69,6 @@ class PostgresTestModel extends Model {
  * name property
  *
  * @var string 'PostgresTestModel'
- * @access public
  */
 	public $name = 'PostgresTestModel';
 
@@ -80,7 +76,6 @@ class PostgresTestModel extends Model {
  * useTable property
  *
  * @var bool false
- * @access public
  */
 	public $useTable = false;
 
@@ -88,7 +83,6 @@ class PostgresTestModel extends Model {
  * belongsTo property
  *
  * @var array
- * @access public
  */
 	public $belongsTo = array(
 		'PostgresClientTestModel' => array(
@@ -103,10 +97,9 @@ class PostgresTestModel extends Model {
  * @param mixed $fields
  * @param mixed $order
  * @param mixed $recursive
- * @access public
  * @return void
  */
-	function find($conditions = null, $fields = null, $order = null, $recursive = null) {
+	public function find($conditions = null, $fields = null, $order = null, $recursive = null) {
 		return $conditions;
 	}
 
@@ -117,20 +110,18 @@ class PostgresTestModel extends Model {
  * @param mixed $fields
  * @param mixed $order
  * @param mixed $recursive
- * @access public
  * @return void
  */
-	function findAll($conditions = null, $fields = null, $order = null, $recursive = null) {
+	public function findAll($conditions = null, $fields = null, $order = null, $recursive = null) {
 		return $conditions;
 	}
 
 /**
  * schema method
  *
- * @access public
  * @return void
  */
-	function schema($field = false) {
+	public function schema($field = false) {
 		return array(
 			'id'		=> array('type' => 'integer', 'null' => '', 'default' => '', 'length' => '8'),
 			'client_id' => array('type' => 'integer', 'null' => '', 'default' => '0', 'length' => '11'),
@@ -157,7 +148,7 @@ class PostgresTestModel extends Model {
 /**
  * PostgresClientTestModel class
  *
- * @package       cake.tests.cases.libs.model.datasources
+ * @package       Cake.Test.Case.Model.Datasource.Database
  */
 class PostgresClientTestModel extends Model {
 
@@ -165,7 +156,6 @@ class PostgresClientTestModel extends Model {
  * name property
  *
  * @var string 'PostgresClientTestModel'
- * @access public
  */
 	public $name = 'PostgresClientTestModel';
 
@@ -173,17 +163,15 @@ class PostgresClientTestModel extends Model {
  * useTable property
  *
  * @var bool false
- * @access public
  */
 	public $useTable = false;
 
 /**
  * schema method
  *
- * @access public
  * @return void
  */
-	function schema($field = false) {
+	public function schema($field = false) {
 		return array(
 			'id'		=> array('type' => 'integer', 'null' => '', 'default' => '', 'length' => '8', 'key' => 'primary'),
 			'name'		=> array('type' => 'string', 'null' => '', 'default' => '', 'length' => '255'),
@@ -195,18 +183,17 @@ class PostgresClientTestModel extends Model {
 }
 
 /**
- * DboPostgresTest class
+ * PostgresTest class
  *
- * @package       cake.tests.cases.libs.model.datasources.dbo
+ * @package       Cake.Test.Case.Model.Datasource.Database
  */
-class DboPostgresTest extends CakeTestCase {
+class PostgresTest extends CakeTestCase {
 
 /**
  * Do not automatically load fixtures for each test, they will be loaded manually
  * using CakeTestCase::loadFixtures
  *
  * @var boolean
- * @access public
  */
 	public $autoFixtures = false;
 
@@ -214,7 +201,6 @@ class DboPostgresTest extends CakeTestCase {
  * Fixtures
  *
  * @var object
- * @access public
  */
 	public $fixtures = array('core.user', 'core.binary_test', 'core.comment', 'core.article',
 		'core.tag', 'core.articles_tag', 'core.attachment', 'core.person', 'core.post', 'core.author',
@@ -224,7 +210,6 @@ class DboPostgresTest extends CakeTestCase {
  * Actual DB connection used in testing
  *
  * @var DboSource
- * @access public
  */
 	public $Dbo = null;
 
@@ -232,7 +217,6 @@ class DboPostgresTest extends CakeTestCase {
  * Simulated DB connection used in testing
  *
  * @var DboSource
- * @access public
  */
 	public $Dbo2 = null;
 
@@ -285,17 +269,17 @@ class DboPostgresTest extends CakeTestCase {
 
 		$result = $this->Dbo->fields($this->model);
 		$expected = $fields;
-		$this->assertEqual($expected, $result);
+		$this->assertEquals($expected, $result);
 
 		$result = $this->Dbo->fields($this->model, null, 'PostgresTestModel.*');
 		$expected = $fields;
-		$this->assertEqual($expected, $result);
+		$this->assertEquals($expected, $result);
 
 		$result = $this->Dbo->fields($this->model, null, array('*', 'AnotherModel.id', 'AnotherModel.name'));
 		$expected = array_merge($fields, array(
 			'"AnotherModel"."id" AS "AnotherModel__id"',
 			'"AnotherModel"."name" AS "AnotherModel__name"'));
-		$this->assertEqual($expected, $result);
+		$this->assertEquals($expected, $result);
 
 		$result = $this->Dbo->fields($this->model, null, array('*', 'PostgresClientTestModel.*'));
 		$expected = array_merge($fields, array(
@@ -304,55 +288,53 @@ class DboPostgresTest extends CakeTestCase {
     		'"PostgresClientTestModel"."email" AS "PostgresClientTestModel__email"',
     		'"PostgresClientTestModel"."created" AS "PostgresClientTestModel__created"',
     		'"PostgresClientTestModel"."updated" AS "PostgresClientTestModel__updated"'));
-		$this->assertEqual($expected, $result);
+		$this->assertEquals($expected, $result);
 	}
 
 /**
  * testColumnParsing method
  *
- * @access public
  * @return void
  */
-	function testColumnParsing() {
-		$this->assertEqual($this->Dbo2->column('text'), 'text');
-		$this->assertEqual($this->Dbo2->column('date'), 'date');
-		$this->assertEqual($this->Dbo2->column('boolean'), 'boolean');
-		$this->assertEqual($this->Dbo2->column('character varying'), 'string');
-		$this->assertEqual($this->Dbo2->column('time without time zone'), 'time');
-		$this->assertEqual($this->Dbo2->column('timestamp without time zone'), 'datetime');
+	public function testColumnParsing() {
+		$this->assertEquals($this->Dbo2->column('text'), 'text');
+		$this->assertEquals($this->Dbo2->column('date'), 'date');
+		$this->assertEquals($this->Dbo2->column('boolean'), 'boolean');
+		$this->assertEquals($this->Dbo2->column('character varying'), 'string');
+		$this->assertEquals($this->Dbo2->column('time without time zone'), 'time');
+		$this->assertEquals($this->Dbo2->column('timestamp without time zone'), 'datetime');
 	}
 
 /**
  * testValueQuoting method
  *
- * @access public
  * @return void
  */
-	function testValueQuoting() {
-		$this->assertEqual($this->Dbo->value(1.2, 'float'), "1.200000");
-		$this->assertEqual($this->Dbo->value('1,2', 'float'), "'1,2'");
+	public function testValueQuoting() {
+		$this->assertEquals($this->Dbo->value(1.2, 'float'), "1.200000");
+		$this->assertEquals($this->Dbo->value('1,2', 'float'), "'1,2'");
 
-		$this->assertEqual($this->Dbo->value('0', 'integer'), "0");
-		$this->assertEqual($this->Dbo->value('', 'integer'), 'NULL');
-		$this->assertEqual($this->Dbo->value('', 'float'), 'NULL');
-		$this->assertEqual($this->Dbo->value('', 'integer', false), "NULL");
-		$this->assertEqual($this->Dbo->value('', 'float', false), "NULL");
-		$this->assertEqual($this->Dbo->value('0.0', 'float'), "'0.0'");
+		$this->assertEquals($this->Dbo->value('0', 'integer'), "0");
+		$this->assertEquals($this->Dbo->value('', 'integer'), 'NULL');
+		$this->assertEquals($this->Dbo->value('', 'float'), 'NULL');
+		$this->assertEquals($this->Dbo->value('', 'integer', false), "NULL");
+		$this->assertEquals($this->Dbo->value('', 'float', false), "NULL");
+		$this->assertEquals($this->Dbo->value('0.0', 'float'), "'0.0'");
 
-		$this->assertEqual($this->Dbo->value('t', 'boolean'), "'TRUE'");
-		$this->assertEqual($this->Dbo->value('f', 'boolean'), "'FALSE'");
-		$this->assertEqual($this->Dbo->value(true), "'TRUE'");
-		$this->assertEqual($this->Dbo->value(false), "'FALSE'");
-		$this->assertEqual($this->Dbo->value('t'), "'t'");
-		$this->assertEqual($this->Dbo->value('f'), "'f'");
-		$this->assertEqual($this->Dbo->value('true', 'boolean'), "'TRUE'");
-		$this->assertEqual($this->Dbo->value('false', 'boolean'), "'FALSE'");
-		$this->assertEqual($this->Dbo->value('', 'boolean'), "'FALSE'");
-		$this->assertEqual($this->Dbo->value(0, 'boolean'), "'FALSE'");
-		$this->assertEqual($this->Dbo->value(1, 'boolean'), "'TRUE'");
-		$this->assertEqual($this->Dbo->value('1', 'boolean'), "'TRUE'");
-		$this->assertEqual($this->Dbo->value(null, 'boolean'), "NULL");
-		$this->assertEqual($this->Dbo->value(array()), "NULL");
+		$this->assertEquals($this->Dbo->value('t', 'boolean'), "'TRUE'");
+		$this->assertEquals($this->Dbo->value('f', 'boolean'), "'FALSE'");
+		$this->assertEquals($this->Dbo->value(true), "'TRUE'");
+		$this->assertEquals($this->Dbo->value(false), "'FALSE'");
+		$this->assertEquals($this->Dbo->value('t'), "'t'");
+		$this->assertEquals($this->Dbo->value('f'), "'f'");
+		$this->assertEquals($this->Dbo->value('true', 'boolean'), "'TRUE'");
+		$this->assertEquals($this->Dbo->value('false', 'boolean'), "'FALSE'");
+		$this->assertEquals($this->Dbo->value('', 'boolean'), "'FALSE'");
+		$this->assertEquals($this->Dbo->value(0, 'boolean'), "'FALSE'");
+		$this->assertEquals($this->Dbo->value(1, 'boolean'), "'TRUE'");
+		$this->assertEquals($this->Dbo->value('1', 'boolean'), "'TRUE'");
+		$this->assertEquals($this->Dbo->value(null, 'boolean'), "NULL");
+		$this->assertEquals($this->Dbo->value(array()), "NULL");
 	}
 
 /**
@@ -360,15 +342,15 @@ class DboPostgresTest extends CakeTestCase {
  *
  * @return void
  */
-	function testLocalizedFloats() {
+	public function testLocalizedFloats() {
 		$restore = setlocale(LC_ALL, null);
 		setlocale(LC_ALL, 'de_DE');
 
 		$result = $this->db->value(3.141593, 'float');
-		$this->assertEqual((string)$result, "3.141593");
+		$this->assertEquals($result, "3.141593");
 
 		$result = $this->db->value(3.14);
-		$this->assertEqual((string)$result, "3.140000");
+		$this->assertEquals($result, "3.140000");
 
 		setlocale(LC_ALL, $restore);
 	}
@@ -378,27 +360,26 @@ class DboPostgresTest extends CakeTestCase {
  *
  * @return void
  */
-	function testDateAndTimeAsNull() {
-		$this->assertEqual($this->Dbo->value(null, 'date'), 'NULL');
-		$this->assertEqual($this->Dbo->value('', 'date'), 'NULL');
+	public function testDateAndTimeAsNull() {
+		$this->assertEquals($this->Dbo->value(null, 'date'), 'NULL');
+		$this->assertEquals($this->Dbo->value('', 'date'), 'NULL');
 
-		$this->assertEqual($this->Dbo->value('', 'datetime'), 'NULL');
-		$this->assertEqual($this->Dbo->value(null, 'datetime'), 'NULL');
+		$this->assertEquals($this->Dbo->value('', 'datetime'), 'NULL');
+		$this->assertEquals($this->Dbo->value(null, 'datetime'), 'NULL');
 
-		$this->assertEqual($this->Dbo->value('', 'timestamp'), 'NULL');
-		$this->assertEqual($this->Dbo->value(null, 'timestamp'), 'NULL');
+		$this->assertEquals($this->Dbo->value('', 'timestamp'), 'NULL');
+		$this->assertEquals($this->Dbo->value(null, 'timestamp'), 'NULL');
 
-		$this->assertEqual($this->Dbo->value('', 'time'), 'NULL');
-		$this->assertEqual($this->Dbo->value(null, 'time'), 'NULL');
+		$this->assertEquals($this->Dbo->value('', 'time'), 'NULL');
+		$this->assertEquals($this->Dbo->value(null, 'time'), 'NULL');
 	}
 
 /**
  * Tests that different Postgres boolean 'flavors' are properly returned as native PHP booleans
  *
- * @access public
  * @return void
  */
-	function testBooleanNormalization() {
+	public function testBooleanNormalization() {
 		$this->assertEquals(true, $this->Dbo2->boolean('t', false));
 		$this->assertEquals(true, $this->Dbo2->boolean('true', false));
 		$this->assertEquals(true, $this->Dbo2->boolean('TRUE', false));
@@ -419,21 +400,20 @@ class DboPostgresTest extends CakeTestCase {
  *
  * @return void
  */
-	function testBooleanDefaultFalseInSchema() {
+	public function testBooleanDefaultFalseInSchema() {
 		$this->loadFixtures('Datatype');
 
 		$model = new Model(array('name' => 'Datatype', 'table' => 'datatypes', 'ds' => 'test'));
 		$model->create();
-		$this->assertIdentical(false, $model->data['Datatype']['bool']);
+		$this->assertSame(false, $model->data['Datatype']['bool']);
 	}
 
 /**
  * testLastInsertIdMultipleInsert method
  *
- * @access public
  * @return void
  */
-	function testLastInsertIdMultipleInsert() {
+	public function testLastInsertIdMultipleInsert() {
 		$this->loadFixtures('User');
 		$db1 = ConnectionManager::getDataSource('test');
 
@@ -443,57 +423,34 @@ class DboPostgresTest extends CakeTestCase {
 			"INSERT INTO {$table} (\"user\", password) VALUES ('mariano', '{$password}')"
 		);
 
-		$this->assertEqual($db1->lastInsertId($table), 5);
+		$this->assertEquals($db1->lastInsertId($table), 5);
 
 		$db1->execute("INSERT INTO {$table} (\"user\", password) VALUES ('hoge', '{$password}')");
-		$this->assertEqual($db1->lastInsertId($table), 6);
-	}
-
-/**
- * Tests that table lists and descriptions are scoped to the proper Postgres schema
- *
- * @access public
- * @return void
- */
-	function testSchemaScoping() {
-		$db1 = ConnectionManager::getDataSource('test');
-		$db1->cacheSources = false;
-		$db1->reconnect(array('persistent' => false));
-		$db1->query('CREATE SCHEMA _scope_test');
-
-		$db2 = ConnectionManager::create(
-			'test_2',
-			array_merge($db1->config, array('driver' => 'postgres', 'schema' => '_scope_test'))
-		);
-		$db2->cacheSources = false;
-
-		$db2->query('DROP SCHEMA _scope_test');
+		$this->assertEquals($db1->lastInsertId($table), 6);
 	}
 
 /**
  * Tests that column types without default lengths in $columns do not have length values
  * applied when generating schemas.
  *
- * @access public
  * @return void
  */
-	function testColumnUseLength() {
+	public function testColumnUseLength() {
 		$result = array('name' => 'foo', 'type' => 'string', 'length' => 100, 'default' => 'FOO');
 		$expected = '"foo" varchar(100) DEFAULT \'FOO\'';
-		$this->assertEqual($this->Dbo->buildColumn($result), $expected);
+		$this->assertEquals($this->Dbo->buildColumn($result), $expected);
 
 		$result = array('name' => 'foo', 'type' => 'text', 'length' => 100, 'default' => 'FOO');
 		$expected = '"foo" text DEFAULT \'FOO\'';
-		$this->assertEqual($this->Dbo->buildColumn($result), $expected);
+		$this->assertEquals($this->Dbo->buildColumn($result), $expected);
 	}
 
 /**
  * Tests that binary data is escaped/unescaped properly on reads and writes
  *
- * @access public
  * @return void
  */
-	function testBinaryDataIntegrity() {
+	public function testBinaryDataIntegrity() {
 		$this->loadFixtures('BinaryTest');
 		$data = '%PDF-1.3
 		%ƒÂÚÂÎßÛ†–ƒ∆
@@ -518,16 +475,15 @@ class DboPostgresTest extends CakeTestCase {
 		$model->save(compact('data'));
 
 		$result = $model->find('first');
-		$this->assertEqual($result['BinaryTest']['data'], $data);
+		$this->assertEquals($result['BinaryTest']['data'], $data);
 	}
 
 /**
  * Tests the syntax of generated schema indexes
  *
- * @access public
  * @return void
  */
-	function testSchemaIndexSyntax() {
+	public function testSchemaIndexSyntax() {
 		$schema = new CakeSchema();
 		$schema->tables = array('i18n' => array(
 			'id' => array(
@@ -551,7 +507,7 @@ class DboPostgresTest extends CakeTestCase {
 		));
 
 		$result = $this->Dbo->createSchema($schema);
-		$this->assertNoPattern('/^CREATE INDEX(.+);,$/', $result);
+		$this->assertNotRegExp('/^CREATE INDEX(.+);,$/', $result);
 	}
 
 /**
@@ -565,7 +521,6 @@ class DboPostgresTest extends CakeTestCase {
 	public function testCakeSchema() {
 		$db1 = ConnectionManager::getDataSource('test');
 		$db1->cacheSources = false;
-		$db1->reconnect(array('persistent' => false));
 
 		$db1->rawQuery('CREATE TABLE ' .  $db1->fullTableName('datatype_tests') . ' (
 			id serial NOT NULL,
@@ -586,9 +541,9 @@ class DboPostgresTest extends CakeTestCase {
 		$result = $db1->createSchema($schema, 'datatype_tests');
 
 
-		$this->assertNoPattern('/timestamp DEFAULT/', $result);
-		$this->assertPattern('/\"full_length\"\s*text\s.*,/', $result);
-		$this->assertPattern('/timestamp\s*,/', $result);
+		$this->assertNotRegExp('/timestamp DEFAULT/', $result);
+		$this->assertRegExp('/\"full_length\"\s*text\s.*,/', $result);
+		$this->assertRegExp('/timestamp\s*,/', $result);
 
 
 		$db1->query('DROP TABLE ' . $db1->fullTableName('datatype_tests'));
@@ -600,7 +555,7 @@ class DboPostgresTest extends CakeTestCase {
 		));
 		$schema->tables = array('datatype_tests' => $result2['tables']['missing']['datatype_tests']);
 		$result2 = $db1->createSchema($schema, 'datatype_tests');
-		$this->assertEqual($result, $result2);
+		$this->assertEquals($result, $result2);
 
 		$db1->query('DROP TABLE ' . $db1->fullTableName('datatype_tests'));
 	}
@@ -610,7 +565,7 @@ class DboPostgresTest extends CakeTestCase {
  *
  * @return void
  */
-	function testIndexGeneration() {
+	public function testIndexGeneration() {
 		$name = $this->Dbo->fullTableName('index_test', false);
 		$this->Dbo->query('CREATE TABLE ' . $name . ' ("id" serial NOT NULL PRIMARY KEY, "bool" integer, "small_char" varchar(50), "description" varchar(40) )');
 		$this->Dbo->query('CREATE INDEX pointless_bool ON ' . $name . '("bool")');
@@ -622,7 +577,7 @@ class DboPostgresTest extends CakeTestCase {
 		);
 		$result = $this->Dbo->index($name);
 		$this->Dbo->query('DROP TABLE ' . $name);
-		$this->assertEqual($expected, $result);
+		$this->assertEquals($expected, $result);
 
 		$name = $this->Dbo->fullTableName('index_test_2', false);
 		$this->Dbo->query('CREATE TABLE ' . $name . ' ("id" serial NOT NULL PRIMARY KEY, "bool" integer, "small_char" varchar(50), "description" varchar(40) )');
@@ -633,16 +588,15 @@ class DboPostgresTest extends CakeTestCase {
 		);
 		$result = $this->Dbo->index($name);
 		$this->Dbo->query('DROP TABLE ' . $name);
-		$this->assertEqual($expected, $result);
+		$this->assertEquals($expected, $result);
 	}
 
 /**
  * Test the alterSchema capabilities of postgres
  *
- * @access public
  * @return void
  */
-	function testAlterSchema() {
+	public function testAlterSchema() {
 		$Old = new CakeSchema(array(
 			'connection' => 'test',
 			'name' => 'AlterPosts',
@@ -677,21 +631,36 @@ class DboPostgresTest extends CakeTestCase {
 		$result = $model->schema();
 		$this->assertTrue(isset($result['status']));
 		$this->assertFalse(isset($result['published']));
-		$this->assertEqual($result['body']['type'], 'string');
-		$this->assertEqual($result['status']['default'], 1);
-		$this->assertEqual($result['author_id']['null'], true);
-		$this->assertEqual($result['title']['null'], false);
+		$this->assertEquals($result['body']['type'], 'string');
+		$this->assertEquals($result['status']['default'], 1);
+		$this->assertEquals($result['author_id']['null'], true);
+		$this->assertEquals($result['title']['null'], false);
 
 		$this->Dbo->query($this->Dbo->dropSchema($New));
+
+		$New = new CakeSchema(array(
+			'connection' => 'test_suite',
+			'name' => 'AlterPosts',
+			'alter_posts' => array(
+				'id' => array('type' => 'string', 'length' => 36, 'key' => 'primary'),
+				'author_id' => array('type' => 'integer', 'null' => false),
+				'title' => array('type' => 'string', 'null' => true),
+				'body' => array('type' => 'text'),
+				'published' => array('type' => 'string', 'length' => 1, 'default' => 'N'),
+				'created' => array('type' => 'datetime'),
+				'updated' => array('type' => 'datetime'),
+			)
+		));
+		$result = $this->Dbo->alterSchema($New->compare($Old), 'alter_posts');
+		$this->assertNotRegExp('/varchar\(36\) NOT NULL/i', $result);
 	}
 
 /**
  * Test the alter index capabilities of postgres
  *
- * @access public
  * @return void
  */
-	function testAlterIndexes() {
+	public function testAlterIndexes() {
 		$this->Dbo->cacheSources = false;
 
 		$schema1 = new CakeSchema(array(
@@ -704,7 +673,7 @@ class DboPostgresTest extends CakeTestCase {
 				'group2' => array('type' => 'integer', 'null' => true)
 			)
 		));
-		$this->Dbo->rawQuery($this->Dbo->dropSchema($schema1));
+
 		$this->Dbo->rawQuery($this->Dbo->createSchema($schema1));
 
 		$schema2 = new CakeSchema(array(
@@ -726,7 +695,7 @@ class DboPostgresTest extends CakeTestCase {
 		$this->Dbo->query($this->Dbo->alterSchema($schema2->compare($schema1)));
 
 		$indexes = $this->Dbo->index('altertest');
-		$this->assertEqual($schema2->tables['altertest']['indexes'], $indexes);
+		$this->assertEquals($schema2->tables['altertest']['indexes'], $indexes);
 
 		// Change three indexes, delete one and add another one
 		$schema3 = new CakeSchema(array(
@@ -747,16 +716,16 @@ class DboPostgresTest extends CakeTestCase {
 		$this->Dbo->query($this->Dbo->alterSchema($schema3->compare($schema2)));
 
 		$indexes = $this->Dbo->index('altertest');
-		$this->assertEqual($schema3->tables['altertest']['indexes'], $indexes);
+		$this->assertEquals($schema3->tables['altertest']['indexes'], $indexes);
 
 		// Compare us to ourself.
-		$this->assertEqual($schema3->compare($schema3), array());
+		$this->assertEquals($schema3->compare($schema3), array());
 
 		// Drop the indexes
 		$this->Dbo->query($this->Dbo->alterSchema($schema1->compare($schema3)));
 
 		$indexes = $this->Dbo->index('altertest');
-		$this->assertEqual(array(), $indexes);
+		$this->assertEquals(array(), $indexes);
 
 		$this->Dbo->query($this->Dbo->dropSchema($schema1));
 	}
@@ -764,10 +733,9 @@ class DboPostgresTest extends CakeTestCase {
 /*
  * Test it is possible to use virtual field with postgresql
  *
- * @access public
  * @return void
  */
-	function testVirtualFields() {
+	public function testVirtualFields() {
 		$this->loadFixtures('Article', 'Comment', 'User', 'Attachment', 'Tag', 'ArticlesTag');
 		$Article = new Article;
 		$Article->virtualFields = array(
@@ -777,41 +745,59 @@ class DboPostgresTest extends CakeTestCase {
 			'subquery' => 'SELECT count(*) FROM ' . $Article->Comment->table
 		);
 		$result = $Article->find('first');
-		$this->assertEqual($result['Article']['next_id'], 2);
-		$this->assertEqual($result['Article']['complex'], $result['Article']['title'] . $result['Article']['body']);
-		$this->assertEqual($result['Article']['functional'], $result['User']['user']);
-		$this->assertEqual($result['Article']['subquery'], 6);
+		$this->assertEquals($result['Article']['next_id'], 2);
+		$this->assertEquals($result['Article']['complex'], $result['Article']['title'] . $result['Article']['body']);
+		$this->assertEquals($result['Article']['functional'], $result['User']['user']);
+		$this->assertEquals($result['Article']['subquery'], 6);
+	}
+
+/**
+ * Test that virtual fields work with SQL constants
+ *
+ * @return void
+ */
+	function testVirtualFieldAsAConstant() {
+		$this->loadFixtures('Article', 'Comment');
+		$Article =& ClassRegistry::init('Article');
+		$Article->virtualFields = array(
+			'empty' => "NULL",
+			'number' => 43,
+			'truth' => 'TRUE'
+		);
+		$result = $Article->find('first');
+		$this->assertNull($result['Article']['empty']);
+		$this->assertTrue($result['Article']['truth']);
+		$this->assertEquals(43, $result['Article']['number']);
 	}
 
 /**
  * Tests additional order options for postgres
  *
- * @access public
  * @return void
  */
-	function testOrderAdditionalParams() {
+	public function testOrderAdditionalParams() {
 		$result = $this->Dbo->order(array('title' => 'DESC NULLS FIRST', 'body' => 'DESC'));
 		$expected = ' ORDER BY "title" DESC NULLS FIRST, "body" DESC';
-		$this->assertEqual($expected, $result);
+		$this->assertEquals($expected, $result);
 	}
 
 /**
 * Test it is possible to do a SELECT COUNT(DISTINCT Model.field) query in postgres and it gets correctly quoted
 */
-	function testQuoteDistinctInFunction() {
+	public function testQuoteDistinctInFunction() {
 		$this->loadFixtures('Article');
 		$Article = new Article;
 		$result = $this->Dbo->fields($Article, null, array('COUNT(DISTINCT Article.id)'));
 		$expected = array('COUNT(DISTINCT "Article"."id")');
-		$this->assertEqual($expected, $result);
+		$this->assertEquals($expected, $result);
 
 		$result = $this->Dbo->fields($Article, null, array('COUNT(DISTINCT id)'));
 		$expected = array('COUNT(DISTINCT "id")');
-		$this->assertEqual($expected, $result);
+		$this->assertEquals($expected, $result);
 
 		$result = $this->Dbo->fields($Article, null, array('COUNT(DISTINCT FUNC(id))'));
 		$expected = array('COUNT(DISTINCT FUNC("id"))');
-		$this->assertEqual($expected, $result);
+		$this->assertEquals($expected, $result);
 	}
 
 /**
@@ -819,7 +805,7 @@ class DboPostgresTest extends CakeTestCase {
  *
  * @return void
  */
-	function testUpdateAllWithNonQualifiedConditions() {
+	public function testUpdateAllWithNonQualifiedConditions() {
 		$this->loadFixtures('Article');
 		$Article = new Article();
 		$result = $Article->updateAll(array('title' => "'Awesome'"), array('title' => 'Third Article'));
@@ -828,7 +814,7 @@ class DboPostgresTest extends CakeTestCase {
 		$result = $Article->find('count', array(
 			'conditions' => array('Article.title' => 'Awesome')
 		));
-		$this->assertEqual($result, 1, 'Article count is wrong or fixture has changed.');
+		$this->assertEquals($result, 1, 'Article count is wrong or fixture has changed.');
 	}
 
 /**
@@ -836,7 +822,7 @@ class DboPostgresTest extends CakeTestCase {
  *
  * @return void
  */
-	function testAlteringTwoTables() {
+	public function testAlteringTwoTables() {
 		$schema1 = new CakeSchema(array(
 			'name' => 'AlterTest1',
 			'connection' => 'test',
@@ -862,7 +848,26 @@ class DboPostgresTest extends CakeTestCase {
 			)
 		));
 		$result = $this->db->alterSchema($schema2->compare($schema1));
-		$this->assertEqual(2, substr_count($result, 'field_two'), 'Too many fields');
+		$this->assertEquals(2, substr_count($result, 'field_two'), 'Too many fields');
 		$this->assertFalse(strpos(';ALTER', $result), 'Too many semi colons');
+	}
+	
+/**
+ * test encoding setting.
+ *
+ * @return void
+ */
+	public function testEncoding() {
+		$result = $this->Dbo->setEncoding('utf8');
+		$this->assertTrue($result) ;
+		
+		$result = $this->Dbo->getEncoding();
+		$this->assertEquals('utf8', $result) ;
+		
+		$result = $this->Dbo->setEncoding('EUC-JP');
+		$this->assertTrue($result) ;
+		
+		$result = $this->Dbo->getEncoding();
+		$this->assertEquals('EUC-JP', $result) ;
 	}
 }

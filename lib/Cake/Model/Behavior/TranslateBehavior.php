@@ -5,14 +5,14 @@
  * PHP 5
  *
  * CakePHP(tm) : Rapid Development Framework (http://cakephp.org)
- * Copyright 2005-2010, Cake Software Foundation, Inc. (http://cakefoundation.org)
+ * Copyright 2005-2011, Cake Software Foundation, Inc. (http://cakefoundation.org)
  *
  * Licensed under The MIT License
  * Redistributions of files must retain the above copyright notice.
  *
- * @copyright     Copyright 2005-2010, Cake Software Foundation, Inc. (http://cakefoundation.org)
+ * @copyright     Copyright 2005-2011, Cake Software Foundation, Inc. (http://cakefoundation.org)
  * @link          http://cakephp.org CakePHP(tm) Project
- * @package       cake.libs.model.behaviors
+ * @package       Cake.Model.Behavior
  * @since         CakePHP(tm) v 1.2.0.4525
  * @license       MIT License (http://www.opensource.org/licenses/mit-license.php)
  */
@@ -22,14 +22,14 @@ App::uses('I18n', 'I18n');
 /**
  * Translate behavior
  *
- * @package       cake.libs.model.behaviors
- * @link http://book.cakephp.org/view/1328/Translate
+ * @package       Cake.Model.Behavior
+ * @link http://book.cakephp.org/2.0/en/core-libraries/behaviors/translate.html
  */
 class TranslateBehavior extends ModelBehavior {
 
 /**
  * Used for runtime configuration of model
- * 
+ *
  * @var array
  */
 	public $runtime = array();
@@ -99,17 +99,16 @@ class TranslateBehavior extends ModelBehavior {
 		} else {
 			$tablePrefix = $db->config['prefix'];
 		}
-
-		if ($tablePrefix == $db->config['prefix']) {
-			$tablePrefix = null;
-		}
+		$joinTable = new StdClass();
+		$joinTable->tablePrefix = $tablePrefix;
+		$joinTable->table = $RuntimeModel->table;
 
 		if (is_string($query['fields']) && 'COUNT(*) AS '.$db->name('count') == $query['fields']) {
 			$query['fields'] = 'COUNT(DISTINCT('.$db->name($model->alias . '.' . $model->primaryKey) . ')) ' . $db->alias . 'count';
 			$query['joins'][] = array(
 				'type' => 'INNER',
 				'alias' => $RuntimeModel->alias,
-				'table' => $db->fullTableName($tablePrefix . $RuntimeModel->useTable),
+				'table' => $joinTable,
 				'conditions' => array(
 					$model->alias . '.' . $model->primaryKey => $db->identifier($RuntimeModel->alias.'.foreign_key'),
 					$RuntimeModel->alias.'.model' => $model->name,
@@ -155,7 +154,7 @@ class TranslateBehavior extends ModelBehavior {
 						$query['joins'][] = array(
 							'type' => 'LEFT',
 							'alias' => 'I18n__'.$field.'__'.$_locale,
-							'table' => $db->fullTableName($tablePrefix . $RuntimeModel->useTable),
+							'table' => $joinTable,
 							'conditions' => array(
 								$model->alias . '.' . $model->primaryKey => $db->identifier("I18n__{$field}__{$_locale}.foreign_key"),
 								'I18n__'.$field.'__'.$_locale.'.model' => $model->name,
@@ -170,21 +169,16 @@ class TranslateBehavior extends ModelBehavior {
 						$query['fields'][] = 'i18n_'.$field;
 					}
 					$query['joins'][] = array(
-						'type' => 'LEFT',
+						'type' => 'INNER',
 						'alias' => 'I18n__'.$field,
-						'table' => $db->fullTableName($tablePrefix . $RuntimeModel->useTable),
+						'table' => $joinTable,
 						'conditions' => array(
 							$model->alias . '.' . $model->primaryKey => $db->identifier("I18n__{$field}.foreign_key"),
 							'I18n__'.$field.'.model' => $model->name,
-							'I18n__'.$field.'.'.$RuntimeModel->displayField => $aliasField
+							'I18n__'.$field.'.'.$RuntimeModel->displayField => $aliasField,
+							'I18n__'.$field.'.locale' => $locale
 						)
 					);
-
-					if (is_string($query['conditions'])) {
-						$query['conditions'] = $db->conditions($query['conditions'], true, false, $model) . ' AND '.$db->name('I18n__'.$field.'.locale').' = \''.$locale.'\'';
-					} else {
-						$query['conditions'][$db->name("I18n__{$field}.locale")] = $locale;
-					}
 				}
 			}
 		}
@@ -352,7 +346,7 @@ class TranslateBehavior extends ModelBehavior {
  * name to find/use.  If no translateModel property is found 'I18nModel' will be used.
  *
  * @param Model $model Model to get a translatemodel for.
- * @return object
+ * @return Model
  */
 	public function translateModel($model) {
 		if (!isset($this->runtime[$model->alias]['model'])) {
@@ -376,12 +370,12 @@ class TranslateBehavior extends ModelBehavior {
  * Bind translation for fields, optionally with hasMany association for
  * fake field
  *
- * @param object instance of model
- * @param mixed string with field or array(field1, field2=>AssocName, field3)
+ * @param Model $model instance of model
+ * @param string|array $fields string with field or array(field1, field2=>AssocName, field3)
  * @param boolean $reset
- * @return bool
+ * @return boolean
  */
-	function bindTranslation($model, $fields, $reset = true) {
+	public function bindTranslation($model, $fields, $reset = true) {
 		if (is_string($fields)) {
 			$fields = array($fields);
 		}
@@ -449,12 +443,12 @@ class TranslateBehavior extends ModelBehavior {
  * Unbind translation for fields, optionally unbinds hasMany association for
  * fake field
  *
- * @param object $model instance of model
- * @param mixed $fields string with field, or array(field1, field2=>AssocName, field3), or null for 
+ * @param Model $model instance of model
+ * @param mixed $fields string with field, or array(field1, field2=>AssocName, field3), or null for
  *    unbind all original translations
- * @return bool
+ * @return boolean
  */
-	function unbindTranslation($model, $fields = null) {
+	public function unbindTranslation($model, $fields = null) {
 		if (empty($fields) && empty($this->settings[$model->alias])) {
 			return false;
 		}
@@ -502,10 +496,29 @@ class TranslateBehavior extends ModelBehavior {
 }
 
 /**
- * @package       cake.libs.model.behaviors
+ * @package       Cake.Model.Behavior
  */
 class I18nModel extends AppModel {
+
+/**
+ * Model name
+ *
+ * @var string
+ */
 	public $name = 'I18nModel';
+
+/**
+ * Table name
+ *
+ * @var string
+ */
 	public $useTable = 'i18n';
+
+/**
+ * Display field
+ *
+ * @var string
+ */
 	public $displayField = 'field';
+
 }

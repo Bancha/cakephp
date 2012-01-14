@@ -5,14 +5,14 @@
  * PHP 5
  *
  * CakePHP(tm) : Rapid Development Framework (http://cakephp.org)
- * Copyright 2005-2010, Cake Software Foundation, Inc. (http://cakefoundation.org)
+ * Copyright 2005-2011, Cake Software Foundation, Inc. (http://cakefoundation.org)
  *
  * Licensed under The MIT License
  * Redistributions of files must retain the above copyright notice.
  *
- * @copyright     Copyright 2005-2010, Cake Software Foundation, Inc. (http://cakefoundation.org)
+ * @copyright     Copyright 2005-2011, Cake Software Foundation, Inc. (http://cakefoundation.org)
  * @link          http://cakephp.org CakePHP(tm) Project
- * @package       cake.libs
+ * @package       Cake.Network
  * @since         CakePHP(tm) v 1.2.0
  * @license       MIT License (http://www.opensource.org/licenses/mit-license.php)
  */
@@ -23,7 +23,7 @@ App::uses('Validation', 'Utility');
  *
  * Core base class for network communication.
  *
- * @package       cake.libs
+ * @package       Cake.Network
  */
 class CakeSocket {
 
@@ -31,7 +31,6 @@ class CakeSocket {
  * Object description
  *
  * @var string
- * @access public
  */
 	public $description = 'Remote DataSource Network Socket Interface';
 
@@ -39,7 +38,6 @@ class CakeSocket {
  * Base configuration settings for the socket connection
  *
  * @var array
- * @access protected
  */
 	protected $_baseConfig = array(
 		'persistent'	=> false,
@@ -53,7 +51,6 @@ class CakeSocket {
  * Configuration settings for the socket connection
  *
  * @var array
- * @access public
  */
 	public $config = array();
 
@@ -61,7 +58,6 @@ class CakeSocket {
  * Reference to socket connection resource
  *
  * @var resource
- * @access public
  */
 	public $connection = null;
 
@@ -69,7 +65,6 @@ class CakeSocket {
  * This boolean contains the current state of the CakeSocket class
  *
  * @var boolean
- * @access public
  */
 	public $connected = false;
 
@@ -77,7 +72,6 @@ class CakeSocket {
  * This variable contains an array with the last error number (num) and string (str)
  *
  * @var array
- * @access public
  */
 	public $lastError = array();
 
@@ -87,7 +81,7 @@ class CakeSocket {
  * @param array $config Socket configuration, which will be merged with the base configuration
  * @see CakeSocket::$_baseConfig
  */
-	function __construct($config = array()) {
+	public function __construct($config = array()) {
 		$this->config = array_merge($this->_baseConfig, $config);
 		if (!is_numeric($this->config['protocol'])) {
 			$this->config['protocol'] = getprotobyname($this->config['protocol']);
@@ -256,9 +250,8 @@ class CakeSocket {
 /**
  * Destructor, used to disconnect from current connection.
  *
- * @access private
  */
-	function __destruct() {
+	public function __destruct() {
 		$this->disconnect();
 	}
 

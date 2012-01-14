@@ -7,14 +7,14 @@
  * PHP 5
  *
  * CakePHP : Rapid Development Framework (http://cakephp.org)
- * Copyright 2006-2009, Cake Software Foundation, Inc.
+ * Copyright 2005-2011, Cake Software Foundation, Inc.
  *
  * Licensed under The MIT License
  * Redistributions of files must retain the above copyright notice.
  *
- * @copyright     Copyright 2006-2009, Cake Software Foundation, Inc.
+ * @copyright     Copyright 2005-2011, Cake Software Foundation, Inc.
  * @link          http://cakephp.org CakePHP Project
- * @package       cake.tests.cases.console.libs.tasks
+ * @package       Cake.Test.Case.Console.Command.Task
  * @since         CakePHP v 1.3.0
  * @license       MIT License (http://www.opensource.org/licenses/mit-license.php)
  */
@@ -31,7 +31,7 @@ App::uses('File', 'Utility');
 /**
  * PluginTaskPlugin class
  *
- * @package       cake.tests.cases.console.libs.tasks
+ * @package       Cake.Test.Case.Console.Command.Task
  */
 class PluginTaskTest extends CakeTestCase {
 
@@ -45,12 +45,12 @@ class PluginTaskTest extends CakeTestCase {
 		$this->out = $this->getMock('ConsoleOutput', array(), array(), '', false);
 		$this->in = $this->getMock('ConsoleInput', array(), array(), '', false);
 
-		$this->Task = $this->getMock('PluginTask', 
+		$this->Task = $this->getMock('PluginTask',
 			array('in', 'err', 'createFile', '_stop', 'clear'),
 			array($this->out, $this->out, $this->in)
 		);
 		$this->Task->path = TMP . 'tests' . DS;
-		
+
 		$this->_paths = $paths = App::path('plugins');
 		foreach ($paths as $i => $p) {
 			if (!is_dir($p)) {
@@ -84,9 +84,9 @@ class PluginTaskTest extends CakeTestCase {
 
 		$path = $this->Task->path . 'BakeTestPlugin';
 		$this->assertTrue(is_dir($path), 'No plugin dir %s');
-		
+
 		$directories = array(
-			'Config' . DS . 'schema',
+			'Config' . DS . 'Schema',
 			'Model' . DS . 'Behavior',
 			'Model' . DS . 'Datasource',
 			'Console' . DS . 'Command' . DS . 'Task',
@@ -155,7 +155,7 @@ class PluginTaskTest extends CakeTestCase {
 		$file = $path . DS . 'Model' . DS . 'BakeTestPluginAppModel.php';
 		$this->Task->expects($this->at(3))->method('createFile')
 			->with($file, new PHPUnit_Framework_Constraint_IsAnything());
-		
+
 		$this->Task->args = array('BakeTestPlugin');
 
 		$this->Task->execute();
@@ -174,7 +174,7 @@ class PluginTaskTest extends CakeTestCase {
 		$last = count($paths);
 		$paths[] = '/fake/path';
 
-		$this->Task = $this->getMock('PluginTask', 
+		$this->Task = $this->getMock('PluginTask',
 			array('in', 'out', 'err', 'createFile', '_stop'),
 			array($this->out, $this->out, $this->in)
 		);
@@ -183,7 +183,7 @@ class PluginTaskTest extends CakeTestCase {
 		// Make sure the added path is filtered out.
 		$this->Task->expects($this->exactly($last))
 			->method('out');
-	
+
 		$this->Task->expects($this->once())
 			->method('in')
 			->will($this->returnValue($last));

@@ -7,14 +7,14 @@
  * PHP 5
  *
  * CakePHP(tm) Tests <http://book.cakephp.org/view/1196/Testing>
- * Copyright 2005-2010, Cake Software Foundation, Inc. (http://cakefoundation.org)
+ * Copyright 2005-2011, Cake Software Foundation, Inc. (http://cakefoundation.org)
  *
  * Licensed under The MIT License
  * Redistributions of files must retain the above copyright notice
  *
- * @copyright     Copyright 2005-2010, Cake Software Foundation, Inc. (http://cakefoundation.org)
+ * @copyright     Copyright 2005-2011, Cake Software Foundation, Inc. (http://cakefoundation.org)
  * @link          http://book.cakephp.org/view/1196/Testing CakePHP(tm) Tests
- * @package       cake.tests.cases.libs.view.helpers
+ * @package       Cake.Test.Case.View.Helper
  * @since         CakePHP(tm) v 1.3
  * @license       MIT License (http://www.opensource.org/licenses/mit-license.php)
  */
@@ -45,7 +45,7 @@ class OptionEngineHelper extends JsBaseEngineHelper {
  *
  * @return array
  */
-	function testMap($options = array()) {
+	public function testMap($options = array()) {
 		return $this->_mapOptions('request', $options);
 	}
 /**
@@ -53,27 +53,27 @@ class OptionEngineHelper extends JsBaseEngineHelper {
  *
  * @return void
  */
-	function testParseOptions($options, $safe = array()) {
+	public function testParseOptions($options, $safe = array()) {
 		return $this->_parseOptions($options, $safe);
 	}
 
-	function get($selector) {}
-	function event($type, $callback, $options = array()) {}
-	function domReady($functionBody) {}
-	function each($callback) {}
-	function effect($name, $options = array()) {}
-	function request($url, $options = array()) {}
-	function drag($options = array()) {}
-	function drop($options = array()) {}
-	function sortable($options = array()) {}
-	function slider($options = array()) {}
-	function serializeForm($options = array()) {}
+	public function get($selector) {}
+	public function event($type, $callback, $options = array()) {}
+	public function domReady($functionBody) {}
+	public function each($callback) {}
+	public function effect($name, $options = array()) {}
+	public function request($url, $options = array()) {}
+	public function drag($options = array()) {}
+	public function drop($options = array()) {}
+	public function sortable($options = array()) {}
+	public function slider($options = array()) {}
+	public function serializeForm($options = array()) {}
 }
 
 /**
  * JsHelper TestCase.
  *
- * @package       cake.tests.cases.libs.view.helpers
+ * @package       Cake.Test.Case.View.Helper
  */
 class JsHelperTest extends CakeTestCase {
 /**
@@ -94,10 +94,9 @@ class JsHelperTest extends CakeTestCase {
 /**
  * setUp method
  *
- * @access public
  * @return void
  */
-	function setUp() {
+	public function setUp() {
 		$this->_asset = Configure::read('Asset.timestamp');
 		Configure::write('Asset.timestamp', false);
 
@@ -118,10 +117,9 @@ class JsHelperTest extends CakeTestCase {
 /**
  * tearDown method
  *
- * @access public
  * @return void
  */
-	function tearDown() {
+	public function tearDown() {
 		Configure::write('Asset.timestamp', $this->_asset);
 		unset($this->Js);
 	}
@@ -154,26 +152,27 @@ class JsHelperTest extends CakeTestCase {
  *
  * @return void
  */
-	function testConstruction() {
+	public function testConstruction() {
 		$js = new JsHelper($this->View);
-		$this->assertEqual($js->helpers, array('Html', 'Form', 'JqueryEngine'));
+		$this->assertEquals($js->helpers, array('Html', 'Form', 'JqueryEngine'));
 
 		$js = new JsHelper($this->View, array('mootools'));
-		$this->assertEqual($js->helpers, array('Html', 'Form', 'mootoolsEngine'));
+		$this->assertEquals($js->helpers, array('Html', 'Form', 'mootoolsEngine'));
 
 		$js = new JsHelper($this->View, 'prototype');
-		$this->assertEqual($js->helpers, array('Html', 'Form', 'prototypeEngine'));
+		$this->assertEquals($js->helpers, array('Html', 'Form', 'prototypeEngine'));
 
 		$js = new JsHelper($this->View, 'MyPlugin.Dojo');
-		$this->assertEqual($js->helpers, array('Html', 'Form', 'MyPlugin.DojoEngine'));
+		$this->assertEquals($js->helpers, array('Html', 'Form', 'MyPlugin.DojoEngine'));
 	}
 
 /**
  * test that methods dispatch internally and to the engine class
  *
+ * @expectedException PHPUnit_Framework_Error_Warning
  * @return void
  */
-	function testMethodDispatching() {
+	public function testMethodDispatching() {
 		$this->_useMock();
 
 		$this->Js->TestJsEngine
@@ -184,7 +183,6 @@ class JsHelperTest extends CakeTestCase {
 		$this->Js->event('click', 'callback');
 
 		$this->Js->TestJsEngine = new StdClass();
-		$this->expectError();
 		$this->Js->someMethodThatSurelyDoesntExist();
 	}
 
@@ -193,7 +191,7 @@ class JsHelperTest extends CakeTestCase {
  *
  * @return void
  */
-	function testEventDispatchWithBuffering() {
+	public function testEventDispatchWithBuffering() {
 		$this->_useMock();
 
 		$this->Js->TestJsEngine->bufferedMethods = array('event', 'sortables');
@@ -203,18 +201,18 @@ class JsHelperTest extends CakeTestCase {
 
 		$this->Js->event('click', 'foo');
 		$result = $this->Js->getBuffer();
-		$this->assertEqual(count($result), 1);
-		$this->assertEqual($result[0], 'This is an event call');
+		$this->assertEquals(count($result), 1);
+		$this->assertEquals($result[0], 'This is an event call');
 
 		$result = $this->Js->event('click', 'foo', array('buffer' => false));
 		$buffer = $this->Js->getBuffer();
 		$this->assertTrue(empty($buffer));
-		$this->assertEqual($result, 'This is an event call');
+		$this->assertEquals($result, 'This is an event call');
 
 		$result = $this->Js->event('click', 'foo', false);
 		$buffer = $this->Js->getBuffer();
 		$this->assertTrue(empty($buffer));
-		$this->assertEqual($result, 'This is an event call');
+		$this->assertEquals($result, 'This is an event call');
 	}
 
 /**
@@ -222,7 +220,7 @@ class JsHelperTest extends CakeTestCase {
  *
  * @return void
  */
-	function testEffectDispatchWithBuffering() {
+	public function testEffectDispatchWithBuffering() {
 		$this->_useMock();
 		$this->Js->TestJsEngine->expects($this->exactly(4))
 			->method('effect')
@@ -231,25 +229,25 @@ class JsHelperTest extends CakeTestCase {
 		$result = $this->Js->effect('slideIn');
 		$buffer = $this->Js->getBuffer();
 		$this->assertTrue(empty($buffer));
-		$this->assertEqual($result, 'I am not buffered.');
+		$this->assertEquals($result, 'I am not buffered.');
 
 		$result = $this->Js->effect('slideIn', true);
 		$buffer = $this->Js->getBuffer();
 		$this->assertNull($result);
-		$this->assertEqual(count($buffer), 1);
-		$this->assertEqual($buffer[0], 'I am not buffered.');
+		$this->assertEquals(count($buffer), 1);
+		$this->assertEquals($buffer[0], 'I am not buffered.');
 
 		$result = $this->Js->effect('slideIn', array('speed' => 'slow'), true);
 		$buffer = $this->Js->getBuffer();
 		$this->assertNull($result);
-		$this->assertEqual(count($buffer), 1);
-		$this->assertEqual($buffer[0], 'I am not buffered.');
+		$this->assertEquals(count($buffer), 1);
+		$this->assertEquals($buffer[0], 'I am not buffered.');
 
 		$result = $this->Js->effect('slideIn', array('speed' => 'slow', 'buffer' => true));
 		$buffer = $this->Js->getBuffer();
 		$this->assertNull($result);
-		$this->assertEqual(count($buffer), 1);
-		$this->assertEqual($buffer[0], 'I am not buffered.');
+		$this->assertEquals(count($buffer), 1);
+		$this->assertEquals($buffer[0], 'I am not buffered.');
 	}
 
 /**
@@ -257,7 +255,7 @@ class JsHelperTest extends CakeTestCase {
  *
  * @return void
  */
-	function testWriteScriptsNoFile() {
+	public function testWriteScriptsNoFile() {
 		$this->_useMock();
 		$this->Js->buffer('one = 1;');
 		$this->Js->buffer('two = 2;');
@@ -285,7 +283,7 @@ class JsHelperTest extends CakeTestCase {
  *
  * @return void
  */
-	function testWriteBufferNotInline() {
+	public function testWriteBufferNotInline() {
 		$this->Js->set('foo', 1);
 
 		$this->View->expects($this->once())
@@ -301,7 +299,7 @@ class JsHelperTest extends CakeTestCase {
  *
  * @return void
  */
-	function testWriteBufferAndXhr() {
+	public function testWriteBufferAndXhr() {
 		$this->_useMock();
 		$this->Js->params['isAjax'] = true;
 		$this->Js->buffer('alert("test");');
@@ -314,10 +312,9 @@ class JsHelperTest extends CakeTestCase {
  *
  * @return void
  */
-	function testWriteScriptsInFile() {
-		if ($this->skipIf(!is_writable(JS), 'webroot/js is not Writable, script caching test has been skipped')) {
-			return;
-		}
+	public function testWriteScriptsInFile() {
+		$this->skipIf(!is_writable(JS), 'webroot/js is not Writable, script caching test has been skipped.');
+
 		$this->Js->request->webroot = '/';
 		$this->Js->JsBaseEngine = new TestJsEngineHelper($this->View);
 		$this->Js->buffer('one = 1;');
@@ -330,7 +327,7 @@ class JsHelperTest extends CakeTestCase {
 		preg_match('/src="(.*\.js)"/', $result, $filename);
 		$this->assertTrue(file_exists(WWW_ROOT . $filename[1]));
 		$contents = file_get_contents(WWW_ROOT . $filename[1]);
-		$this->assertPattern('/one\s=\s1;\ntwo\s=\s2;/', $contents);
+		$this->assertRegExp('/one\s=\s1;\ntwo\s=\s2;/', $contents);
 
 		@unlink(WWW_ROOT . $filename[1]);
 	}
@@ -340,7 +337,7 @@ class JsHelperTest extends CakeTestCase {
  *
  * @return void
  */
-	function testLinkWithMock() {
+	public function testLinkWithMock() {
 		$this->_useMock();
 
 		$options = array('update' => '#content');
@@ -371,7 +368,7 @@ class JsHelperTest extends CakeTestCase {
  *
  * @return void
  */
-	function testLinkWithMockAndConfirm() {
+	public function testLinkWithMockAndConfirm() {
 		$this->_useMock();
 
 		$options = array(
@@ -408,7 +405,7 @@ class JsHelperTest extends CakeTestCase {
  *
  * @return void
  */
-	function testLinkWithAribtraryAttributes() {
+	public function testLinkWithAribtraryAttributes() {
 		$this->_useMock();
 
 		$options = array('id' => 'something', 'htmlAttributes' => array('arbitrary' => 'value', 'batman' => 'robin'));
@@ -427,7 +424,7 @@ class JsHelperTest extends CakeTestCase {
  *
  * @return void
  */
-	function testLinkWithNoBuffering() {
+	public function testLinkWithNoBuffering() {
 		$this->_useMock();
 
 		$this->Js->TestJsEngine->expects($this->at(1))
@@ -459,7 +456,7 @@ class JsHelperTest extends CakeTestCase {
  *
  * @return void
  */
-	function testLinkWithNoBufferingAndSafe() {
+	public function testLinkWithNoBufferingAndSafe() {
 		$this->_useMock();
 
 		$this->Js->TestJsEngine->expects($this->at(1))
@@ -490,7 +487,7 @@ class JsHelperTest extends CakeTestCase {
  *
  * @return void
  */
-	function testSubmitWithMock() {
+	public function testSubmitWithMock() {
 		$this->_useMock();
 
 		$options = array('update' => '#content', 'id' => 'test-submit', 'style' => 'margin: 0');
@@ -529,7 +526,7 @@ class JsHelperTest extends CakeTestCase {
  *
  * @return void
  */
-	function testSubmitWithMockRequestParams() {
+	public function testSubmitWithMockRequestParams() {
 		$this->_useMock();
 
 		$this->Js->TestJsEngine->expects($this->at(0))
@@ -575,7 +572,7 @@ class JsHelperTest extends CakeTestCase {
  *
  * @return void
  */
-	function testSubmitWithNoBuffer() {
+	public function testSubmitWithNoBuffer() {
 		$this->_useMock();
 		$options = array('update' => '#content', 'id' => 'test-submit', 'buffer' => false, 'safe' => false);
 
@@ -620,10 +617,10 @@ class JsHelperTest extends CakeTestCase {
  *
  * @return void
  */
-	function testObjectPassThrough() {
+	public function testObjectPassThrough() {
 		$result = $this->Js->object(array('one' => 'first', 'two' => 'second'));
 		$expected = '{"one":"first","two":"second"}';
-		$this->assertEqual($expected, $result);
+		$this->assertEquals($expected, $result);
 	}
 
 /**
@@ -632,10 +629,10 @@ class JsHelperTest extends CakeTestCase {
  *
  * @return void
  */
-	function testValuePassThrough() {
+	public function testValuePassThrough() {
 		$result = $this->Js->value('string "quote"', true);
 		$expected = '"string \"quote\""';
-		$this->assertEqual($expected, $result);
+		$this->assertEquals($expected, $result);
 	}
 
 /**
@@ -643,26 +640,26 @@ class JsHelperTest extends CakeTestCase {
  *
  * @return void
  */
-	function testSet() {
+	public function testSet() {
 		$this->Js->set('loggedIn', true);
 		$this->Js->set(array('height' => 'tall', 'color' => 'purple'));
 		$result = $this->Js->getBuffer();
 		$expected = 'window.app = {"loggedIn":true,"height":"tall","color":"purple"};';
-		$this->assertEqual($result[0], $expected);
+		$this->assertEquals($result[0], $expected);
 
 		$this->Js->set('loggedIn', true);
 		$this->Js->set(array('height' => 'tall', 'color' => 'purple'));
 		$this->Js->setVariable = 'WICKED';
 		$result = $this->Js->getBuffer();
 		$expected = 'window.WICKED = {"loggedIn":true,"height":"tall","color":"purple"};';
-		$this->assertEqual($result[0], $expected);
+		$this->assertEquals($result[0], $expected);
 
 		$this->Js->set('loggedIn', true);
 		$this->Js->set(array('height' => 'tall', 'color' => 'purple'));
 		$this->Js->setVariable = 'Application.variables';
 		$result = $this->Js->getBuffer();
 		$expected = 'Application.variables = {"loggedIn":true,"height":"tall","color":"purple"};';
-		$this->assertEqual($result[0], $expected);
+		$this->assertEquals($result[0], $expected);
 	}
 
 /**
@@ -670,23 +667,23 @@ class JsHelperTest extends CakeTestCase {
  *
  * @return void
  */
-	function testSetVarsAtTopOfBufferedScripts() {
+	public function testSetVarsAtTopOfBufferedScripts() {
 		$this->Js->set(array('height' => 'tall', 'color' => 'purple'));
 		$this->Js->alert('hey you!', array('buffer' => true));
 		$this->Js->confirm('Are you sure?', array('buffer' => true));
 		$result = $this->Js->getBuffer(false);
 
 		$expected = 'window.app = {"height":"tall","color":"purple"};';
-		$this->assertEqual($result[0], $expected);
-		$this->assertEqual($result[1], 'alert("hey you!");');
-		$this->assertEqual($result[2], 'confirm("Are you sure?");');
+		$this->assertEquals($result[0], $expected);
+		$this->assertEquals($result[1], 'alert("hey you!");');
+		$this->assertEquals($result[2], 'confirm("Are you sure?");');
 	}
 }
 
 /**
  * JsBaseEngine Class Test case
  *
- * @package cake.tests.view.helpers
+ * @package       Cake.Test.Case.View.Helper
  */
 class JsBaseEngineTest extends CakeTestCase {
 /**
@@ -694,7 +691,7 @@ class JsBaseEngineTest extends CakeTestCase {
  *
  * @return void
  */
-	function setUp() {
+	public function setUp() {
 		parent::setUp();
 		$controller = null;
 		$this->View = $this->getMock('View', array('addScript'), array(&$controller));
@@ -705,7 +702,7 @@ class JsBaseEngineTest extends CakeTestCase {
  *
  * @return void
  */
-	function tearDown() {
+	public function tearDown() {
 		parent::tearDown();
 		unset($this->JsEngine);
 	}
@@ -715,30 +712,30 @@ class JsBaseEngineTest extends CakeTestCase {
  *
  * @return void
  */
-	function testEscaping() {
+	public function testEscaping() {
 		$result = $this->JsEngine->escape('');
 		$expected = '';
-		$this->assertEqual($expected, $result);
+		$this->assertEquals($expected, $result);
 
 		$result = $this->JsEngine->escape('CakePHP' . "\n" . 'Rapid Development Framework');
 		$expected = 'CakePHP\\nRapid Development Framework';
-		$this->assertEqual($expected, $result);
+		$this->assertEquals($expected, $result);
 
 		$result = $this->JsEngine->escape('CakePHP' . "\r\n" . 'Rapid Development Framework' . "\r" . 'For PHP');
 		$expected = 'CakePHP\\r\\nRapid Development Framework\\rFor PHP';
-		$this->assertEqual($expected, $result);
+		$this->assertEquals($expected, $result);
 
 		$result = $this->JsEngine->escape('CakePHP: "Rapid Development Framework"');
 		$expected = 'CakePHP: \\"Rapid Development Framework\\"';
-		$this->assertEqual($expected, $result);
+		$this->assertEquals($expected, $result);
 
 		$result = $this->JsEngine->escape("CakePHP: 'Rapid Development Framework'");
 		$expected = "CakePHP: 'Rapid Development Framework'";
-		$this->assertEqual($expected, $result);
+		$this->assertEquals($expected, $result);
 
 		$result = $this->JsEngine->escape('my \\"string\\"');
 		$expected = 'my \\\\\\"string\\\\\\"';
-		$this->assertEqual($expected, $result);
+		$this->assertEquals($expected, $result);
 	}
 
 /**
@@ -746,14 +743,14 @@ class JsBaseEngineTest extends CakeTestCase {
  *
  * @return void
  */
-	function testPrompt() {
+	public function testPrompt() {
 		$result = $this->JsEngine->prompt('Hey, hey you', 'hi!');
 		$expected = 'prompt("Hey, hey you", "hi!");';
-		$this->assertEqual($expected, $result);
+		$this->assertEquals($expected, $result);
 
 		$result = $this->JsEngine->prompt('"Hey"', '"hi"');
 		$expected = 'prompt("\"Hey\"", "\"hi\"");';
-		$this->assertEqual($expected, $result);
+		$this->assertEquals($expected, $result);
 	}
 
 /**
@@ -761,14 +758,14 @@ class JsBaseEngineTest extends CakeTestCase {
  *
  * @return void
  */
-	function testAlert() {
+	public function testAlert() {
 		$result = $this->JsEngine->alert('Hey there');
 		$expected = 'alert("Hey there");';
-		$this->assertEqual($expected, $result);
+		$this->assertEquals($expected, $result);
 
 		$result = $this->JsEngine->alert('"Hey"');
 		$expected = 'alert("\"Hey\"");';
-		$this->assertEqual($expected, $result);
+		$this->assertEquals($expected, $result);
 	}
 
 /**
@@ -776,14 +773,14 @@ class JsBaseEngineTest extends CakeTestCase {
  *
  * @return void
  */
-	function testConfirm() {
+	public function testConfirm() {
 		$result = $this->JsEngine->confirm('Are you sure?');
 		$expected = 'confirm("Are you sure?");';
-		$this->assertEqual($expected, $result);
+		$this->assertEquals($expected, $result);
 
 		$result = $this->JsEngine->confirm('"Are you sure?"');
 		$expected = 'confirm("\"Are you sure?\"");';
-		$this->assertEqual($expected, $result);
+		$this->assertEquals($expected, $result);
 	}
 
 /**
@@ -791,10 +788,10 @@ class JsBaseEngineTest extends CakeTestCase {
  *
  * @return void
  */
-	function testRedirect() {
+	public function testRedirect() {
 		$result = $this->JsEngine->redirect(array('controller' => 'posts', 'action' => 'view', 1));
 		$expected = 'window.location = "/posts/view/1";';
-		$this->assertEqual($expected, $result);
+		$this->assertEquals($expected, $result);
 	}
 
 /**
@@ -802,22 +799,22 @@ class JsBaseEngineTest extends CakeTestCase {
  *
  * @return void
  */
-	function testObject() {
+	public function testObject() {
 
 		$object = array('title' => 'New thing', 'indexes' => array(5, 6, 7, 8));
 		$result = $this->JsEngine->object($object);
 		$expected = '{"title":"New thing","indexes":[5,6,7,8]}';
-		$this->assertEqual($expected, $result);
+		$this->assertEquals($expected, $result);
 
 		$object = new JsEncodingObject();
 		$object->title = 'New thing';
 		$object->indexes = array(5,6,7,8);
 		$result = $this->JsEngine->object($object);
-		$this->assertEqual($expected, $result);
+		$this->assertEquals($expected, $result);
 
 		$result = $this->JsEngine->object(array('default' => 0));
 		$expected = '{"default":0}';
-		$this->assertEqual($expected, $result);
+		$this->assertEquals($expected, $result);
 
 		$result = $this->JsEngine->object(array(
 			'2007' => array(
@@ -838,19 +835,19 @@ class JsBaseEngineTest extends CakeTestCase {
 			)
 		));
 		$expected = '{"2007":{"Spring":{"1":{"id":1,"name":"Josh"},"2":{"id":2,"name":"Becky"}},"Fall":{"1":{"id":1,"name":"Josh"},"2":{"id":2,"name":"Becky"}}},"2006":{"Spring":{"1":{"id":1,"name":"Josh"},"2":{"id":2,"name":"Becky"}},"Fall":{"1":{"id":1,"name":"Josh"},"2":{"id":2,"name":"Becky"}}}}';
-		$this->assertEqual($expected, $result);
+		$this->assertEquals($expected, $result);
 
 		foreach (array('true' => true, 'false' => false, 'null' => null) as $expected => $data) {
 			$result = $this->JsEngine->object($data);
-			$this->assertEqual($expected, $result);
+			$this->assertEquals($expected, $result);
 		}
 
 		$object = array('title' => 'New thing', 'indexes' => array(5, 6, 7, 8), 'object' => array('inner' => array('value' => 1)));
 		$result = $this->JsEngine->object($object, array('prefix' => 'PREFIX', 'postfix' => 'POSTFIX'));
-		$this->assertPattern('/^PREFIX/', $result);
-		$this->assertPattern('/POSTFIX$/', $result);
-		$this->assertNoPattern('/.PREFIX./', $result);
-		$this->assertNoPattern('/.POSTFIX./', $result);
+		$this->assertRegExp('/^PREFIX/', $result);
+		$this->assertRegExp('/POSTFIX$/', $result);
+		$this->assertNotRegExp('/.PREFIX./', $result);
+		$this->assertNotRegExp('/.POSTFIX./', $result);
 	}
 
 /**
@@ -858,19 +855,19 @@ class JsBaseEngineTest extends CakeTestCase {
  *
  * @return void
  */
-	function testOptionMapping() {
+	public function testOptionMapping() {
 		$JsEngine = new OptionEngineHelper($this->View);
 		$result = $JsEngine->testMap();
-		$this->assertEqual($result, array());
+		$this->assertEquals($result, array());
 
 		$result = $JsEngine->testMap(array('foo' => 'bar', 'baz' => 'sho'));
-		$this->assertEqual($result, array('foo' => 'bar', 'baz' => 'sho'));
+		$this->assertEquals($result, array('foo' => 'bar', 'baz' => 'sho'));
 
 		$result = $JsEngine->testMap(array('complete' => 'myFunc', 'type' => 'json', 'update' => '#element'));
-		$this->assertEqual($result, array('success' => 'myFunc', 'dataType' => 'json', 'update' => '#element'));
+		$this->assertEquals($result, array('success' => 'myFunc', 'dataType' => 'json', 'update' => '#element'));
 
 		$result = $JsEngine->testMap(array('success' => 'myFunc', 'dataType' => 'json', 'update' => '#element'));
-		$this->assertEqual($result, array('success' => 'myFunc', 'dataType' => 'json', 'update' => '#element'));
+		$this->assertEquals($result, array('success' => 'myFunc', 'dataType' => 'json', 'update' => '#element'));
 	}
 
 /**
@@ -878,16 +875,16 @@ class JsBaseEngineTest extends CakeTestCase {
  *
  * @return void
  */
-	function testOptionParsing() {
+	public function testOptionParsing() {
 		$JsEngine = new OptionEngineHelper($this->View);
 
 		$result = $JsEngine->testParseOptions(array('url' => '/posts/view/1', 'key' => 1));
 		$expected = 'key:1, url:"\\/posts\\/view\\/1"';
-		$this->assertEqual($expected, $result);
+		$this->assertEquals($expected, $result);
 
 		$result = $JsEngine->testParseOptions(array('url' => '/posts/view/1', 'success' => 'doSuccess'), array('success'));
 		$expected = 'success:doSuccess, url:"\\/posts\\/view\\/1"';
-		$this->assertEqual($expected, $result);
+		$this->assertEquals($expected, $result);
 	}
 
 }

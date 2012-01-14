@@ -5,28 +5,30 @@
  * PHP 5
  *
  * CakePHP(tm) : Rapid Development Framework (http://cakephp.org)
- * Copyright 2005-2010, Cake Software Foundation, Inc. (http://cakefoundation.org)
+ * Copyright 2005-2011, Cake Software Foundation, Inc. (http://cakefoundation.org)
  *
  * Licensed under The MIT License
  * Redistributions of files must retain the above copyright notice.
  *
- * @copyright     Copyright 2005-2010, Cake Software Foundation, Inc. (http://cakefoundation.org)
+ * @copyright     Copyright 2005-2011, Cake Software Foundation, Inc. (http://cakefoundation.org)
  * @link          http://cakephp.org CakePHP(tm) Project
- * @package       cake.console.shells
  * @since         CakePHP(tm) v 1.2.0.5012
  * @license       MIT License (http://www.opensource.org/licenses/mit-license.php)
  */
 
+App::uses('AppShell', 'Console/Command');
+
 /**
- * @package       cake.console.shells
+ * Provides a very basic 'interactive' console for CakePHP apps.
+ *
+ * @package       Cake.Console.Command
  */
-class ConsoleShell extends Shell {
+class ConsoleShell extends AppShell {
 
 /**
  * Available binding types
  *
  * @var array
- * @access public
  */
 	public $associations = array('hasOne', 'hasMany', 'belongsTo', 'hasAndBelongsToMany');
 
@@ -34,7 +36,6 @@ class ConsoleShell extends Shell {
  * Chars that describe invalid commands
  *
  * @var array
- * @access public
  */
 	public $badCommandChars = array('$', ';');
 
@@ -42,13 +43,13 @@ class ConsoleShell extends Shell {
  * Available models
  *
  * @var array
- * @access public
  */
 	public $models = array();
 
 /**
  * Override initialize of the Shell
  *
+ * @return void
  */
 	public function initialize() {
 		App::uses('Dispatcher', 'Routing');
@@ -73,6 +74,7 @@ class ConsoleShell extends Shell {
 /**
  * Prints the help message
  *
+ * @return void
  */
 	public function help() {
 		$out  = 'Console help:';
@@ -135,6 +137,8 @@ class ConsoleShell extends Shell {
 /**
  * Override main() to handle action
  *
+ * @param string $command
+ * @return void
  */
 	public function main($command = null) {
 		while (true) {
@@ -330,7 +334,7 @@ class ConsoleShell extends Shell {
 	}
 
 /**
- * Reloads the routes configuration from config/routes.php, and compiles
+ * Reloads the routes configuration from app/Config/routes.php, and compiles
  * all routes found
  *
  * @return boolean True if config reload was a success, otherwise false

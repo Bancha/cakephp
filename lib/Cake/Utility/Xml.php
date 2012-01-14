@@ -7,14 +7,14 @@
  * PHP 5
  *
  * CakePHP(tm) : Rapid Development Framework (http://cakephp.org)
- * Copyright 2005-2010, Cake Software Foundation, Inc. (http://cakefoundation.org)
+ * Copyright 2005-2011, Cake Software Foundation, Inc. (http://cakefoundation.org)
  *
  * Licensed under The MIT License
  * Redistributions of files must retain the above copyright notice.
  *
- * @copyright     Copyright 2005-2010, Cake Software Foundation, Inc. (http://cakefoundation.org)
+ * @copyright     Copyright 2005-2011, Cake Software Foundation, Inc. (http://cakefoundation.org)
  * @link          http://cakephp.org CakePHP(tm) Project
- * @package       cake.libs
+ * @package       Cake.Utility
  * @since         CakePHP v .0.10.3.1400
  * @license       MIT License (http://www.opensource.org/licenses/mit-license.php)
  */
@@ -61,7 +61,7 @@ class Xml {
  * 	);
  * $xml = Xml::build($value);
  * }}}
- * 
+ *
  * When building XML from an array ensure that there is only one top level element.
  *
  * ### Options
@@ -71,7 +71,7 @@ class Xml {
  *
  * @param mixed $input XML string, a path to a file, an URL or an array
  * @param array $options The options to use
- * @return object SimpleXMLElement or DOMDocument
+ * @return SimpleXMLElement|DOMDocument SimpleXMLElement or DOMDocument
  * @throws XmlException
  */
 	public static function build($input, $options = array()) {
@@ -116,7 +116,7 @@ class Xml {
  * - `return` If return object of SimpleXMLElement ('simplexml') or DOMDocument ('domdocument'). Default is SimpleXMLElement.
  *
  * Using the following data:
- * 
+ *
  * {{{
  * $value = array(
  *    'root' => array(
@@ -139,7 +139,7 @@ class Xml {
  *
  * @param array $input Array with data
  * @param array $options The options to use
- * @return object SimpleXMLElement or DOMDocument
+ * @return SimpleXMLElement|DOMDocument SimpleXMLElement or DOMDocument
  * @throws XmlException
  */
 	public static function fromArray($input, $options = array()) {
@@ -175,11 +175,12 @@ class Xml {
 /**
  * Recursive method to create childs from array
  *
- * @param object $dom Handler to DOMDocument
- * @param object $node Handler to DOMElement (child)
+ * @param DOMDocument $dom Handler to DOMDocument
+ * @param DOMElement $node Handler to DOMElement (child)
  * @param array $data Array of data to append to the $node.
  * @param string $format Either 'attribute' or 'tags'.  This determines where nested keys go.
  * @return void
+ * @throws XmlException
  */
 	protected static function _fromArray($dom, $node, &$data, $format) {
 		if (empty($data) || !is_array($data)) {
@@ -199,7 +200,16 @@ class Xml {
 						continue;
 					}
 					if ($key[0] !== '@' && $format === 'tags') {
-						$child = $dom->createElement($key, $value);
+						$child = null;
+						if (!is_numeric($value)) {
+							// Escape special characters
+							// http://www.w3.org/TR/REC-xml/#syntax
+							// https://bugs.php.net/bug.php?id=36795
+							$child = $dom->createElement($key, '');
+							$child->appendChild(new DOMText($value));
+						} else {
+							$child = $dom->createElement($key, $value);
+						}
 						$node->appendChild($child);
 					} else {
 						if ($key[0] === '@') {
@@ -217,10 +227,10 @@ class Xml {
 						foreach ($value as $item) {
 							$data = compact('dom', 'node', 'key', 'format');
 							$data['value'] = $item;
-							self::__createChild($data);
+							self::_createChild($data);
 						}
 					} else { // Struct
-						self::__createChild(compact('dom', 'node', 'key', 'value', 'format'));
+						self::_createChild(compact('dom', 'node', 'key', 'value', 'format'));
 					}
 				}
 			} else {
@@ -235,7 +245,7 @@ class Xml {
  * @param array $data Array with informations to create childs
  * @return void
  */
-	private static function __createChild($data) {
+	protected static function _createChild($data) {
 		extract($data);
 		$childNS = $childValue = null;
 		if (is_array($value)) {
@@ -267,7 +277,7 @@ class Xml {
 /**
  * Returns this XML structure as a array.
  *
- * @param object $obj SimpleXMLElement, DOMDocument or DOMNode instance
+ * @param SimpleXMLElement|DOMDocument|DOMNode $obj SimpleXMLElement, DOMDocument or DOMNode instance
  * @return array Array representation of the XML structure.
  * @throws XmlException
  */
@@ -287,7 +297,7 @@ class Xml {
 /**
  * Recursive method to toArray
  *
- * @param object $xml SimpleXMLElement object
+ * @param SimpleXMLElement $xml SimpleXMLElement object
  * @param array $parentData Parent array with data
  * @param string $ns Namespace of current child
  * @param array $namespaces List of namespaces in XML

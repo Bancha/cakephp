@@ -5,14 +5,14 @@
  * PHP 5
  *
  * CakePHP(tm) : Rapid Development Framework (http://cakephp.org)
- * Copyright 2005-2010, Cake Software Foundation, Inc. (http://cakefoundation.org)
+ * Copyright 2005-2011, Cake Software Foundation, Inc. (http://cakefoundation.org)
  *
  * Licensed under The MIT License
  * Redistributions of files must retain the above copyright notice.
  *
- * @copyright     Copyright 2005-2010, Cake Software Foundation, Inc. (http://cakefoundation.org)
+ * @copyright     Copyright 2005-2011, Cake Software Foundation, Inc. (http://cakefoundation.org)
  * @link          http://cakephp.org CakePHP(tm) Project
- * @package       cake.tests.cases.libs
+ * @package       Cake.Test.Case.Network
  * @since         CakePHP(tm) v 2.0
  * @license       MIT License (http://www.opensource.org/licenses/mit-license.php)
  */
@@ -21,13 +21,13 @@ App::uses('Dispatcher', 'Routing');
 App::uses('Xml', 'Utility');
 App::uses('CakeRequest', 'Network');
 
-class CakeRequestTestCase extends CakeTestCase {
+class CakeRequestTest extends CakeTestCase {
 /**
  * setup callback
  *
  * @return void
  */
-	function setUp() {
+	public function setUp() {
 		parent::setUp();
 		$this->_server = $_SERVER;
 		$this->_get = $_GET;
@@ -48,7 +48,7 @@ class CakeRequestTestCase extends CakeTestCase {
  *
  * @return void
  */
-	function tearDown() {
+	public function tearDown() {
 		parent::tearDown();
 		$_SERVER = $this->_server;
 		$_GET = $this->_get;
@@ -65,7 +65,7 @@ class CakeRequestTestCase extends CakeTestCase {
  *
  * @return void
  */
-	function testNoAutoParseConstruction() {
+	public function testNoAutoParseConstruction() {
 		$_GET = array(
 			'one' => 'param'
 		);
@@ -78,21 +78,21 @@ class CakeRequestTestCase extends CakeTestCase {
  *
  * @return void
  */
-	function testConstructionGetParsing() {
+	public function testConstructionGetParsing() {
 		$_GET = array(
 			'one' => 'param',
 			'two' => 'banana'
 		);
 		$request = new CakeRequest('some/path');
-		$this->assertEqual($request->query, $_GET);
-		
+		$this->assertEquals($request->query, $_GET);
+
 		$_GET = array(
 			'one' => 'param',
 			'two' => 'banana',
 		);
 		$request = new CakeRequest('some/path');
-		$this->assertEqual($request->query, $_GET);
-		$this->assertEqual($request->url, 'some/path');
+		$this->assertEquals($request->query, $_GET);
+		$this->assertEquals($request->url, 'some/path');
 	}
 
 /**
@@ -100,13 +100,13 @@ class CakeRequestTestCase extends CakeTestCase {
  *
  * @return void
  */
-	function testQueryStringParsingFromInputUrl() {
+	public function testQueryStringParsingFromInputUrl() {
 		$_GET = array();
 		$request = new CakeRequest('some/path?one=something&two=else');
 		$expected = array('one' => 'something', 'two' => 'else');
-		$this->assertEqual($request->query, $expected);
+		$this->assertEquals($request->query, $expected);
 		$this->assertEquals('some/path?one=something&two=else', $request->url);
-		
+
 	}
 
 /**
@@ -114,16 +114,16 @@ class CakeRequestTestCase extends CakeTestCase {
  *
  * @return void
  */
-	function testAddParams() {
+	public function testAddParams() {
 		$request = new CakeRequest('some/path');
 		$request->params = array('controller' => 'posts', 'action' => 'view');
 		$result = $request->addParams(array('plugin' => null, 'action' => 'index'));
 
-		$this->assertIdentical($result, $request, 'Method did not return itself. %s');
+		$this->assertSame($result, $request, 'Method did not return itself. %s');
 
-		$this->assertEqual($request->controller, 'posts');
-		$this->assertEqual($request->action, 'index');
-		$this->assertEqual($request->plugin, null);
+		$this->assertEquals($request->controller, 'posts');
+		$this->assertEquals($request->action, 'index');
+		$this->assertEquals($request->plugin, null);
 	}
 
 /**
@@ -131,18 +131,18 @@ class CakeRequestTestCase extends CakeTestCase {
  *
  * @return void
  */
-	function testAddPaths() {
+	public function testAddPaths() {
 		$request = new CakeRequest('some/path');
 		$request->webroot = '/some/path/going/here/';
 		$result = $request->addPaths(array(
 			'random' => '/something', 'webroot' => '/', 'here' => '/', 'base' => '/base_dir'
 		));
 
-		$this->assertIdentical($result, $request, 'Method did not return itself. %s');
+		$this->assertSame($result, $request, 'Method did not return itself. %s');
 
-		$this->assertEqual($request->webroot, '/');
-		$this->assertEqual($request->base, '/base_dir');
-		$this->assertEqual($request->here, '/');
+		$this->assertEquals($request->webroot, '/');
+		$this->assertEquals($request->base, '/base_dir');
+		$this->assertEquals($request->here, '/');
 		$this->assertFalse(isset($request->random));
 	}
 
@@ -152,12 +152,12 @@ class CakeRequestTestCase extends CakeTestCase {
  *
  * @return void
  */
-	function testPostParsing() {
+	public function testPostParsing() {
 		$_POST = array('data' => array(
 			'Article' => array('title')
 		));
 		$request = new CakeRequest('some/path');
-		$this->assertEqual($request->data, $_POST['data']);
+		$this->assertEquals($request->data, $_POST['data']);
 
 		$_POST = array('one' => 1, 'two' => 'three');
 		$request = new CakeRequest('some/path');
@@ -169,7 +169,7 @@ class CakeRequestTestCase extends CakeTestCase {
  *
  * @return void
  */
-	function testFILESParsing() {
+	public function testFILESParsing() {
 		$_FILES = array('data' => array('name' => array(
 			'File' => array(
 					array('data' => 'cake_sqlserver_patch.patch'),
@@ -258,7 +258,7 @@ class CakeRequestTestCase extends CakeTestCase {
 				'size' => 80469,
 			))
 		);
-		$this->assertEqual($request->data, $expected);
+		$this->assertEquals($request->data, $expected);
 
 		$_FILES = array(
 			'data' => array(
@@ -386,7 +386,7 @@ class CakeRequestTestCase extends CakeTestCase {
 				),
 			)
 		);
-		$this->assertEqual($request->data, $expected);
+		$this->assertEquals($request->data, $expected);
 
 
 		$_FILES = array(
@@ -409,7 +409,7 @@ class CakeRequestTestCase extends CakeTestCase {
 				'size' => 123
 			)
 		);
-		$this->assertEqual($request->data, $expected);
+		$this->assertEquals($request->data, $expected);
 
 		$_FILES = array(
 			'something' => array(
@@ -421,7 +421,7 @@ class CakeRequestTestCase extends CakeTestCase {
 			)
 		);
 		$request = new CakeRequest('some/path');
-		$this->assertEqual($request->params['form'], $_FILES);
+		$this->assertEquals($request->params['form'], $_FILES);
 
 	}
 
@@ -430,18 +430,18 @@ class CakeRequestTestCase extends CakeTestCase {
  *
  * @return void
  */
-	function testMethodOverrides() {
+	public function testMethodOverrides() {
 		$_POST = array('_method' => 'POST');
 		$request = new CakeRequest('some/path');
-		$this->assertEqual(env('REQUEST_METHOD'), 'POST');
+		$this->assertEquals(env('REQUEST_METHOD'), 'POST');
 
 		$_POST = array('_method' => 'DELETE');
 		$request = new CakeRequest('some/path');
-		$this->assertEqual(env('REQUEST_METHOD'), 'DELETE');
+		$this->assertEquals(env('REQUEST_METHOD'), 'DELETE');
 
 		$_SERVER['HTTP_X_HTTP_METHOD_OVERRIDE'] = 'PUT';
 		$request = new CakeRequest('some/path');
-		$this->assertEqual(env('REQUEST_METHOD'), 'PUT');
+		$this->assertEquals(env('REQUEST_METHOD'), 'PUT');
 	}
 
 /**
@@ -449,22 +449,22 @@ class CakeRequestTestCase extends CakeTestCase {
  *
  * @return void
  */
-	function testclientIp() {
+	public function testclientIp() {
 		$_SERVER['HTTP_X_FORWARDED_FOR'] = '192.168.1.5, 10.0.1.1, proxy.com';
 		$_SERVER['HTTP_CLIENT_IP'] = '192.168.1.2';
 		$_SERVER['REMOTE_ADDR'] = '192.168.1.3';
 		$request = new CakeRequest('some/path');
-		$this->assertEqual($request->clientIp(false), '192.168.1.5');
-		$this->assertEqual($request->clientIp(), '192.168.1.2');
+		$this->assertEquals($request->clientIp(false), '192.168.1.5');
+		$this->assertEquals($request->clientIp(), '192.168.1.2');
 
 		unset($_SERVER['HTTP_X_FORWARDED_FOR']);
-		$this->assertEqual($request->clientIp(), '192.168.1.2');
+		$this->assertEquals($request->clientIp(), '192.168.1.2');
 
 		unset($_SERVER['HTTP_CLIENT_IP']);
-		$this->assertEqual($request->clientIp(), '192.168.1.3');
+		$this->assertEquals($request->clientIp(), '192.168.1.3');
 
 		$_SERVER['HTTP_CLIENTADDRESS'] = '10.0.1.2, 10.0.1.1';
-		$this->assertEqual($request->clientIp(), '10.0.1.2');
+		$this->assertEquals($request->clientIp(), '10.0.1.2');
 	}
 
 /**
@@ -472,37 +472,37 @@ class CakeRequestTestCase extends CakeTestCase {
  *
  * @return void
  */
-	function testReferer() {
+	public function testReferer() {
 		$request = new CakeRequest('some/path');
 		$request->webroot = '/';
 
 		$_SERVER['HTTP_REFERER'] = 'http://cakephp.org';
 		$result = $request->referer();
-		$this->assertIdentical($result, 'http://cakephp.org');
+		$this->assertSame($result, 'http://cakephp.org');
 
 		$_SERVER['HTTP_REFERER'] = '';
 		$result = $request->referer();
-		$this->assertIdentical($result, '/');
+		$this->assertSame($result, '/');
 
 		$_SERVER['HTTP_REFERER'] = FULL_BASE_URL . '/some/path';
 		$result = $request->referer(true);
-		$this->assertIdentical($result, '/some/path');
+		$this->assertSame($result, '/some/path');
 
 		$_SERVER['HTTP_REFERER'] = FULL_BASE_URL . '/some/path';
 		$result = $request->referer(false);
-		$this->assertIdentical($result, FULL_BASE_URL . '/some/path');
+		$this->assertSame($result, FULL_BASE_URL . '/some/path');
 
 		$_SERVER['HTTP_REFERER'] = FULL_BASE_URL . '/some/path';
 		$result = $request->referer(true);
-		$this->assertIdentical($result, '/some/path');
+		$this->assertSame($result, '/some/path');
 
 		$_SERVER['HTTP_REFERER'] = FULL_BASE_URL . '/recipes/add';
 		$result = $request->referer(true);
-		$this->assertIdentical($result, '/recipes/add');
+		$this->assertSame($result, '/recipes/add');
 
 		$_SERVER['HTTP_X_FORWARDED_HOST'] = 'cakephp.org';
 		$result = $request->referer();
-		$this->assertIdentical($result, 'cakephp.org');
+		$this->assertSame($result, 'cakephp.org');
 	}
 
 /**
@@ -510,7 +510,7 @@ class CakeRequestTestCase extends CakeTestCase {
  *
  * @return void
  */
-	function testIsHttpMethods() {
+	public function testIsHttpMethods() {
 		$request = new CakeRequest('some/path');
 
 		$this->assertFalse($request->is('undefined-behavior'));
@@ -538,7 +538,7 @@ class CakeRequestTestCase extends CakeTestCase {
  *
  * @return void
  */
-	function testMethod() {
+	public function testMethod() {
 		$_SERVER['REQUEST_METHOD'] = 'delete';
 		$request = new CakeRequest('some/path');
 
@@ -550,10 +550,10 @@ class CakeRequestTestCase extends CakeTestCase {
  *
  * @return void
  */
-	function testHost() {
+	public function testHost() {
 		$_SERVER['HTTP_HOST'] = 'localhost';
 		$request = new CakeRequest('some/path');
-		
+
 		$this->assertEquals('localhost', $request->host());
 	}
 
@@ -562,7 +562,7 @@ class CakeRequestTestCase extends CakeTestCase {
  *
  * @return void
  */
-	function testDomain() {
+	public function testDomain() {
 		$_SERVER['HTTP_HOST'] = 'something.example.com';
 		$request = new CakeRequest('some/path');
 
@@ -577,7 +577,7 @@ class CakeRequestTestCase extends CakeTestCase {
  *
  * @return void
  */
-	function testSubdomain() {
+	public function testSubdomain() {
 		$_SERVER['HTTP_HOST'] = 'something.example.com';
 		$request = new CakeRequest('some/path');
 
@@ -598,7 +598,7 @@ class CakeRequestTestCase extends CakeTestCase {
  *
  * @return void
  */
-	function testisAjaxFlashAndFriends() {
+	public function testisAjaxFlashAndFriends() {
 		$request = new CakeRequest('some/path');
 
 		$_SERVER['HTTP_USER_AGENT'] = 'Shockwave Flash';
@@ -617,7 +617,7 @@ class CakeRequestTestCase extends CakeTestCase {
 		$_SERVER['HTTP_USER_AGENT'] = 'Android 2.0';
 		$this->assertTrue($request->is('mobile'));
 		$this->assertTrue($request->isMobile());
-		
+
 		$_SERVER['HTTP_USER_AGENT'] = 'Mozilla/5.0 (Windows NT 5.1; rv:2.0b6pre) Gecko/20100902 Firefox/4.0b6pre Fennec/2.0b1pre';
 		$this->assertTrue($request->is('mobile'));
 		$this->assertTrue($request->isMobile());
@@ -629,7 +629,7 @@ class CakeRequestTestCase extends CakeTestCase {
  * @expectedException CakeException
  * @return void
  */
-	function test__callExceptionOnUnknownMethod() {
+	public function test__callExceptionOnUnknownMethod() {
 		$request = new CakeRequest('some/path');
 		$request->IamABanana();
 	}
@@ -639,7 +639,7 @@ class CakeRequestTestCase extends CakeTestCase {
  *
  * @return void
  */
-	function testIsSsl() {
+	public function testIsSsl() {
 		$request = new CakeRequest('some/path');
 
 		$_SERVER['HTTPS'] = 1;
@@ -672,14 +672,34 @@ class CakeRequestTestCase extends CakeTestCase {
  *
  * @return void
  */
-	function test__get() {
+	public function test__get() {
 		$request = new CakeRequest('some/path');
 		$request->params = array('controller' => 'posts', 'action' => 'view', 'plugin' => 'blogs');
 
-		$this->assertEqual($request->controller, 'posts');
-		$this->assertEqual($request->action, 'view');
-		$this->assertEqual($request->plugin, 'blogs');
-		$this->assertIdentical($request->banana, null);
+		$this->assertEquals($request->controller, 'posts');
+		$this->assertEquals($request->action, 'view');
+		$this->assertEquals($request->plugin, 'blogs');
+		$this->assertSame($request->banana, null);
+	}
+
+/**
+ * Test isset()/empty() with overloaded properties.
+ *
+ * @return void
+ */
+	public function test__isset() {
+		$request = new CakeRequest('some/path');
+		$request->params = array(
+			'controller' => 'posts',
+			'action' => 'view',
+			'plugin' => 'blogs',
+			'named' => array()
+		);
+
+		$this->assertTrue(isset($request->controller));
+		$this->assertFalse(isset($request->notthere));
+		$this->assertFalse(empty($request->controller));
+		$this->assertTrue(empty($request->named));
 	}
 
 /**
@@ -687,15 +707,15 @@ class CakeRequestTestCase extends CakeTestCase {
  *
  * @return void
  */
-	function testArrayAccess() {
+	public function testArrayAccess() {
 		$request = new CakeRequest('some/path');
 		$request->params = array('controller' => 'posts', 'action' => 'view', 'plugin' => 'blogs');
 
-		$this->assertEqual($request['controller'], 'posts');
+		$this->assertEquals($request['controller'], 'posts');
 
 		$request['slug'] = 'speedy-slug';
-		$this->assertEqual($request->slug, 'speedy-slug');
-		$this->assertEqual($request['slug'], 'speedy-slug');
+		$this->assertEquals($request->slug, 'speedy-slug');
+		$this->assertEquals($request['slug'], 'speedy-slug');
 
 		$this->assertTrue(isset($request['action']));
 		$this->assertFalse(isset($request['wrong-param']));
@@ -710,7 +730,7 @@ class CakeRequestTestCase extends CakeTestCase {
 		$this->assertTrue(isset($request['url']['one']));
 
 		$request->data = array('Post' => array('title' => 'something'));
-		$this->assertEqual($request['data']['Post']['title'], 'something');
+		$this->assertEquals($request['data']['Post']['title'], 'something');
 	}
 
 /**
@@ -718,7 +738,7 @@ class CakeRequestTestCase extends CakeTestCase {
  *
  * @return void
  */
-	function testAddDetector() {
+	public function testAddDetector() {
 		$request = new CakeRequest('some/path');
 		$request->addDetector('compare', array('env' => 'TEST_VAR', 'value' => 'something'));
 
@@ -765,7 +785,7 @@ class CakeRequestTestCase extends CakeTestCase {
  *
  * @return void
  */
-	function testHeader() {
+	public function testHeader() {
 		$_SERVER['HTTP_HOST'] = 'localhost';
 		$_SERVER['HTTP_USER_AGENT'] = 'Mozilla/5.0 (Macintosh; U; Intel Mac OS X 10_6_4; en-ca) AppleWebKit/534.8+ (KHTML, like Gecko) Version/5.0 Safari/533.16';
 		$request = new CakeRequest('/', false);
@@ -779,21 +799,68 @@ class CakeRequestTestCase extends CakeTestCase {
  *
  * @return void
  */
-	function testAccepts() {
+	public function testAccepts() {
 		$_SERVER['HTTP_ACCEPT'] = 'text/xml,application/xml;q=0.9,application/xhtml+xml,text/html,text/plain,image/png';
 		$request = new CakeRequest('/', false);
-		
+
 		$result = $request->accepts();
 		$expected = array(
-			'text/xml', 'application/xml', 'application/xhtml+xml', 'text/html', 'text/plain', 'image/png'
+			'text/xml', 'application/xhtml+xml', 'text/html', 'text/plain', 'image/png', 'application/xml'
 		);
 		$this->assertEquals($expected, $result, 'Content types differ.');
-		
+
 		$result = $request->accepts('text/html');
 		$this->assertTrue($result);
-		
+
 		$result = $request->accepts('image/gif');
 		$this->assertFalse($result);
+	}
+
+/**
+ * Test that accept header types are trimmed for comparisons.
+ *
+ * @return void
+ */
+	public function testAcceptWithWhitespace() {
+		$_SERVER['HTTP_ACCEPT'] = 'text/xml  ,  text/html ,  text/plain,image/png';
+		$request = new CakeRequest('/', false);
+		$result = $request->accepts();
+		$expected = array(
+			'text/xml', 'text/html', 'text/plain', 'image/png'
+		);
+		$this->assertEquals($expected, $result, 'Content types differ.');
+
+		$this->assertTrue($request->accepts('text/html'));
+	}
+
+/**
+ * Content types from accepts() should respect the client's q preference values.
+ *
+ * @return void
+ */
+	public function testAcceptWithQvalueSorting() {
+		$_SERVER['HTTP_ACCEPT'] = 'text/html;q=0.8,application/json;q=0.7,application/xml;q=1.0';
+		$request = new CakeRequest('/', false);
+		$result = $request->accepts();
+		$expected = array('application/xml', 'text/html', 'application/json');
+		$this->assertEquals($expected, $result);
+	}
+
+/**
+ * Test the raw parsing of accept headers into the q value formatting.
+ *
+ * @return void
+ */
+	public function testParseAcceptWithQValue() {
+		$_SERVER['HTTP_ACCEPT'] = 'text/html;q=0.8,application/json;q=0.7,application/xml;q=1.0,image/png';
+		$request = new CakeRequest('/', false);
+		$result = $request->parseAccept();
+		$expected = array(
+			'1.0' => array('application/xml', 'image/png'),
+			'0.8' => array('text/html'),
+			'0.7' => array('application/json'),
+		);
+		$this->assertEquals($expected, $result);
 	}
 
 /**
@@ -809,9 +876,9 @@ class CakeRequestTestCase extends CakeTestCase {
 		$_SERVER['PATH_INFO'] = '/posts/view/1';
 
 		$request = new CakeRequest();
-		$this->assertEqual($request->base, '/1.2.x.x');
-		$this->assertEqual($request->webroot, '/1.2.x.x/');
-		$this->assertEqual($request->url, 'posts/view/1');
+		$this->assertEquals($request->base, '/1.2.x.x');
+		$this->assertEquals($request->webroot, '/1.2.x.x/');
+		$this->assertEquals($request->url, 'posts/view/1');
 
 
 		$_SERVER['DOCUMENT_ROOT'] = '/cake/repo/branches/1.2.x.x/app/webroot';
@@ -819,24 +886,24 @@ class CakeRequestTestCase extends CakeTestCase {
 		$_SERVER['PATH_INFO'] = '/posts/add';
 		$request = new CakeRequest();
 
-		$this->assertEqual($request->base, '');
-		$this->assertEqual($request->webroot, '/');
-		$this->assertEqual($request->url, 'posts/add');
+		$this->assertEquals($request->base, '');
+		$this->assertEquals($request->webroot, '/');
+		$this->assertEquals($request->url, 'posts/add');
 
 		$_SERVER['DOCUMENT_ROOT'] = '/cake/repo/branches/1.2.x.x/test/';
 		$_SERVER['SCRIPT_NAME'] = '/webroot/index.php';
 		$request = new CakeRequest();
 
-		$this->assertEqual('', $request->base);
-		$this->assertEqual('/', $request->webroot);
+		$this->assertEquals('', $request->base);
+		$this->assertEquals('/', $request->webroot);
 
 
 		$_SERVER['DOCUMENT_ROOT'] = '/some/apps/where';
 		$_SERVER['SCRIPT_NAME'] = '/app/webroot/index.php';
 		$request = new CakeRequest();
 
-		$this->assertEqual($request->base, '');
-		$this->assertEqual($request->webroot, '/');
+		$this->assertEquals($request->base, '');
+		$this->assertEquals($request->webroot, '/');
 
 		Configure::write('App.dir', 'auth');
 
@@ -845,8 +912,8 @@ class CakeRequestTestCase extends CakeTestCase {
 
 		$request = new CakeRequest();
 
-		$this->assertEqual($request->base, '/demos/auth');
-		$this->assertEqual($request->webroot, '/demos/auth/');
+		$this->assertEquals($request->base, '/demos/auth');
+		$this->assertEquals($request->webroot, '/demos/auth/');
 
 		Configure::write('App.dir', 'code');
 
@@ -854,8 +921,8 @@ class CakeRequestTestCase extends CakeTestCase {
 		$_SERVER['SCRIPT_NAME'] = '/clients/PewterReport/code/webroot/index.php';
 		$request = new CakeRequest();
 
-		$this->assertEqual($request->base, '/clients/PewterReport/code');
-		$this->assertEqual($request->webroot, '/clients/PewterReport/code/');
+		$this->assertEquals($request->base, '/clients/PewterReport/code');
+		$this->assertEquals($request->webroot, '/clients/PewterReport/code/');
 	}
 
 /**
@@ -871,8 +938,8 @@ class CakeRequestTestCase extends CakeTestCase {
 
 		$request = new CakeRequest();
 
-		$this->assertEqual($request->base, '/control');
-		$this->assertEqual($request->webroot, '/control/');
+		$this->assertEquals($request->base, '/control');
+		$this->assertEquals($request->webroot, '/control/');
 
 		Configure::write('App.base', false);
 		Configure::write('App.dir', 'affiliate');
@@ -882,8 +949,8 @@ class CakeRequestTestCase extends CakeTestCase {
 		$_SERVER['SCRIPT_NAME'] = '/newaffiliate/index.php';
 		$request = new CakeRequest();
 
-		$this->assertEqual($request->base, '/newaffiliate');
-		$this->assertEqual($request->webroot, '/newaffiliate/');
+		$this->assertEquals($request->base, '/newaffiliate');
+		$this->assertEquals($request->webroot, '/newaffiliate/');
 	}
 
 /**
@@ -891,7 +958,7 @@ class CakeRequestTestCase extends CakeTestCase {
  *
  * @return void
  */
-	function testBaseUrlWithNoModRewrite() {
+	public function testBaseUrlWithNoModRewrite() {
 		$_SERVER['DOCUMENT_ROOT'] = '/Users/markstory/Sites';
 		$_SERVER['SCRIPT_FILENAME'] = '/Users/markstory/Sites/cake/index.php';
 		$_SERVER['PHP_SELF'] = '/cake/index.php/posts/index';
@@ -905,9 +972,9 @@ class CakeRequestTestCase extends CakeTestCase {
 		));
 
 		$request = new CakeRequest();
-		$this->assertEqual($request->base, '/cake/index.php');
-		$this->assertEqual($request->webroot, '/cake/app/webroot/');
-		$this->assertEqual($request->url, 'posts/index');
+		$this->assertEquals($request->base, '/cake/index.php');
+		$this->assertEquals($request->webroot, '/cake/app/webroot/');
+		$this->assertEquals($request->url, 'posts/index');
 	}
 
 /**
@@ -920,43 +987,43 @@ class CakeRequestTestCase extends CakeTestCase {
 		Configure::write('App.baseUrl', '/app/webroot/index.php');
 
 		$request = new CakeRequest();
-		$this->assertEqual($request->base, '/app/webroot/index.php');
-		$this->assertEqual($request->webroot, '/app/webroot/');
+		$this->assertEquals($request->base, '/app/webroot/index.php');
+		$this->assertEquals($request->webroot, '/app/webroot/');
 
 		Configure::write('App.baseUrl', '/app/webroot/test.php');
 		$request = new CakeRequest();
-		$this->assertEqual($request->base, '/app/webroot/test.php');
-		$this->assertEqual($request->webroot, '/app/webroot/');
+		$this->assertEquals($request->base, '/app/webroot/test.php');
+		$this->assertEquals($request->webroot, '/app/webroot/');
 
 		Configure::write('App.baseUrl', '/app/index.php');
 		$request = new CakeRequest();
-		$this->assertEqual($request->base, '/app/index.php');
-		$this->assertEqual($request->webroot, '/app/webroot/');
+		$this->assertEquals($request->base, '/app/index.php');
+		$this->assertEquals($request->webroot, '/app/webroot/');
 
 		Configure::write('App.baseUrl', '/CakeBB/app/webroot/index.php');
 		$request = new CakeRequest();
-		$this->assertEqual($request->base, '/CakeBB/app/webroot/index.php');
-		$this->assertEqual($request->webroot, '/CakeBB/app/webroot/');
+		$this->assertEquals($request->base, '/CakeBB/app/webroot/index.php');
+		$this->assertEquals($request->webroot, '/CakeBB/app/webroot/');
 
 		Configure::write('App.baseUrl', '/CakeBB/app/index.php');
 		$request = new CakeRequest();
 
-		$this->assertEqual($request->base, '/CakeBB/app/index.php');
-		$this->assertEqual($request->webroot, '/CakeBB/app/webroot/');
+		$this->assertEquals($request->base, '/CakeBB/app/index.php');
+		$this->assertEquals($request->webroot, '/CakeBB/app/webroot/');
 
 		Configure::write('App.baseUrl', '/CakeBB/index.php');
 		$request = new CakeRequest();
 
-		$this->assertEqual($request->base, '/CakeBB/index.php');
-		$this->assertEqual($request->webroot, '/CakeBB/app/webroot/');
+		$this->assertEquals($request->base, '/CakeBB/index.php');
+		$this->assertEquals($request->webroot, '/CakeBB/app/webroot/');
 
 		Configure::write('App.baseUrl', '/dbhauser/index.php');
 		$_SERVER['DOCUMENT_ROOT'] = '/kunden/homepages/4/d181710652/htdocs/joomla';
 		$_SERVER['SCRIPT_FILENAME'] = '/kunden/homepages/4/d181710652/htdocs/joomla/dbhauser/index.php';
 		$request = new CakeRequest();
 
-		$this->assertEqual($request->base, '/dbhauser/index.php');
-		$this->assertEqual($request->webroot, '/dbhauser/app/webroot/');
+		$this->assertEquals($request->base, '/dbhauser/index.php');
+		$this->assertEquals($request->webroot, '/dbhauser/app/webroot/');
 	}
 
 /**
@@ -964,14 +1031,14 @@ class CakeRequestTestCase extends CakeTestCase {
  *
  * @return void
  */
-	function testBaseUrlNoRewriteTopLevelIndex() {
+	public function testBaseUrlNoRewriteTopLevelIndex() {
 		Configure::write('App.baseUrl', '/index.php');
 		$_SERVER['DOCUMENT_ROOT'] = '/Users/markstory/Sites/cake_dev';
 		$_SERVER['SCRIPT_FILENAME'] = '/Users/markstory/Sites/cake_dev/index.php';
 
 		$request = new CakeRequest();
-		$this->assertEqual('/index.php', $request->base);
-		$this->assertEqual('/app/webroot/', $request->webroot);
+		$this->assertEquals('/index.php', $request->base);
+		$this->assertEquals('/app/webroot/', $request->webroot);
 	}
 
 /**
@@ -979,14 +1046,29 @@ class CakeRequestTestCase extends CakeTestCase {
  *
  * @return void
  */
-	function testBaseUrlNoRewriteWebrootIndex() {
+	public function testBaseUrlNoRewriteWebrootIndex() {
 		Configure::write('App.baseUrl', '/index.php');
 		$_SERVER['DOCUMENT_ROOT'] = '/Users/markstory/Sites/cake_dev/app/webroot';
 		$_SERVER['SCRIPT_FILENAME'] = '/Users/markstory/Sites/cake_dev/app/webroot/index.php';
 
 		$request = new CakeRequest();
-		$this->assertEqual('/index.php', $request->base);
-		$this->assertEqual('/', $request->webroot);
+		$this->assertEquals('/index.php', $request->base);
+		$this->assertEquals('/', $request->webroot);
+	}
+
+/**
+ * Test that a request with a . in the main GET parameter is filtered out.
+ * PHP changes GET parameter keys containing dots to _.
+ *
+ * @return void
+ */
+	public function testGetParamsWithDot() {
+		$_GET['/posts/index/add_add'] = '';
+		$_SERVER['SCRIPT_NAME'] = '/cake_dev/app/webroot/index.php';
+		$_SERVER['REQUEST_URI'] = '/cake_dev/posts/index/add.add';
+
+		$request = new CakeRequest();
+		$this->assertEquals(array(), $request->query);
 	}
 
 /**
@@ -1000,7 +1082,7 @@ class CakeRequestTestCase extends CakeTestCase {
 				'IIS - No rewrite base path',
 				 array(
 					'App' => array(
-						'base' => false, 
+						'base' => false,
 						'baseUrl' => '/index.php',
 						'dir' => 'app',
 						'webroot' => 'webroot'
@@ -1029,7 +1111,7 @@ class CakeRequestTestCase extends CakeTestCase {
 				'IIS - No rewrite with path, no PHP_SELF',
 				array(
 					'App' => array(
-						'base' => false, 
+						'base' => false,
 						'baseUrl' => '/index.php?',
 						'dir' => 'app',
 						'webroot' => 'webroot'
@@ -1054,21 +1136,21 @@ class CakeRequestTestCase extends CakeTestCase {
 				'IIS - No rewrite sub dir 2',
 				array(
 					'App' => array(
-						'base' => false, 
-						'baseUrl' => '/site/index.php', 
-						'dir' => 'app', 
-						'webroot' => 'webroot', 
+						'base' => false,
+						'baseUrl' => '/site/index.php',
+						'dir' => 'app',
+						'webroot' => 'webroot',
 					),
 					'SERVER' => array(
-						'SCRIPT_NAME' => '/site/index.php', 
-						'PATH_TRANSLATED' => 'C:\\Inetpub\\wwwroot', 
-						'QUERY_STRING' => '', 
-						'REQUEST_URI' => '/site/index.php', 
-						'URL' => '/site/index.php', 
-						'SCRIPT_FILENAME' => 'C:\\Inetpub\\wwwroot\\site\\index.php', 
-						'DOCUMENT_ROOT' => 'C:\\Inetpub\\wwwroot', 
-						'PHP_SELF' => '/site/index.php', 
-						'argv' => array(), 
+						'SCRIPT_NAME' => '/site/index.php',
+						'PATH_TRANSLATED' => 'C:\\Inetpub\\wwwroot',
+						'QUERY_STRING' => '',
+						'REQUEST_URI' => '/site/index.php',
+						'URL' => '/site/index.php',
+						'SCRIPT_FILENAME' => 'C:\\Inetpub\\wwwroot\\site\\index.php',
+						'DOCUMENT_ROOT' => 'C:\\Inetpub\\wwwroot',
+						'PHP_SELF' => '/site/index.php',
+						'argv' => array(),
 						'argc' => 0
 					),
 				),
@@ -1082,22 +1164,22 @@ class CakeRequestTestCase extends CakeTestCase {
 				'IIS - No rewrite sub dir 2 with path',
 				array(
 					'App' => array(
-						'base' => false, 
+						'base' => false,
 						'baseUrl' => '/site/index.php',
 						'dir' => 'app',
 						'webroot' => 'webroot'
 					),
 					'GET' => array('/posts/add' => ''),
 					'SERVER' => array(
-						'SCRIPT_NAME' => '/site/index.php', 
-						'PATH_TRANSLATED' => 'C:\\Inetpub\\wwwroot', 
-						'QUERY_STRING' => '/posts/add', 
-						'REQUEST_URI' => '/site/index.php/posts/add', 
-						'URL' => '/site/index.php/posts/add', 
-						'ORIG_PATH_TRANSLATED' => 'C:\\Inetpub\\wwwroot\\site\\index.php', 
-						'DOCUMENT_ROOT' => 'C:\\Inetpub\\wwwroot', 
-						'PHP_SELF' => '/site/index.php/posts/add', 
-						'argv' => array('/posts/add'), 
+						'SCRIPT_NAME' => '/site/index.php',
+						'PATH_TRANSLATED' => 'C:\\Inetpub\\wwwroot',
+						'QUERY_STRING' => '/posts/add',
+						'REQUEST_URI' => '/site/index.php/posts/add',
+						'URL' => '/site/index.php/posts/add',
+						'ORIG_PATH_TRANSLATED' => 'C:\\Inetpub\\wwwroot\\site\\index.php',
+						'DOCUMENT_ROOT' => 'C:\\Inetpub\\wwwroot',
+						'PHP_SELF' => '/site/index.php/posts/add',
+						'argv' => array('/posts/add'),
 						'argc' => 1
 					),
 				),
@@ -1111,16 +1193,16 @@ class CakeRequestTestCase extends CakeTestCase {
 				'Apache - No rewrite, document root set to webroot, requesting path',
 				array(
 					'App' => array(
-						'base' => false, 
-						'baseUrl' => '/index.php', 
-						'dir' => 'app', 
+						'base' => false,
+						'baseUrl' => '/index.php',
+						'dir' => 'app',
 						'webroot' => 'webroot'
 					),
 					'SERVER' => array(
-						'DOCUMENT_ROOT' => '/Library/WebServer/Documents/site/app/webroot', 
-						'SCRIPT_FILENAME' => '/Library/WebServer/Documents/site/app/webroot/index.php', 
-						'QUERY_STRING' => '', 
-						'REQUEST_URI' => '/index.php/posts/index', 
+						'DOCUMENT_ROOT' => '/Library/WebServer/Documents/site/app/webroot',
+						'SCRIPT_FILENAME' => '/Library/WebServer/Documents/site/app/webroot/index.php',
+						'QUERY_STRING' => '',
+						'REQUEST_URI' => '/index.php/posts/index',
 						'SCRIPT_NAME' => '/index.php',
 						'PATH_INFO' => '/posts/index',
 						'PHP_SELF' => '/index.php/posts/index',
@@ -1136,19 +1218,19 @@ class CakeRequestTestCase extends CakeTestCase {
 				'Apache - No rewrite, document root set to webroot, requesting root',
 				array(
 					'App' => array(
-						'base' => false, 
-						'baseUrl' => '/index.php', 
-						'dir' => 'app', 
+						'base' => false,
+						'baseUrl' => '/index.php',
+						'dir' => 'app',
 						'webroot' => 'webroot'
 					),
 					'SERVER' => array(
-						'DOCUMENT_ROOT' => '/Library/WebServer/Documents/site/app/webroot', 
-						'SCRIPT_FILENAME' => '/Library/WebServer/Documents/site/app/webroot/index.php', 
-						'QUERY_STRING' => '', 
-						'REQUEST_URI' => '/index.php', 
-						'SCRIPT_NAME' => '/index.php', 
-						'PATH_INFO' => '', 
-						'PHP_SELF' => '/index.php', 
+						'DOCUMENT_ROOT' => '/Library/WebServer/Documents/site/app/webroot',
+						'SCRIPT_FILENAME' => '/Library/WebServer/Documents/site/app/webroot/index.php',
+						'QUERY_STRING' => '',
+						'REQUEST_URI' => '/index.php',
+						'SCRIPT_NAME' => '/index.php',
+						'PATH_INFO' => '',
+						'PHP_SELF' => '/index.php',
 					),
 				),
 				array(
@@ -1161,16 +1243,16 @@ class CakeRequestTestCase extends CakeTestCase {
 				'Apache - No rewrite, document root set above top level cake dir, requesting path',
 				array(
 					'App' => array(
-						'base' => false, 
-						'baseUrl' => '/site/index.php', 
-						'dir' => 'app', 
+						'base' => false,
+						'baseUrl' => '/site/index.php',
+						'dir' => 'app',
 						'webroot' => 'webroot'
 					),
 					'SERVER' => array(
-						'SERVER_NAME' => 'localhost', 
-						'DOCUMENT_ROOT' => '/Library/WebServer/Documents', 
-						'SCRIPT_FILENAME' => '/Library/WebServer/Documents/site/index.php', 
-						'REQUEST_URI' => '/site/index.php/posts/index', 
+						'SERVER_NAME' => 'localhost',
+						'DOCUMENT_ROOT' => '/Library/WebServer/Documents',
+						'SCRIPT_FILENAME' => '/Library/WebServer/Documents/site/index.php',
+						'REQUEST_URI' => '/site/index.php/posts/index',
 						'SCRIPT_NAME' => '/site/index.php',
 						'PATH_INFO' => '/posts/index',
 						'PHP_SELF' => '/site/index.php/posts/index',
@@ -1186,15 +1268,15 @@ class CakeRequestTestCase extends CakeTestCase {
 				'Apache - No rewrite, document root set above top level cake dir, request root, no PATH_INFO',
 				array(
 					'App' => array(
-						'base' => false, 
-						'baseUrl' => '/site/index.php', 
-						'dir' => 'app', 
+						'base' => false,
+						'baseUrl' => '/site/index.php',
+						'dir' => 'app',
 						'webroot' => 'webroot'
 					),
 					'SERVER' => array(
-						'SERVER_NAME' => 'localhost', 
-						'DOCUMENT_ROOT' => '/Library/WebServer/Documents', 
-						'SCRIPT_FILENAME' => '/Library/WebServer/Documents/site/index.php', 
+						'SERVER_NAME' => 'localhost',
+						'DOCUMENT_ROOT' => '/Library/WebServer/Documents',
+						'SCRIPT_FILENAME' => '/Library/WebServer/Documents/site/index.php',
 						'REQUEST_URI' => '/site/index.php/',
 						'SCRIPT_NAME' => '/site/index.php',
 						'PHP_SELF' => '/site/index.php/',
@@ -1210,17 +1292,17 @@ class CakeRequestTestCase extends CakeTestCase {
 				'Apache - No rewrite, document root set above top level cake dir, request path, with GET',
 				array(
 					'App' => array(
-						'base' => false, 
-						'baseUrl' => '/site/index.php', 
-						'dir' => 'app', 
+						'base' => false,
+						'baseUrl' => '/site/index.php',
+						'dir' => 'app',
 						'webroot' => 'webroot'
 					),
 					'GET' => array('a' => 'b', 'c' => 'd'),
 					'SERVER' => array(
-						'SERVER_NAME' => 'localhost', 
-						'DOCUMENT_ROOT' => '/Library/WebServer/Documents', 
-						'SCRIPT_FILENAME' => '/Library/WebServer/Documents/site/index.php', 
-						'REQUEST_URI' => '/site/index.php/posts/index?a=b&c=d', 
+						'SERVER_NAME' => 'localhost',
+						'DOCUMENT_ROOT' => '/Library/WebServer/Documents',
+						'SCRIPT_FILENAME' => '/Library/WebServer/Documents/site/index.php',
+						'REQUEST_URI' => '/site/index.php/posts/index?a=b&c=d',
 						'SCRIPT_NAME' => '/site/index.php',
 						'PATH_INFO' => '/posts/index',
 						'PHP_SELF' => '/site/index.php/posts/index',
@@ -1244,9 +1326,9 @@ class CakeRequestTestCase extends CakeTestCase {
 						'webroot' => 'webroot'
 					),
 					'SERVER' => array(
-						'SERVER_NAME' => 'localhost', 
-						'DOCUMENT_ROOT' => '/Library/WebServer/Documents', 
-						'SCRIPT_FILENAME' => '/Library/WebServer/Documents/site/index.php', 
+						'SERVER_NAME' => 'localhost',
+						'DOCUMENT_ROOT' => '/Library/WebServer/Documents',
+						'SCRIPT_FILENAME' => '/Library/WebServer/Documents/site/index.php',
 						'REQUEST_URI' => '/site/',
 						'SCRIPT_NAME' => '/site/app/webroot/index.php',
 						'PHP_SELF' => '/site/app/webroot/index.php',
@@ -1268,9 +1350,9 @@ class CakeRequestTestCase extends CakeTestCase {
 						'webroot' => 'webroot'
 					),
 					'SERVER' => array(
-						'SERVER_NAME' => 'localhost', 
-						'DOCUMENT_ROOT' => '/Library/WebServer/Documents', 
-						'SCRIPT_FILENAME' => '/Library/WebServer/Documents/site/index.php', 
+						'SERVER_NAME' => 'localhost',
+						'DOCUMENT_ROOT' => '/Library/WebServer/Documents',
+						'SCRIPT_FILENAME' => '/Library/WebServer/Documents/site/index.php',
 						'SCRIPT_NAME' => '/site/app/webroot/index.php',
 						'PHP_SELF' => '/site/app/webroot/index.php',
 						'PATH_INFO' => null,
@@ -1293,9 +1375,9 @@ class CakeRequestTestCase extends CakeTestCase {
 						'webroot' => 'webroot'
 					),
 					'SERVER' => array(
-						'SERVER_NAME' => 'localhost', 
-						'DOCUMENT_ROOT' => '/Library/WebServer/Documents/site/app/webroot', 
-						'SCRIPT_FILENAME' => '/Library/WebServer/Documents/site/app/webroot/index.php', 
+						'SERVER_NAME' => 'localhost',
+						'DOCUMENT_ROOT' => '/Library/WebServer/Documents/site/app/webroot',
+						'SCRIPT_FILENAME' => '/Library/WebServer/Documents/site/app/webroot/index.php',
 						'SCRIPT_NAME' => '/index.php',
 						'PHP_SELF' => '/index.php',
 						'PATH_INFO' => null,
@@ -1306,6 +1388,34 @@ class CakeRequestTestCase extends CakeTestCase {
 					'url' => '',
 					'base' => '',
 					'webroot' => '/',
+				),
+			),
+			array(
+				'Nginx - w/rewrite, document root set to webroot, request root, no PATH_INFO',
+				array(
+					'App' => array(
+						'base' => false,
+						'baseUrl' => false,
+						'dir' => 'app',
+						'webroot' => 'webroot'
+					),
+					'GET' => array('/posts/add' => ''),
+					'SERVER' => array(
+						'SERVER_NAME' => 'localhost',
+						'DOCUMENT_ROOT' => '/Library/WebServer/Documents/site/app/webroot',
+						'SCRIPT_FILENAME' => '/Library/WebServer/Documents/site/app/webroot/index.php',
+						'SCRIPT_NAME' => '/index.php',
+						'QUERY_STRING' => '/posts/add&',
+						'PHP_SELF' => '/index.php',
+						'PATH_INFO' => null,
+						'REQUEST_URI' => '/posts/add',
+					),
+				),
+				array(
+					'url' => 'posts/add',
+					'base' => '',
+					'webroot' => '/',
+					'urlParams' => array()
 				),
 			),
 		);
@@ -1326,7 +1436,7 @@ class CakeRequestTestCase extends CakeTestCase {
 		$this->assertEquals($expected['base'], $request->base, "base error");
 		$this->assertEquals($expected['webroot'], $request->webroot, "webroot error");
 		if (isset($expected['urlParams'])) {
-			$this->assertEqual($_GET, $expected['urlParams'], "GET param mismatch");
+			$this->assertEquals($request->query, $expected['urlParams'], "GET param mismatch");
 		}
 	}
 
@@ -1335,7 +1445,7 @@ class CakeRequestTestCase extends CakeTestCase {
  *
  * @return void
  */
-	function testDataReading() {
+	public function testDataReading() {
 		$_POST['data'] = array(
 			'Model' => array(
 				'field' => 'value'
@@ -1354,7 +1464,7 @@ class CakeRequestTestCase extends CakeTestCase {
  *
  * @return void
  */
-	function testDataWriting() {
+	public function testDataWriting() {
 		$_POST['data'] = array(
 			'Model' => array(
 				'field' => 'value'
@@ -1363,7 +1473,7 @@ class CakeRequestTestCase extends CakeTestCase {
 		$request = new CakeRequest('posts/index');
 		$result = $request->data('Model.new_value', 'new value');
 		$this->assertSame($result, $request, 'Return was not $this');
-		
+
 		$this->assertEquals($request->data['Model']['new_value'], 'new value');
 
 		$request->data('Post.title', 'New post')->data('Comment.1.author', 'Mark');
@@ -1376,18 +1486,18 @@ class CakeRequestTestCase extends CakeTestCase {
  *
  * @return void
  */
-	function testDataWritingFalsey() {
+	public function testDataWritingFalsey() {
 		$request = new CakeRequest('posts/index');
 
 		$request->data('Post.null', null);
 		$this->assertNull($request->data['Post']['null']);
-		
+
 		$request->data('Post.false', false);
 		$this->assertFalse($request->data['Post']['false']);
-		
+
 		$request->data('Post.zero', 0);
 		$this->assertSame(0, $request->data['Post']['zero']);
-		
+
 		$request->data('Post.empty', '');
 		$this->assertSame('', $request->data['Post']['empty']);
 	}
@@ -1397,7 +1507,7 @@ class CakeRequestTestCase extends CakeTestCase {
  *
  * @return void
  */
-	function testAcceptLanguage() {
+	public function testAcceptLanguage() {
 		$_SERVER['HTTP_ACCEPT_LANGUAGE'] = 'inexistent,en-ca';
 		$result = CakeRequest::acceptLanguage();
 		$this->assertEquals(array('inexistent', 'en-ca'), $result, 'Languages do not match');
@@ -1405,7 +1515,7 @@ class CakeRequestTestCase extends CakeTestCase {
 		$_SERVER['HTTP_ACCEPT_LANGUAGE'] = 'es_mx;en_ca';
 		$result = CakeRequest::acceptLanguage();
 		$this->assertEquals(array('es-mx', 'en-ca'), $result, 'Languages do not match');
-		
+
 		$result = CakeRequest::acceptLanguage('en-ca');
 		$this->assertTrue($result);
 
@@ -1414,11 +1524,11 @@ class CakeRequestTestCase extends CakeTestCase {
 	}
 
 /**
- * test the here() method 
+ * test the here() method
  *
  * @return void
  */
-	function testHere() {
+	public function testHere() {
 		Configure::write('App.base', '/base_path');
 		$_GET = array('test' => 'value');
 		$request = new CakeRequest('/posts/add/1/name:value');
@@ -1442,11 +1552,11 @@ class CakeRequestTestCase extends CakeTestCase {
  *
  * @return void
  */
-	function testInput() {
-		$request = $this->getMock('CakeRequest', array('_readStdin'));
-		$request->expects($this->once())->method('_readStdin')
+	public function testInput() {
+		$request = $this->getMock('CakeRequest', array('_readInput'));
+		$request->expects($this->once())->method('_readInput')
 			->will($this->returnValue('I came from stdin'));
-		
+
 		$result = $request->input();
 		$this->assertEquals('I came from stdin', $result);
 	}
@@ -1456,21 +1566,21 @@ class CakeRequestTestCase extends CakeTestCase {
  *
  * @return void
  */
-	function testInputDecode() {
-		$request = $this->getMock('CakeRequest', array('_readStdin'));
-		$request->expects($this->once())->method('_readStdin')
+	public function testInputDecode() {
+		$request = $this->getMock('CakeRequest', array('_readInput'));
+		$request->expects($this->once())->method('_readInput')
 			->will($this->returnValue('{"name":"value"}'));
 
 		$result = $request->input('json_decode');
 		$this->assertEquals(array('name' => 'value'), (array)$result);
 	}
 
-/** 
+/**
  * Test input() decoding with additional arguments.
  *
  * @return void
  */
-	function testInputDecodeExtraParams() {
+	public function testInputDecodeExtraParams() {
 		$xml = <<<XML
 <?xml version="1.0" encoding="utf-8"?>
 <post>
@@ -1478,14 +1588,14 @@ class CakeRequestTestCase extends CakeTestCase {
 </post>
 XML;
 
-		$request = $this->getMock('CakeRequest', array('_readStdin'));
-		$request->expects($this->once())->method('_readStdin')
+		$request = $this->getMock('CakeRequest', array('_readInput'));
+		$request->expects($this->once())->method('_readInput')
 			->will($this->returnValue($xml));
 
 		$result = $request->input('Xml::build', array('return' => 'domdocument'));
 		$this->assertInstanceOf('DOMDocument', $result);
 		$this->assertEquals(
-			'Test', 
+			'Test',
 			$result->getElementsByTagName('title')->item(0)->childNodes->item(0)->wholeText
 		);
 	}
@@ -1495,7 +1605,6 @@ XML;
  *
  * @param mixed $env
  * @return void
- * @access private
  */
 	function __loadEnvironment($env) {
 		if (isset($env['App'])) {

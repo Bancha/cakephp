@@ -1,18 +1,18 @@
 <?php
 /**
- * ComponentCollectionTest file
+ * ObjectCollectionTest file
  *
  * PHP 5
  *
  * CakePHP(tm) : Rapid Development Framework (http://cakephp.org)
- * Copyright 2005-2010, Cake Software Foundation, Inc. (http://cakefoundation.org)
+ * Copyright 2005-2011, Cake Software Foundation, Inc. (http://cakefoundation.org)
  *
  * Licensed under The MIT License
  * Redistributions of files must retain the above copyright notice.
  *
- * @copyright     Copyright 2005-2010, Cake Software Foundation, Inc. (http://cakefoundation.org)
+ * @copyright     Copyright 2005-2011, Cake Software Foundation, Inc. (http://cakefoundation.org)
  * @link          http://book.cakephp.org/view/1196/Testing CakePHP(tm) Tests
- * @package       cake.tests.cases.libs
+ * @package       Cake.Test.Case.Utility
  * @since         CakePHP(tm) v 2.0
  * @license       MIT License (http://www.opensource.org/licenses/mit-license.php)
  */
@@ -77,7 +77,7 @@ class ObjectCollectionTest extends CakeTestCase {
  *
  * @return void
  */
-	function setup() {
+	public function setup() {
 		$this->Objects = new GenericObjectCollection();
 	}
 
@@ -86,7 +86,7 @@ class ObjectCollectionTest extends CakeTestCase {
  *
  * @return void
  */
-	function teardown() {
+	public function teardown() {
 		unset($this->Objects);
 	}
 
@@ -95,7 +95,7 @@ class ObjectCollectionTest extends CakeTestCase {
  *
  * @return void
  */
-	function testLoad() {
+	public function testLoad() {
 		$result = $this->Objects->load('First');
 		$this->assertInstanceOf('FirstGenericObject', $result);
 		$this->assertInstanceOf('FirstGenericObject', $this->Objects->First);
@@ -114,7 +114,7 @@ class ObjectCollectionTest extends CakeTestCase {
  *
  * @return void
  */
-	function testUnload() {
+	public function testUnload() {
 		$this->Objects->load('First');
 		$this->Objects->load('Second');
 
@@ -137,17 +137,17 @@ class ObjectCollectionTest extends CakeTestCase {
  *
  * @return void
  */
-	function testSet() {
+	public function testSet() {
 		$this->Objects->load('First');
 
 		$result = $this->Objects->attached();
 		$this->assertEquals(array('First'), $result, 'loaded objects are wrong');
 
 		$result = $this->Objects->set('First', new SecondGenericObject());
-		$this->assertIsA($result['First'], 'SecondGenericObject', 'set failed');
+		$this->assertInstanceOf('SecondGenericObject', $result['First'], 'set failed');
 
 		$result = $this->Objects->set('Second', new SecondGenericObject());
-		$this->assertIsA($result['Second'], 'SecondGenericObject', 'set failed');
+		$this->assertInstanceOf('SecondGenericObject', $result['Second'], 'set failed');
 
 		$this->assertEquals(count($result), 2);
 	}
@@ -171,7 +171,7 @@ class ObjectCollectionTest extends CakeTestCase {
  *
  * @return void
  */
-	function testTrigger() {
+	public function testTrigger() {
 		$this->_makeMockClasses();
 		$this->Objects->load('TriggerMockFirst');
 		$this->Objects->load('TriggerMockSecond');
@@ -190,35 +190,11 @@ class ObjectCollectionTest extends CakeTestCase {
 	}
 
 /**
- * test that the initalize callback is triggered on all components even those that are disabled.
- *
- * @return void
- */
-	function testTriggerWithTriggerDisabledObjects() {
-		$this->_makeMockClasses();
-		$this->Objects->load('TriggerMockFirst', array(), false);
-		$this->Objects->load('TriggerMockSecond');
-
-		$this->mockObjects[] = $this->Objects->TriggerMockFirst;
-		$this->mockObjects[] = $this->Objects->TriggerMockSecond;
-
-		$this->Objects->TriggerMockFirst->expects($this->once())
-			->method('callback')
-			->will($this->returnValue(true));
-		$this->Objects->TriggerMockSecond->expects($this->once())
-			->method('callback')
-			->will($this->returnValue(true));
-
-		$result = $this->Objects->trigger('callback', array(), array('triggerDisabled' => true));
-		$this->assertTrue($result);
-	}
-
-/**
  * test trigger and disabled objects
  *
  * @return void
  */
-	function testTriggerWithDisabledObjects() {
+	public function testTriggerWithDisabledObjects() {
 		$this->_makeMockClasses();
 		$this->Objects->load('TriggerMockFirst');
 		$this->Objects->load('TriggerMockSecond');
@@ -243,7 +219,7 @@ class ObjectCollectionTest extends CakeTestCase {
  *
  * @return void
  */
-	function testTriggerWithCollectReturn() {
+	public function testTriggerWithCollectReturn() {
 		$this->_makeMockClasses();
 		$this->Objects->load('TriggerMockFirst');
 		$this->Objects->load('TriggerMockSecond');
@@ -257,7 +233,7 @@ class ObjectCollectionTest extends CakeTestCase {
 		$this->Objects->TriggerMockSecond->expects($this->once())
 			->method('callback')
 			->will($this->returnValue(array('three', 'four')));
-	
+
 		$result = $this->Objects->trigger('callback', array(), array('collectReturn' => true));
 		$expected = array(
 			array('one', 'two'),
@@ -271,7 +247,7 @@ class ObjectCollectionTest extends CakeTestCase {
  *
  * @return void
  */
-	function testTriggerWithBreak() {
+	public function testTriggerWithBreak() {
 		$this->_makeMockClasses();
 		$this->Objects->load('TriggerMockFirst');
 		$this->Objects->load('TriggerMockSecond');
@@ -298,7 +274,7 @@ class ObjectCollectionTest extends CakeTestCase {
  *
  * @return void
  */
-	function testTriggerWithModParams() {
+	public function testTriggerWithModParams() {
 		$this->_makeMockClasses();
 		$this->Objects->load('TriggerMockFirst');
 		$this->Objects->load('TriggerMockSecond');
@@ -330,7 +306,7 @@ class ObjectCollectionTest extends CakeTestCase {
  * @expectedException CakeException
  * @return void
  */
-	function testTriggerModParamsInvalidIndex() {
+	public function testTriggerModParamsInvalidIndex() {
 		$this->_makeMockClasses();
 		$this->Objects->load('TriggerMockFirst');
 		$this->Objects->load('TriggerMockSecond');
@@ -356,7 +332,7 @@ class ObjectCollectionTest extends CakeTestCase {
  *
  * @return void
  */
-	function testTriggerModParamsNullIgnored() {
+	public function testTriggerModParamsNullIgnored() {
 		$this->_makeMockClasses();
 		$this->Objects->load('TriggerMockFirst');
 		$this->Objects->load('TriggerMockSecond');
@@ -387,7 +363,7 @@ class ObjectCollectionTest extends CakeTestCase {
  *
  * @return void
  */
-	function testnormalizeObjectArray() {
+	public function testnormalizeObjectArray() {
 		$components = array(
 			'Html',
 			'Foo.Bar' => array('one', 'two'),
@@ -401,6 +377,16 @@ class ObjectCollectionTest extends CakeTestCase {
 			'Something' => array('class' => 'Something', 'settings' => array()),
 			'Apple' => array('class' => 'Banana.Apple', 'settings' => array('foo' => 'bar')),
 		);
+		$this->assertEquals($expected, $result);
+
+		// This is the result after Controller::_mergeVars
+		$components = array(
+			'Html' => null,
+			'Foo.Bar' => array('one', 'two'),
+			'Something' => null,
+			'Banana.Apple' => array('foo' => 'bar')
+		);
+		$result = ObjectCollection::normalizeObjectArray($components);
 		$this->assertEquals($expected, $result);
 	}
 

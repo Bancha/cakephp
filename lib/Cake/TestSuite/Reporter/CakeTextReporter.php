@@ -5,27 +5,23 @@
  * PHP 5
  *
  * CakePHP(tm) Tests <http://book.cakephp.org/view/1196/Testing>
- * Copyright 2005-2010, Cake Software Foundation, Inc. (http://cakefoundation.org)
+ * Copyright 2005-2011, Cake Software Foundation, Inc. (http://cakefoundation.org)
  *
  * Licensed under The MIT License
  * Redistributions of files must retain the above copyright notice
  *
- * @copyright     Copyright 2005-2010, Cake Software Foundation, Inc. (http://cakefoundation.org)
+ * @copyright     Copyright 2005-2011, Cake Software Foundation, Inc. (http://cakefoundation.org)
  * @link          http://cakephp.org CakePHP(tm) Project
- * @package       cake.tests.libs.reporter
  * @since         CakePHP(tm) v 1.3
  * @license       MIT License (http://www.opensource.org/licenses/mit-license.php)
  */
-
-include_once dirname(__FILE__) . DS . 'cake_base_reporter.php';
-
-PHP_CodeCoverage_Filter::getInstance()->addFileToBlacklist(__FILE__, 'DEFAULT');
+App::uses('CakeBaseReporter', 'TestSuite/Reporter');
+App::uses('TextCoverageReport', 'TestSuite/Coverage');
 
 /**
  * CakeTextReporter contains reporting features used for plain text based output
  *
- * @package cake
- * @package    cake.tests.lib
+ * @package       Cake.TestSuite.Reporter
  */
 class CakeTextReporter extends CakeBaseReporter {
 
@@ -62,7 +58,7 @@ class CakeTextReporter extends CakeBaseReporter {
 		$context = $context[2];
 
 		printf(
-			"FAIL on line %s\n%s in\n%s %s()\n\n", 
+			"FAIL on line %s\n%s in\n%s %s()\n\n",
 			$context['line'], $message->toString(), $context['file'], $realContext['function']
 		);
 	}
@@ -81,7 +77,7 @@ class CakeTextReporter extends CakeBaseReporter {
 			echo "FAILURES!!!\n";
 		}
 
-		echo "Test cases run: " . $result->count() . 
+		echo "Test cases run: " . $result->count() .
 			"/" . ($result->count() - $result->skippedCount()) .
 			', Passes: ' . $this->numAssertions .
 			', Failures: ' . $result->failureCount() .
@@ -91,7 +87,7 @@ class CakeTextReporter extends CakeBaseReporter {
         echo 'Peak memory: ' . number_format(memory_get_peak_usage()) . " bytes\n";
 
 		if (isset($this->params['codeCoverage']) && $this->params['codeCoverage']) {
-			$coverage = $result->getCodeCoverageInformation();
+			$coverage = $result->getCodeCoverage()->getSummary();
 			echo $this->paintCoverage($coverage);
 		}
 	}
@@ -184,8 +180,6 @@ class CakeTextReporter extends CakeBaseReporter {
  * @return string
  */
 	public function paintCoverage($coverage) {
-		$file = dirname(dirname(__FILE__)) . '/coverage/text_coverage_report.php';
-		include $file;
 		$reporter = new TextCoverageReport($coverage, $this);
 		echo $reporter->report();
 	}

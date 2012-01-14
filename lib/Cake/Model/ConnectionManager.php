@@ -2,30 +2,29 @@
 /**
  * Datasource connection manager
  *
- * Provides an interface for loading and enumerating connections defined in app/config/database.php
+ * Provides an interface for loading and enumerating connections defined in app/Config/database.php
  *
  * PHP 5
  *
  * CakePHP(tm) : Rapid Development Framework (http://cakephp.org)
- * Copyright 2005-2010, Cake Software Foundation, Inc. (http://cakefoundation.org)
+ * Copyright 2005-2011, Cake Software Foundation, Inc. (http://cakefoundation.org)
  *
  * Licensed under The MIT License
  * Redistributions of files must retain the above copyright notice.
  *
- * @copyright     Copyright 2005-2010, Cake Software Foundation, Inc. (http://cakefoundation.org)
+ * @copyright     Copyright 2005-2011, Cake Software Foundation, Inc. (http://cakefoundation.org)
  * @link          http://cakephp.org CakePHP(tm) Project
- * @package       cake.libs.model
+ * @package       Cake.Model
  * @since         CakePHP(tm) v 0.10.x.1402
  * @license       MIT License (http://www.opensource.org/licenses/mit-license.php)
  */
 
 App::uses('DataSource', 'Model/Datasource');
-config('database');
 
 /**
  * Manages loaded instances of DataSource objects
  *
- * @package       cake.libs.model
+ * @package       Cake.Model
  */
 class ConnectionManager {
 
@@ -33,7 +32,6 @@ class ConnectionManager {
  * Holds a loaded instance of the Connections object
  *
  * @var DATABASE_CONFIG
- * @access public
  */
 	public static $config = null;
 
@@ -41,7 +39,6 @@ class ConnectionManager {
  * Holds instances DataSource objects
  *
  * @var array
- * @access protected
  */
 	protected static $_dataSources = array();
 
@@ -49,41 +46,40 @@ class ConnectionManager {
  * Contains a list of all file and class names used in Connection settings
  *
  * @var array
- * @access protected
  */
 	protected static $_connectionsEnum = array();
 
 /**
- * Indicates if the init code for this class has alredy been executed
+ * Indicates if the init code for this class has already been executed
  *
  * @var boolean
  */
-	private static $_init = false;
+	protected static $_init = false;
 
 /**
  * Loads connections configuration.
  *
+ * @return void
  */
-	private static function init() {
+	protected static function _init() {
 		include_once APP . 'Config' . DS . 'database.php';
 		if (class_exists('DATABASE_CONFIG')) {
 			self::$config = new DATABASE_CONFIG();
 		}
-		register_shutdown_function('ConnectionManager::shutdown');
 		self::$_init = true;
 	}
 
 /**
  * Gets a reference to a DataSource object
  *
- * @param string $name The name of the DataSource, as defined in app/config/database.php
- * @return object Instance
+ * @param string $name The name of the DataSource, as defined in app/Config/database.php
+ * @return DataSource Instance
  * @throws MissingDatasourceConfigException
- * @throws MissingDatasourceFileException
+ * @throws MissingDatasourceException
  */
 	public static function getDataSource($name) {
 		if (empty(self::$_init)) {
-			self::init();
+			self::_init();
 		}
 
 		if (!empty(self::$_dataSources[$name])) {
@@ -107,12 +103,14 @@ class ConnectionManager {
 
 /**
  * Gets the list of available DataSource connections
+ * This will only return the datasources instantiated by this manager
+ * It differs from enumConnectionObjects, since the latter will return all configured connections
  *
  * @return array List of available connections
  */
 	public static function sourceList() {
 		if (empty(self::$_init)) {
-			self::init();
+			self::_init();
 		}
 		return array_keys(self::$_dataSources);
 	}
@@ -120,34 +118,34 @@ class ConnectionManager {
 /**
  * Gets a DataSource name from an object reference.
  *
- * @param object $source DataSource object
+ * @param DataSource $source DataSource object
  * @return string Datasource name, or null if source is not present
  *    in the ConnectionManager.
  */
 	public static function getSourceName($source) {
 		if (empty(self::$_init)) {
-			self::init();
+			self::_init();
 		}
 		foreach (self::$_dataSources as $name => $ds) {
 			if ($ds === $source) {
 				return $name;
 			}
 		}
-		return '';
+		return null;
 	}
 
 /**
  * Loads the DataSource class for the given connection name
  *
- * @param mixed $connName A string name of the connection, as defined in app/config/database.php,
+ * @param mixed $connName A string name of the connection, as defined in app/Config/database.php,
  *                        or an array containing the filename (without extension) and class name of the object,
- *                        to be found in app/models/datasources/ or cake/libs/model/datasources/.
+ *                        to be found in app/Model/Datasource/ or lib/Cake/Model/Datasource/.
  * @return boolean True on success, null on failure or false if the class is already loaded
- * @throws MissingDatasourceFileException
+ * @throws MissingDatasourceException
  */
 	public static function loadDataSource($connName) {
 		if (empty(self::$_init)) {
-			self::init();
+			self::_init();
 		}
 
 		if (is_array($connName)) {
@@ -170,7 +168,10 @@ class ConnectionManager {
 
 		App::uses($conn['classname'], $plugin . 'Model/Datasource' . $package);
 		if (!class_exists($conn['classname'])) {
-			throw new MissingDatasourceFileException(array('class' => $conn['classname'], 'plugin' => $plugin));
+			throw new MissingDatasourceException(array(
+				'class' => $conn['classname'],
+				'plugin' => substr($plugin, 0, -1)
+			));
 		}
 		return true;
 	}
@@ -183,7 +184,7 @@ class ConnectionManager {
  */
 	public static function enumConnectionObjects() {
 		if (empty(self::$_init)) {
-			self::init();
+			self::_init();
 		}
 		return (array) self::$config;
 	}
@@ -193,11 +194,11 @@ class ConnectionManager {
  *
  * @param string $name The DataSource name
  * @param array $config The DataSource configuration settings
- * @return object A reference to the DataSource object, or null if creation failed
+ * @return DataSource A reference to the DataSource object, or null if creation failed
  */
 	public static function create($name = '', $config = array()) {
 		if (empty(self::$_init)) {
-			self::init();
+			self::_init();
 		}
 
 		if (empty($name) || empty($config) || array_key_exists($name, self::$_connectionsEnum)) {
@@ -217,7 +218,7 @@ class ConnectionManager {
  */
 	public static function drop($name) {
 		if (empty(self::$_init)) {
-			self::init();
+			self::_init();
 		}
 
 		if (!isset(self::$config->{$name})) {
@@ -230,7 +231,9 @@ class ConnectionManager {
 /**
  * Gets a list of class and file names associated with the user-defined DataSource connections
  *
+ * @param string $name Connection name
  * @return void
+ * @throws MissingDatasourceConfigException
  */
 	protected static function _getConnectionObject($name) {
 		if (!empty(self::$config->{$name})) {
@@ -243,9 +246,10 @@ class ConnectionManager {
 /**
  * Returns the file, class name, and parent for the given driver.
  *
+ * @param array $config Array with connection configuration. Key 'datasource' is required
  * @return array An indexed array with: filename, classname, plugin and parent
  */
-	private static function _connectionData($config) {
+	protected static function _connectionData($config) {
 		$package = $classname = $plugin = null;
 
 		list($plugin, $classname) = pluginSplit($config['datasource']);
@@ -254,15 +258,5 @@ class ConnectionManager {
 			$classname = basename($classname);
 		}
 		return compact('package', 'classname', 'plugin');
-	}
-
-/**
- * Destructor.
- *
- */
-	public static function shutdown() {
-		if (Configure::read('Session.defaults') == 'database' && function_exists('session_write_close')) {
-			session_write_close();
-		}
 	}
 }

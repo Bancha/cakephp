@@ -5,14 +5,14 @@
  * PHP 5
  *
  * CakePHP(tm) : Rapid Development Framework (http://cakephp.org)
- * Copyright 2005-2010, Cake Software Foundation, Inc. (http://cakefoundation.org)
+ * Copyright 2005-2011, Cake Software Foundation, Inc. (http://cakefoundation.org)
  *
  * Licensed under The MIT License
  * Redistributions of files must retain the above copyright notice.
  *
- * @copyright     Copyright 2005-2010, Cake Software Foundation, Inc. (http://cakefoundation.org)
+ * @copyright     Copyright 2005-2011, Cake Software Foundation, Inc. (http://cakefoundation.org)
  * @link          http://cakephp.org CakePHP(tm) Project
- * @package       cake.libs.controller.components
+ * @package       Cake.Controller.Component
  * @since         CakePHP(tm) v 1.2.0.4213
  * @license       MIT License (http://www.opensource.org/licenses/mit-license.php)
  */
@@ -25,8 +25,8 @@ App::uses('Security', 'Utility');
  *
  * Cookie handling for the controller.
  *
- * @package       cake.libs.controller.components
- * @link http://book.cakephp.org/view/1280/Cookies
+ * @package       Cake.Controller.Component
+ * @link http://book.cakephp.org/2.0/en/core-libraries/components/cookie.html
  *
  */
 class CookieComponent extends Component {
@@ -38,7 +38,6 @@ class CookieComponent extends Component {
  * $this->Cookie->name = 'CookieName';
  *
  * @var string
- * @access public
  */
 	public $name = 'CakeCookie';
 
@@ -51,7 +50,6 @@ class CookieComponent extends Component {
  * $this->Cookie->time = '5 Days';
  *
  * @var mixed
- * @access public
  */
 	public $time = null;
 
@@ -67,7 +65,6 @@ class CookieComponent extends Component {
  * The default value is the entire domain.
  *
  * @var string
- * @access public
  */
 	public $path = '/';
 
@@ -83,7 +80,6 @@ class CookieComponent extends Component {
  * Set $this->Cookie->domain = '.example.com'; in your controller beforeFilter
  *
  * @var string
- * @access public
  */
 	public $domain = '';
 
@@ -97,7 +93,6 @@ class CookieComponent extends Component {
  * When set to true, the cookie will only be set if a secure connection exists.
  *
  * @var boolean
- * @access public
  */
 	public $secure = false;
 
@@ -108,14 +103,13 @@ class CookieComponent extends Component {
  * $this->Cookie->key = 'SomeRandomString';
  *
  * @var string
- * @access protected
  */
 	public $key = null;
 
 /**
  * HTTP only cookie
  *
- * Set to true to make HTTP only cookies.  Cookies that are HTTP only 
+ * Set to true to make HTTP only cookies.  Cookies that are HTTP only
  * are not accessible in Javascript.
  *
  * @var boolean
@@ -129,7 +123,6 @@ class CookieComponent extends Component {
  *
  * @see CookieComponent::read();
  * @var string
- * @access private
  */
 	protected $_values = array();
 
@@ -140,7 +133,6 @@ class CookieComponent extends Component {
  * Defaults to Security::cipher();
  *
  * @var string
- * @access private
  * @todo add additional encryption methods
  */
 	protected $_type = 'cipher';
@@ -149,7 +141,6 @@ class CookieComponent extends Component {
  * Used to reset cookie time if $expire is passed to CookieComponent::write()
  *
  * @var string
- * @access private
  */
 	protected $_reset = null;
 
@@ -159,7 +150,6 @@ class CookieComponent extends Component {
  * This is controlled by CookieComponent::time;
  *
  * @var string
- * @access private
  */
 	protected $_expires = 0;
 
@@ -180,6 +170,8 @@ class CookieComponent extends Component {
 /**
  * Start CookieComponent for use in the controller
  *
+ * @param Controller $controller
+ * @return void
  */
 	public function startup($controller) {
 		$this->_expire($this->time);
@@ -205,6 +197,8 @@ class CookieComponent extends Component {
  * @param mixed $value Value
  * @param boolean $encrypt Set to true to encrypt value, false otherwise
  * @param string $expires Can be either Unix timestamp, or date string
+ * @return void
+ * @link http://book.cakephp.org/2.0/en/core-libraries/components/cookie.html#CookieComponent::write
  */
 	public function write($key, $value = null, $encrypt = true, $expires = null) {
 		if (is_null($encrypt)) {
@@ -212,7 +206,7 @@ class CookieComponent extends Component {
 		}
 		$this->_encrypted = $encrypt;
 		$this->_expire($expires);
-		
+
 		if (!is_array($key)) {
 			$key = array($key => $value);
 		}
@@ -241,6 +235,7 @@ class CookieComponent extends Component {
  *
  * @param mixed $key Key of the value to be obtained. If none specified, obtain map key => values
  * @return string or null, value for specified key
+ * @link http://book.cakephp.org/2.0/en/core-libraries/components/cookie.html#CookieComponent::read
  */
 	public function read($key = null) {
 		if (empty($this->_values) && isset($_COOKIE[$this->name])) {
@@ -276,6 +271,7 @@ class CookieComponent extends Component {
  *
  * @param string $key Key of the value to be deleted
  * @return void
+ * @link http://book.cakephp.org/2.0/en/core-libraries/components/cookie.html#CookieComponent::delete
  */
 	public function delete($key) {
 		if (empty($this->_values)) {
@@ -286,14 +282,15 @@ class CookieComponent extends Component {
 				foreach ($this->_values[$key] as $idx => $val) {
 					$this->_delete("[$key][$idx]");
 				}
-			} else {
-				$this->_delete("[$key]");
 			}
+			$this->_delete("[$key]");
 			unset($this->_values[$key]);
 			return;
 		}
 		$names = explode('.', $key, 2);
-		$this->_values[$names[0]] = Set::remove($this->_values[$names[0]], $names[1]);
+		if (isset($this->_values[$names[0]])) {
+			$this->_values[$names[0]] = Set::remove($this->_values[$names[0]], $names[1]);
+		}
 		$this->_delete('[' . implode('][', $names) . ']');
 	}
 
@@ -304,6 +301,7 @@ class CookieComponent extends Component {
  * Failure to do so will result in header already sent errors.
  *
  * @return void
+ * @link http://book.cakephp.org/2.0/en/core-libraries/components/cookie.html#CookieComponent::destroy
  */
 	public function destroy() {
 		if (isset($_COOKIE[$this->name])) {
@@ -326,7 +324,7 @@ class CookieComponent extends Component {
  * Will allow overriding default encryption method.
  *
  * @param string $type Encryption method
- * @access public
+ * @return void
  * @todo NOT IMPLEMENTED
  */
 	public function type($type = 'cipher') {
@@ -344,7 +342,7 @@ class CookieComponent extends Component {
  * CookieComponent::write(string, string, boolean, '5 Days');
  *
  * @param mixed $expires Can be either Unix timestamp, or date string
- * @return int Unix timestamp
+ * @return integer Unix timestamp
  */
 	protected function _expire($expires = null) {
 		$now = time();
@@ -368,10 +366,11 @@ class CookieComponent extends Component {
  *
  * @param string $name Name for cookie
  * @param string $value Value for cookie
+ * @return void
  */
 	protected function _write($name, $value) {
 		$this->_setcookie(
-			$this->name . $name, $this->_encrypt($value), 
+			$this->name . $name, $this->_encrypt($value),
 			$this->_expires, $this->path, $this->domain, $this->secure, $this->httpOnly
 		);
 
@@ -389,7 +388,7 @@ class CookieComponent extends Component {
  */
 	protected function _delete($name) {
 		$this->_setcookie(
-			$this->name . $name, '', 
+			$this->name . $name, '',
 			time() - 42000, $this->path, $this->domain, $this->secure, $this->httpOnly
 		);
 	}
@@ -397,7 +396,11 @@ class CookieComponent extends Component {
 /**
  * Object wrapper for setcookie() so it can be mocked in unit tests.
  *
+ * @todo Re-factor setting cookies into CakeResponse.  Cookies are part
+ * of the HTTP response, and should be handled there.
+ *
  * @param string $name Name of the cookie
+ * @param string $value Value of the cookie
  * @param integer $expire Time the cookie expires in
  * @param string $path Path the cookie applies to
  * @param string $domain Domain the cookie is for.
@@ -408,6 +411,7 @@ class CookieComponent extends Component {
 	protected function _setcookie($name, $value, $expire, $path, $domain, $secure, $httpOnly = false) {
 		setcookie($name, $value, $expire, $path, $domain, $secure, $httpOnly);
 	}
+
 /**
  * Encrypts $value using public $type method in Security class
  *

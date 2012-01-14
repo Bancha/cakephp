@@ -5,14 +5,14 @@
  * PHP 5
  *
  * CakePHP(tm) Tests <http://book.cakephp.org/view/1196/Testing>
- * Copyright 2005-2010, Cake Software Foundation, Inc. (http://cakefoundation.org)
+ * Copyright 2005-2011, Cake Software Foundation, Inc. (http://cakefoundation.org)
  *
  * Licensed under The MIT License
  * Redistributions of files must retain the above copyright notice
  *
- * @copyright     Copyright 2005-2010, Cake Software Foundation, Inc. (http://cakefoundation.org)
+ * @copyright     Copyright 2005-2011, Cake Software Foundation, Inc. (http://cakefoundation.org)
  * @link          http://book.cakephp.org/view/1196/Testing CakePHP(tm) Tests
- * @package       cake.tests.cases.libs
+ * @package       Cake.Test.Case.Error
  * @since         CakePHP(tm) v 1.2.0.5432
  * @license       MIT License (http://www.opensource.org/licenses/mit-license.php)
  */
@@ -24,17 +24,17 @@ App::uses('Router', 'Routing');
 /**
  * ErrorHandlerTest class
  *
- * @package       cake.tests.cases.libs
+ * @package       Cake.Test.Case.Error
  */
 class ErrorHandlerTest extends CakeTestCase {
 
-	var $_restoreError = false;
+	public $_restoreError = false;
 /**
  * setup create a request object to get out of router later.
  *
  * @return void
  */
-	function setUp() {
+	public function setUp() {
 		App::build(array(
 			'View' => array(
 				CAKE . 'Test' . DS . 'test_app' . DS . 'View'. DS
@@ -55,7 +55,7 @@ class ErrorHandlerTest extends CakeTestCase {
  *
  * @return void
  */
-	function teardown() {
+	public function teardown() {
 		Configure::write('debug', $this->_debug);
 		Configure::write('Error', $this->_error);
 		App::build();
@@ -69,7 +69,7 @@ class ErrorHandlerTest extends CakeTestCase {
  *
  * @return void
  */
-	function testHandleErrorDebugOn() {
+	public function testHandleErrorDebugOn() {
 		set_error_handler('ErrorHandler::handleError');
 		$this->_restoreError = true;
 
@@ -77,9 +77,9 @@ class ErrorHandlerTest extends CakeTestCase {
 		$wrong .= '';
 		$result = ob_get_clean();
 
-		$this->assertPattern('/<pre class="cake-debug">/', $result);
-		$this->assertPattern('/<b>Notice<\/b>/', $result);
-		$this->assertPattern('/variable:\s+wrong/', $result);
+		$this->assertRegExp('/<pre class="cake-error">/', $result);
+		$this->assertRegExp('/<b>Notice<\/b>/', $result);
+		$this->assertRegExp('/variable:\s+wrong/', $result);
 	}
 
 /**
@@ -101,7 +101,7 @@ class ErrorHandlerTest extends CakeTestCase {
  * @dataProvider errorProvider
  * @return void
  */
-	function testErrorMapping($error, $expected) {
+	public function testErrorMapping($error, $expected) {
 		set_error_handler('ErrorHandler::handleError');
 		$this->_restoreError = true;
 
@@ -109,7 +109,7 @@ class ErrorHandlerTest extends CakeTestCase {
 		trigger_error('Test error', $error);
 
 		$result = ob_get_clean();
-		$this->assertPattern('/<b>' . $expected . '<\/b>/', $result);
+		$this->assertRegExp('/<b>' . $expected . '<\/b>/', $result);
 	}
 
 /**
@@ -117,7 +117,7 @@ class ErrorHandlerTest extends CakeTestCase {
  *
  * @return void
  */
-	function testErrorSuppressed() {
+	public function testErrorSuppressed() {
 		set_error_handler('ErrorHandler::handleError');
 		$this->_restoreError = true;
 
@@ -132,7 +132,7 @@ class ErrorHandlerTest extends CakeTestCase {
  *
  * @return void
  */
-	function testHandleErrorDebugOff() {
+	public function testHandleErrorDebugOff() {
 		Configure::write('debug', 0);
 		Configure::write('Error.trace', false);
 		if (file_exists(LOGS . 'debug.log')) {
@@ -145,8 +145,8 @@ class ErrorHandlerTest extends CakeTestCase {
 		$out .= '';
 
 		$result = file(LOGS . 'debug.log');
-		$this->assertEqual(count($result), 1);
-		$this->assertPattern(
+		$this->assertEquals(count($result), 1);
+		$this->assertRegExp(
 			'/^\d{4}-\d{2}-\d{2} \d{2}:\d{2}:\d{2} (Notice|Debug): Notice \(8\): Undefined variable:\s+out in \[.+ line \d+\]$/',
 			$result[0]
 		);
@@ -158,7 +158,7 @@ class ErrorHandlerTest extends CakeTestCase {
  *
  * @return void
  */
-	function testHandleErrorLoggingTrace() {
+	public function testHandleErrorLoggingTrace() {
 		Configure::write('debug', 0);
 		Configure::write('Error.trace', true);
 		if (file_exists(LOGS . 'debug.log')) {
@@ -171,12 +171,12 @@ class ErrorHandlerTest extends CakeTestCase {
 		$out .= '';
 
 		$result = file(LOGS . 'debug.log');
-		$this->assertPattern(
+		$this->assertRegExp(
 			'/^\d{4}-\d{2}-\d{2} \d{2}:\d{2}:\d{2} (Notice|Debug): Notice \(8\): Undefined variable:\s+out in \[.+ line \d+\]$/',
 			$result[0]
 		);
-		$this->assertPattern('/^Trace:/', $result[1]);
-		$this->assertPattern('/^ErrorHandlerTest\:\:testHandleErrorLoggingTrace\(\)/', $result[2]);
+		$this->assertRegExp('/^Trace:/', $result[1]);
+		$this->assertRegExp('/^ErrorHandlerTest\:\:testHandleErrorLoggingTrace\(\)/', $result[2]);
 		@unlink(LOGS . 'debug.log');
 	}
 
@@ -185,16 +185,14 @@ class ErrorHandlerTest extends CakeTestCase {
  *
  * @return void
  */
-	function testHandleException() {
-		if ($this->skipIf(file_exists(APP . 'app_error.php'), 'App error exists cannot run.')) {
-			return;
-		}
+	public function testHandleException() {
+		$this->skipIf(file_exists(APP . 'app_error.php'), 'App error exists cannot run.');
 
 		$error = new NotFoundException('Kaboom!');
 		ob_start();
 		ErrorHandler::handleException($error);
 		$result = ob_get_clean();
-		$this->assertPattern('/Kaboom!/', $result, 'message missing.');
+		$this->assertRegExp('/Kaboom!/', $result, 'message missing.');
 	}
 
 /**
@@ -202,10 +200,9 @@ class ErrorHandlerTest extends CakeTestCase {
  *
  * @return void
  */
-	function testHandleExceptionLog() {
-		if ($this->skipIf(file_exists(APP . 'app_error.php'), 'App error exists cannot run.')) {
-			return;
-		}
+	public function testHandleExceptionLog() {
+		$this->skipIf(file_exists(APP . 'app_error.php'), 'App error exists cannot run.');
+
 		if (file_exists(LOGS . 'error.log')) {
 			unlink(LOGS . 'error.log');
 		}
@@ -215,11 +212,11 @@ class ErrorHandlerTest extends CakeTestCase {
 		ob_start();
 		ErrorHandler::handleException($error);
 		$result = ob_get_clean();
-		$this->assertPattern('/Kaboom!/', $result, 'message missing.');
+		$this->assertRegExp('/Kaboom!/', $result, 'message missing.');
 
 		$log = file(LOGS . 'error.log');
-		$this->assertPattern('/\[NotFoundException\] Kaboom!/', $log[0], 'message missing.');
-		$this->assertPattern('/\#0.*ErrorHandlerTest->testHandleExceptionLog/', $log[1], 'Stack trace missing.');
+		$this->assertRegExp('/\[NotFoundException\] Kaboom!/', $log[0], 'message missing.');
+		$this->assertRegExp('/\#0.*ErrorHandlerTest->testHandleExceptionLog/', $log[1], 'Stack trace missing.');
 	}
 
 /**
@@ -227,7 +224,7 @@ class ErrorHandlerTest extends CakeTestCase {
  *
  * @return void
  */
-	function testLoadPluginHanlder() {
+	public function testLoadPluginHanlder() {
 		App::build(array(
 			'plugins' => array(
 				CAKE . 'Test' . DS . 'test_app' . DS . 'Plugin' . DS

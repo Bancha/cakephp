@@ -5,24 +5,22 @@
  * PHP 5
  *
  * CakePHP(tm) : Rapid Development Framework (http://cakephp.org)
- * Copyright 2005-2010, Cake Software Foundation, Inc. (http://cakefoundation.org)
+ * Copyright 2005-2011, Cake Software Foundation, Inc. (http://cakefoundation.org)
  *
  * Licensed under The MIT License
  * Redistributions of files must retain the above copyright notice.
  *
- * @copyright     Copyright 2005-2010, Cake Software Foundation, Inc. (http://cakefoundation.org)
+ * @copyright     Copyright 2005-2011, Cake Software Foundation, Inc. (http://cakefoundation.org)
  * @link          http://cakephp.org CakePHP(tm) Project
  * @since         CakePHP(tm) v 2.0
  * @license       MIT License (http://www.opensource.org/licenses/mit-license.php)
  */
-require 'PHPUnit/TextUI/TestRunner.php';
-
-PHP_CodeCoverage_Filter::getInstance()->addFileToBlacklist(__FILE__, 'DEFAULT');
+require_once 'PHPUnit/TextUI/TestRunner.php';
 
 /**
  * A custom test runner for Cake's use of PHPUnit.
  *
- * @package       cake.tests.lib
+ * @package       Cake.TestSuite
  */
 class CakeTestRunner extends PHPUnit_TextUI_TestRunner {
 /**
@@ -38,8 +36,8 @@ class CakeTestRunner extends PHPUnit_TextUI_TestRunner {
 /**
  * Actually run a suite of tests.  Cake initializes fixtures here using the chosen fixture manager
  *
- * @param PHPUnit_Framework_Test $suite 
- * @param array $arguments 
+ * @param PHPUnit_Framework_Test $suite
+ * @param array $arguments
  * @return void
  */
 	public function doRun(PHPUnit_Framework_Test $suite, array $arguments = array()) {
@@ -67,8 +65,13 @@ class CakeTestRunner extends PHPUnit_TextUI_TestRunner {
  */
 	protected function createTestResult() {
 		$result = new PHPUnit_Framework_TestResult;
-		if (isset($this->_params['codeCoverage'])) {
-			$result->collectCodeCoverageInformation(true);
+		if (!empty($this->_params['codeCoverage'])) {
+			if (method_exists($result, 'collectCodeCoverageInformation')) {
+				$result->collectCodeCoverageInformation(true);
+			}
+			if (method_exists($result, 'setCodeCoverage')) {
+				$result->setCodeCoverage(new PHP_CodeCoverage());
+			}
 		}
 		return $result;
     }

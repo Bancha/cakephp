@@ -7,23 +7,24 @@
  * PHP 5
  *
  * CakePHP :  Rapid Development Framework (http://cakephp.org)
- * Copyright 2006-2010, Cake Software Foundation, Inc.
+ * Copyright 2005-2011, Cake Software Foundation, Inc.
  *
  * Licensed under The MIT License
  * Redistributions of files must retain the above copyright notice.
  *
- * @copyright     Copyright 2006-2010, Cake Software Foundation, Inc.
+ * @copyright     Copyright 2005-2011, Cake Software Foundation, Inc. (http://cakefoundation.org)
  * @link          http://cakephp.org CakePHP Project
- * @package       cake.libs.model.behaviors
+ * @package       Cake.Model.Behavior
  * @since         CakePHP v 1.2.0.4487
  * @license       MIT License (http://www.opensource.org/licenses/mit-license.php)
  */
+App::uses('AclNode', 'Model');
 
 /**
  * ACL behavior
  *
- * @package       cake.libs.model.behaviors
- * @link http://book.cakephp.org/view/1320/ACL
+ * @package       Cake.Model.Behavior
+ * @link http://book.cakephp.org/2.0/en/core-libraries/behaviors/acl.html
  */
 class AclBehavior extends ModelBehavior {
 
@@ -32,25 +33,25 @@ class AclBehavior extends ModelBehavior {
  *
  * @var array
  */
-	private $__typeMaps = array('requester' => 'Aro', 'controlled' => 'Aco', 'both' => array('Aro', 'Aco'));
+	protected $_typeMaps = array('requester' => 'Aro', 'controlled' => 'Aco', 'both' => array('Aro', 'Aco'));
 
 /**
- * Sets up the configuation for the model, and loads ACL models if they haven't been already
+ * Sets up the configuration for the model, and loads ACL models if they haven't been already
  *
- * @param mixed $config
+ * @param Model $model
+ * @param array $config
  * @return void
  */
 	public function setup($model, $config = array()) {
-		if (is_string($config)) {
-			$config = array('type' => $config);
+		if (isset($config[0])) {
+			$config['type'] = $config[0];
+			unset($config[0]);
 		}
-		$this->settings[$model->name] = array_merge(array('type' => 'controlled'), (array)$config);
+		$this->settings[$model->name] = array_merge(array('type' => 'controlled'), $config);
 		$this->settings[$model->name]['type'] = strtolower($this->settings[$model->name]['type']);
 
-		$types = $this->__typeMaps[$this->settings[$model->name]['type']];
-		if (!class_exists('AclNode')) {
-			require CAKE . 'model' . DS . 'db_acl.php';
-		}
+		$types = $this->_typeMaps[$this->settings[$model->name]['type']];
+
 		if (!is_array($types)) {
 			$types = array($types);
 		}
@@ -65,16 +66,17 @@ class AclBehavior extends ModelBehavior {
 /**
  * Retrieves the Aro/Aco node for this model
  *
+ * @param Model $model
  * @param mixed $ref
  * @param string $type Only needed when Acl is set up as 'both', specify 'Aro' or 'Aco' to get the correct node
  * @return array
- * @link http://book.cakephp.org/view/1322/node
+ * @link http://book.cakephp.org/2.0/en/core-libraries/behaviors/acl.html#node
  */
 	public function node($model, $ref = null, $type = null) {
 		if (empty($type)) {
-			$type = $this->__typeMaps[$this->settings[$model->name]['type']];
+			$type = $this->_typeMaps[$this->settings[$model->name]['type']];
 			if (is_array($type)) {
-				trigger_error(__('AclBehavior is setup with more then one type, please specify type parameter for node()', true), E_USER_WARNING);
+				trigger_error(__d('cake_dev', 'AclBehavior is setup with more then one type, please specify type parameter for node()'), E_USER_WARNING);
 				return null;
 			}
 		}
@@ -87,11 +89,12 @@ class AclBehavior extends ModelBehavior {
 /**
  * Creates a new ARO/ACO node bound to this record
  *
+ * @param Model $model
  * @param boolean $created True if this is a new record
  * @return void
  */
 	public function afterSave($model, $created) {
-		$types = $this->__typeMaps[$this->settings[$model->name]['type']];
+		$types = $this->_typeMaps[$this->settings[$model->name]['type']];
 		if (!is_array($types)) {
 			$types = array($types);
 		}
@@ -102,7 +105,7 @@ class AclBehavior extends ModelBehavior {
 			}
 			$data = array(
 				'parent_id' => isset($parent[0][$type]['id']) ? $parent[0][$type]['id'] : null,
-				'model' => $model->alias,
+				'model' => $model->name,
 				'foreign_key' => $model->id
 			);
 			if (!$created) {
@@ -117,10 +120,11 @@ class AclBehavior extends ModelBehavior {
 /**
  * Destroys the ARO/ACO node bound to the deleted record
  *
+ * @param Model $model
  * @return void
  */
 	public function afterDelete($model) {
-		$types = $this->__typeMaps[$this->settings[$model->name]['type']];
+		$types = $this->_typeMaps[$this->settings[$model->name]['type']];
 		if (!is_array($types)) {
 			$types = array($types);
 		}

@@ -5,14 +5,14 @@
  * PHP 5
  *
  * CakePHP(tm) : Rapid Development Framework (http://cakephp.org)
- * Copyright 2005-2010, Cake Software Foundation, Inc. (http://cakefoundation.org)
+ * Copyright 2005-2011, Cake Software Foundation, Inc. (http://cakefoundation.org)
  *
  * Licensed under The MIT License
  * Redistributions of files must retain the above copyright notice.
  *
- * @copyright     Copyright 2005-2010, Cake Software Foundation, Inc. (http://cakefoundation.org)
+ * @copyright     Copyright 2005-2011, Cake Software Foundation, Inc. (http://cakefoundation.org)
  * @link          http://cakephp.org CakePHP(tm) Project
- * @package       cake.libs.view
+ * @package       Cake.View
  * @since         CakePHP(tm) v 0.10.0.1076
  * @license       MIT License (http://www.opensource.org/licenses/mit-license.php)
  */
@@ -26,9 +26,9 @@ App::uses('View', 'View');
  * the default app view files will be used. You can set `$this->theme` and `$this->viewClass = 'Theme'`
  * in your Controller to use the ThemeView.
  *
- * Example of theme path with `$this->theme = 'super_hot';` Would be `app/views/themed/super_hot/posts`
+ * Example of theme path with `$this->theme = 'SuperHot';` Would be `app/View/Themed/SuperHot/Posts`
  *
- * @package       cake.libs.view
+ * @package       Cake.View
  */
 class ThemeView extends View {
 /**
@@ -36,9 +36,11 @@ class ThemeView extends View {
  *
  * @param Controller $controller Controller object to be rendered.
  */
-	function __construct($controller) {
+	public function __construct($controller) {
 		parent::__construct($controller);
-		$this->theme = $controller->theme;
+		if ($controller) {
+			$this->theme = $controller->theme;
+		}
 	}
 
 /**
@@ -47,20 +49,19 @@ class ThemeView extends View {
  * @param string $plugin The name of the plugin views are being found for.
  * @param boolean $cached Set to true to force dir scan.
  * @return array paths
- * @access protected
  * @todo Make theme path building respect $cached parameter.
  */
-	function _paths($plugin = null, $cached = true) {
+	protected function _paths($plugin = null, $cached = true) {
 		$paths = parent::_paths($plugin, $cached);
 		$themePaths = array();
 
 		if (!empty($this->theme)) {
 			$count = count($paths);
 			for ($i = 0; $i < $count; $i++) {
-				if (strpos($paths[$i], DS . 'Plugins' . DS) === false
+				if (strpos($paths[$i], DS . 'Plugin' . DS) === false
 					&& strpos($paths[$i], DS . 'Cake' . DS . 'View') === false) {
 						if ($plugin) {
-							$themePaths[] = $paths[$i] . 'Themed'. DS . $this->theme . DS . 'Plugins' . DS . $plugin . DS;
+							$themePaths[] = $paths[$i] . 'Themed'. DS . $this->theme . DS . 'Plugin' . DS . $plugin . DS;
 						}
 						$themePaths[] = $paths[$i] . 'Themed'. DS . $this->theme . DS;
 					}

@@ -1,29 +1,31 @@
 <?php
 /**
- * CommandListTest file
+ * Command list Shell
  *
  * PHP 5
  *
- * CakePHP :  Rapid Development Framework (http://cakephp.org)
- * Copyright 2006-2010, Cake Software Foundation, Inc.
+ * CakePHP(tm) : Rapid Development Framework (http://cakephp.org)
+ * Copyright 2005-2011, Cake Software Foundation, Inc. (http://cakefoundation.org)
  *
  * Licensed under The MIT License
  * Redistributions of files must retain the above copyright notice.
  *
- * @copyright     Copyright 2006-2010, Cake Software Foundation, Inc.
+ * @copyright     Copyright 2005-2011, Cake Software Foundation, Inc. (http://cakefoundation.org)
  * @link          http://cakephp.org CakePHP Project
+ * @package       Cake.Console.Command
  * @since         CakePHP v 2.0
  * @license       MIT License (http://www.opensource.org/licenses/mit-license.php)
  */
 
+App::uses('AppShell', 'Console/Command');
 App::uses('Inflector', 'Utility');
 
 /**
  * Shows a list of commands available from the console.
  *
- * @package cake.console.shells
+ * @package       Cake.Console.Command
  */
-class CommandListShell extends Shell {
+class CommandListShell extends AppShell {
 
 /**
  * startup
@@ -45,7 +47,7 @@ class CommandListShell extends Shell {
 		if (empty($this->params['xml'])) {
 			$this->out(__d('cake_console', "<info>Current Paths:</info>"), 2);
 			$this->out(" -app: ". APP_DIR);
-			$this->out(" -working: " . rtrim(APP_PATH, DS));
+			$this->out(" -working: " . rtrim(APP, DS));
 			$this->out(" -root: " . rtrim(ROOT, DS));
 			$this->out(" -core: " . rtrim(CORE_PATH, DS));
 			$this->out("");
@@ -75,15 +77,19 @@ class CommandListShell extends Shell {
 /**
  * Gets the shell command listing.
  *
- * @return array 
+ * @return array
  */
 	protected function _getShellList() {
 		$shellList = array();
+		$skipFiles = array('AppShell');
 
-		$shells = App::objects('file', App::core('Console/Command'));
+		$corePath = App::core('Console/Command');
+		$shells = App::objects('file', $corePath[0]);
+		$shells = array_diff($shells, $skipFiles);
 		$shellList = $this->_appendShells('CORE', $shells, $shellList);
 
 		$appShells = App::objects('Console/Command', null, false);
+		$appShells = array_diff($appShells, $shells, $skipFiles);
 		$shellList = $this->_appendShells('app', $appShells, $shellList);
 
 		$plugins = CakePlugin::loaded();
@@ -98,6 +104,9 @@ class CommandListShell extends Shell {
 /**
  * Scan the provided paths for shells, and append them into $shellList
  *
+ * @param string $type
+ * @param array $shells
+ * @param array $shellList
  * @return array
  */
 	protected function _appendShells($type, $shells, $shellList) {
@@ -111,6 +120,7 @@ class CommandListShell extends Shell {
 /**
  * Output text.
  *
+ * @param array $shellList
  * @return void
  */
 	protected function _asText($shellList) {
@@ -139,13 +149,15 @@ class CommandListShell extends Shell {
 			$this->out(" " . $row);
 		}
 		$this->out();
-		$this->out(__d('cake_console', "To run a command, type <info>cake shell_name [args]</info>"));
+		$this->out(__d('cake_console', "To run an app or core command, type <info>cake shell_name [args]</info>"));
+		$this->out(__d('cake_console', "To run a plugin command, type <info>cake Plugin.shell_name [args]</info>"));
 		$this->out(__d('cake_console', "To get help on a specific command, type <info>cake shell_name --help</info>"), 2);
 	}
 
 /**
  * Generates the shell list sorted by where the shells are found.
  *
+ * @param array $shellList
  * @return void
  */
 	protected function _asSorted($shellList) {
@@ -184,6 +196,7 @@ class CommandListShell extends Shell {
 /**
  * Output as XML
  *
+ * @param array $shellList
  * @return void
  */
 	protected function _asXml($shellList) {
@@ -201,6 +214,7 @@ class CommandListShell extends Shell {
 			$shell->addAttribute('provider', $source);
 			$shell->addAttribute('help', $callable . ' -h');
 		}
+		$this->stdout->outputAs(ConsoleOutput::RAW);
 		$this->out($shells->saveXml());
 	}
 

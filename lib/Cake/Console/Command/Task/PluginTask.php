@@ -5,33 +5,32 @@
  * PHP 5
  *
  * CakePHP(tm) : Rapid Development Framework (http://cakephp.org)
- * Copyright 2005-2010, Cake Software Foundation, Inc. (http://cakefoundation.org)
+ * Copyright 2005-2011, Cake Software Foundation, Inc. (http://cakefoundation.org)
  *
  * Licensed under The MIT License
  * Redistributions of files must retain the above copyright notice.
  *
- * @copyright     Copyright 2005-2010, Cake Software Foundation, Inc. (http://cakefoundation.org)
+ * @copyright     Copyright 2005-2011, Cake Software Foundation, Inc. (http://cakefoundation.org)
  * @link          http://cakephp.org CakePHP(tm) Project
- * @package       cake.console.shells.tasks
  * @since         CakePHP(tm) v 1.2
  * @license       MIT License (http://www.opensource.org/licenses/mit-license.php)
  */
 
+App::uses('AppShell', 'Console/Command');
 App::uses('File', 'Utility');
 App::uses('Folder', 'Utility');
 
 /**
  * Task class for creating a plugin
  *
- * @package       cake.console.shells.tasks
+ * @package       Cake.Console.Command.Task
  */
-class PluginTask extends Shell {
+class PluginTask extends AppShell {
 
 /**
  * path to plugins directory
  *
  * @var array
- * @access public
  */
 	public $path = null;
 
@@ -40,7 +39,7 @@ class PluginTask extends Shell {
  *
  * @return void
  */
-	function initialize() {
+	public function initialize() {
 		$this->path = current(App::path('plugins'));
 	}
 
@@ -67,7 +66,7 @@ class PluginTask extends Shell {
 /**
  * Interactive interface
  *
- * @access private
+ * @param string $plugin
  * @return void
  */
 	protected function _interactive($plugin = null) {
@@ -76,34 +75,32 @@ class PluginTask extends Shell {
 		}
 
 		if (!$this->bake($plugin)) {
-			$this->error(__d('cake_console', "An error occured trying to bake: %s in %s", $plugin, $this->path . Inflector::camelize($plugin)));
+			$this->error(__d('cake_console', "An error occured trying to bake: %s in %s", $plugin, $this->path . $plugin));
 		}
 	}
 
 /**
  * Bake the plugin, create directories and files
  *
- * @params $plugin name of the plugin in CamelCased format
- * @access public
- * @return bool
+ * @param string $plugin Name of the plugin in CamelCased format
+ * @return boolean
  */
 	public function bake($plugin) {
-		$pluginPath = Inflector::camelize($plugin);
 		$pathOptions = App::path('plugins');
 		if (count($pathOptions) > 1) {
 			$this->findPath($pathOptions);
 		}
 		$this->hr();
 		$this->out(__d('cake_console', "<info>Plugin Name:</info> %s", $plugin));
-		$this->out(__d('cake_console', "<info>Plugin Directory:</info> %s", $this->path . $pluginPath));
+		$this->out(__d('cake_console', "<info>Plugin Directory:</info> %s", $this->path . $plugin));
 		$this->hr();
 
 		$looksGood = $this->in(__d('cake_console', 'Look okay?'), array('y', 'n', 'q'), 'y');
 
 		if (strtolower($looksGood) == 'y') {
-			$Folder = new Folder($this->path . $pluginPath);
+			$Folder = new Folder($this->path . $plugin);
 			$directories = array(
-				'Config' . DS . 'schema',
+				'Config' . DS . 'Schema',
 				'Model' . DS . 'Behavior',
 				'Model' . DS . 'Datasource',
 				'Console' . DS . 'Command' . DS . 'Task',
@@ -119,7 +116,7 @@ class PluginTask extends Shell {
 			);
 
 			foreach ($directories as $directory) {
-				$dirPath = $this->path . $pluginPath . DS . $directory;
+				$dirPath = $this->path . $plugin . DS . $directory;
 				$Folder->create($dirPath);
 				$File = new File($dirPath . DS . 'empty', true);
 			}
@@ -138,19 +135,17 @@ class PluginTask extends Shell {
 			$out = "<?php\n\n";
 			$out .= "class {$plugin}AppController extends AppController {\n\n";
 			$out .= "}\n\n";
-			$out .= "?>";
-			$this->createFile($this->path . $pluginPath. DS . 'Controller' . DS . $controllerFileName, $out);
+			$this->createFile($this->path . $plugin. DS . 'Controller' . DS . $controllerFileName, $out);
 
 			$modelFileName = $plugin . 'AppModel.php';
 
 			$out = "<?php\n\n";
 			$out .= "class {$plugin}AppModel extends AppModel {\n\n";
 			$out .= "}\n\n";
-			$out .= "?>";
-			$this->createFile($this->path . $pluginPath . DS . 'Model' . DS . $modelFileName, $out);
+			$this->createFile($this->path . $plugin . DS . 'Model' . DS . $modelFileName, $out);
 
 			$this->hr();
-			$this->out(__d('cake_console', '<success>Created:</success> %s in %s', $plugin, $this->path . $pluginPath), 2);
+			$this->out(__d('cake_console', '<success>Created:</success> %s in %s', $plugin, $this->path . $plugin), 2);
 		}
 
 		return true;
@@ -159,6 +154,7 @@ class PluginTask extends Shell {
 /**
  * find and change $this->path to the user selection
  *
+ * @param array $pathOptions
  * @return string plugin path
  */
 	public function findPath($pathOptions) {

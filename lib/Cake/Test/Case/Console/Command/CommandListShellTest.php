@@ -1,18 +1,18 @@
 <?php
 /**
- * CommandList file
+ * CommandListShellTest file
  *
  * PHP 5
  *
  * CakePHP :  Rapid Development Framework (http://cakephp.org)
- * Copyright 2006-2010, Cake Software Foundation, Inc.
+ * Copyright 2005-2011, Cake Software Foundation, Inc.
  *
  * Licensed under The MIT License
  * Redistributions of files must retain the above copyright notice.
  *
- * @copyright     Copyright 2006-2010, Cake Software Foundation, Inc.
+ * @copyright     Copyright 2005-2011, Cake Software Foundation, Inc.
  * @link          http://cakephp.org CakePHP Project
- * @package       cake.tests.cases.console.libs
+ * @package       Cake.Test.Case.Console.Command
  * @since         CakePHP v 2.0
  * @license       MIT License (http://www.opensource.org/licenses/mit-license.php)
  */
@@ -31,7 +31,7 @@ class TestStringOutput extends ConsoleOutput {
 	}
 }
 
-class CommandListTest extends CakeTestCase {
+class CommandListShellTest extends CakeTestCase {
 /**
  * setUp method
  *
@@ -64,7 +64,7 @@ class CommandListTest extends CakeTestCase {
  *
  * @return void
  */
-	function tearDown() {
+	public function tearDown() {
 		parent::tearDown();
 		unset($this->Shell);
 		CakePlugin::unload();
@@ -75,40 +75,40 @@ class CommandListTest extends CakeTestCase {
  *
  * @return void
  */
-	function testMain() {
+	public function testMain() {
 		$this->Shell->main();
 		$output = $this->Shell->stdout->output;
 
 		$expected = "/example \[.*TestPlugin, TestPluginTwo.*\]/";
-		$this->assertPattern($expected, $output);
+		$this->assertRegExp($expected, $output);
 
 		$expected = "/welcome \[.*TestPluginTwo.*\]/";
-		$this->assertPattern($expected, $output);
+		$this->assertRegExp($expected, $output);
 
 
 		$expected = "/acl \[.*CORE.*\]/";
-		$this->assertPattern($expected, $output);
+		$this->assertRegExp($expected, $output);
 
 		$expected = "/api \[.*CORE.*\]/";
-		$this->assertPattern($expected, $output);
+		$this->assertRegExp($expected, $output);
 
 		$expected = "/bake \[.*CORE.*\]/";
-		$this->assertPattern($expected, $output);
+		$this->assertRegExp($expected, $output);
 
 		$expected = "/console \[.*CORE.*\]/";
-		$this->assertPattern($expected, $output);
+		$this->assertRegExp($expected, $output);
 
 		$expected = "/i18n \[.*CORE.*\]/";
-		$this->assertPattern($expected, $output);
+		$this->assertRegExp($expected, $output);
 
 		$expected = "/schema \[.*CORE.*\]/";
-		$this->assertPattern($expected, $output);
+		$this->assertRegExp($expected, $output);
 
 		$expected = "/testsuite \[.*CORE.*\]/";
-		$this->assertPattern($expected, $output);
+		$this->assertRegExp($expected, $output);
 
 		$expected = "/sample \[.*app.*\]/";
-		$this->assertPattern($expected, $output);
+		$this->assertRegExp($expected, $output);
 	}
 
 /**
@@ -116,23 +116,23 @@ class CommandListTest extends CakeTestCase {
  *
  * @return void
  */
-	function testSortPlugin() {
+	public function testSortPlugin() {
 		$this->Shell->params['sort'] = true;
 		$this->Shell->main();
 
 		$output = $this->Shell->stdout->output;
 
-		$expected = "/\[.*App.*\]\n[ ]+sample/";
-		$this->assertPattern($expected, $output);
+		$expected = "/\[.*App.*\]\\v*[ ]+sample/";
+		$this->assertRegExp($expected, $output);
 
-		$expected = "/\[.*TestPluginTwo.*\]\n[ ]+example, welcome/";
-		$this->assertPattern($expected, $output);
+		$expected = "/\[.*TestPluginTwo.*\]\\v*[ ]+example, welcome/";
+		$this->assertRegExp($expected, $output);
 
-		$expected = "/\[.*TestPlugin.*\]\n[ ]+example/";
-		$this->assertPattern($expected, $output);
+		$expected = "/\[.*TestPlugin.*\]\\v*[ ]+example/";
+		$this->assertRegExp($expected, $output);
 
-		$expected = "/\[.*Core.*\]\n[ ]+acl, api, bake, command_list, console, i18n, schema, testsuite/";
-		$this->assertPattern($expected, $output);
+		$expected = "/\[.*Core.*\]\\v*[ ]+acl, api, bake, command_list, console, i18n, schema, testsuite/";
+		$this->assertRegExp($expected, $output);
 	}
 
 /**
@@ -140,7 +140,7 @@ class CommandListTest extends CakeTestCase {
  *
  * @return void
  */
-	function testMainXml() {
+	public function testMainXml() {
 		$this->Shell->params['xml'] = true;
 		$this->Shell->main();
 

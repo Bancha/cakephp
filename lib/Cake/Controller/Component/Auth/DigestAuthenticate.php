@@ -3,12 +3,12 @@
  * PHP 5
  *
  * CakePHP(tm) : Rapid Development Framework (http://cakephp.org)
- * Copyright 2005-2010, Cake Software Foundation, Inc. (http://cakefoundation.org)
+ * Copyright 2005-2011, Cake Software Foundation, Inc. (http://cakefoundation.org)
  *
  * Licensed under The MIT License
  * Redistributions of files must retain the above copyright notice.
  *
- * @copyright     Copyright 2005-2010, Cake Software Foundation, Inc. (http://cakefoundation.org)
+ * @copyright     Copyright 2005-2011, Cake Software Foundation, Inc. (http://cakefoundation.org)
  * @link          http://cakephp.org CakePHP(tm) Project
  * @license       MIT License (http://www.opensource.org/licenses/mit-license.php)
  */
@@ -20,17 +20,17 @@ App::uses('BaseAuthenticate', 'Controller/Component/Auth');
  *
  * Provides Digest HTTP authentication support for AuthComponent.  Unlike most AuthComponent adapters,
  * DigestAuthenticate requires a special password hash that conforms to RFC2617.  You can create this
- * password using `DigestAuthenticate::password()`.  If you wish to use digest authentication alongside other 
+ * password using `DigestAuthenticate::password()`.  If you wish to use digest authentication alongside other
  * authentication methods, its recommended that you store the digest authentication separately.
  *
  * Clients using Digest Authentication  must support cookies.  Since AuthComponent identifies users based
  * on Session contents, clients without support for cookies will not function properly.
  *
  * ### Using Digest auth
- * 
+ *
  * In your controller's components array, add auth + the required settings.
  * {{{
- *	var $components = array(
+ *	public $components = array(
  *		'Auth' => array(
  *			'authenticate' => array('Digest')
  *		)
@@ -47,11 +47,11 @@ App::uses('BaseAuthenticate', 'Controller/Component/Auth');
  *
  * `$digestPass = DigestAuthenticate::password($username, env('SERVER_NAME'), $password);`
  *
- * Its recommended that you store this digest auth only password separate from password hashes used for other 
+ * Its recommended that you store this digest auth only password separate from password hashes used for other
  * login methods.  For example `User.digest_pass` could be used for a digest password, while `User.password` would
  * store the password hash for use with other methods like Basic or Form.
  *
- * @package cake.libs.controller.components.auth
+ * @package       Cake.Controller.Component.Auth
  * @since 2.0
  */
 class DigestAuthenticate extends BaseAuthenticate {
@@ -101,7 +101,7 @@ class DigestAuthenticate extends BaseAuthenticate {
 		}
 	}
 /**
- * Authenticate a user using Digest HTTP auth.  Will use the configured User model and attempt a 
+ * Authenticate a user using Digest HTTP auth.  Will use the configured User model and attempt a
  * login using Digest HTTP auth.
  *
  * @param CakeRequest $request The request to authenticate with.
@@ -230,7 +230,7 @@ class DigestAuthenticate extends BaseAuthenticate {
 	}
 
 /**
- * Creates an auth digest password hash to store 
+ * Creates an auth digest password hash to store
  *
  * @param string $username The username to use in the digest hash.
  * @param string $password The unhashed password to make a digest hash for.

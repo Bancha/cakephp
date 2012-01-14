@@ -7,14 +7,14 @@
  * PHP 5
  *
  * CakePHP(tm) : Rapid Development Framework (http://cakephp.org)
- * Copyright 2005-2010, Cake Software Foundation, Inc. (http://cakefoundation.org)
+ * Copyright 2005-2011, Cake Software Foundation, Inc. (http://cakefoundation.org)
  *
  * Licensed under The MIT License
  * Redistributions of files must retain the above copyright notice.
  *
- * @copyright     Copyright 2005-2010, Cake Software Foundation, Inc. (http://cakefoundation.org)
+ * @copyright     Copyright 2005-2011, Cake Software Foundation, Inc. (http://cakefoundation.org)
  * @link          http://cakephp.org CakePHP(tm) Project
- * @package       cake.libs.view
+ * @package       Cake.View
  * @since         CakePHP(tm) v 0.2.9
  * @license       MIT License (http://www.opensource.org/licenses/mit-license.php)
  */
@@ -25,7 +25,7 @@ App::uses('Router', 'Routing');
  * Abstract base class for all other Helpers in CakePHP.
  * Provides common methods and features.
  *
- * @package       cake.libs.view
+ * @package       Cake.View
  */
 class Helper extends Object {
 
@@ -51,7 +51,7 @@ class Helper extends Object {
 	public $theme = null;
 
 /**
- * Request object 
+ * Request object
  *
  * @var CakeRequest
  */
@@ -65,17 +65,16 @@ class Helper extends Object {
 	public $plugin = null;
 
 /**
- * Contains model validation errors of form post-backs
+ * Holds the fields array('field_name' => array('type'=> 'string', 'length'=> 100),
+ * primaryKey and validates array('field_name')
  *
- * @access public
  * @var array
  */
-	public $validationErrors = null;
+	public $fieldset = array();
 
 /**
  * Holds tag templates.
  *
- * @access public
  * @var array
  */
 	public $tags = array();
@@ -83,18 +82,16 @@ class Helper extends Object {
 /**
  * Holds the content to be cleaned.
  *
- * @access private
  * @var mixed
  */
-	private $__tainted = null;
+	protected $_tainted = null;
 
 /**
  * Holds the cleaned content.
  *
- * @access private
  * @var mixed
  */
-	private $__cleaned = null;
+	protected $_cleaned = null;
 
 /**
  * The View instance this helper is attached to
@@ -102,6 +99,41 @@ class Helper extends Object {
  * @var View
  */
 	protected $_View;
+
+/**
+ * A list of strings that should be treated as suffixes, or
+ * sub inputs for a parent input.  This is used for date/time
+ * inputs primarily.
+ *
+ * @var array
+ */
+	protected $_fieldSuffixes = array(
+		'year', 'month', 'day', 'hour', 'min', 'second', 'meridian'
+	);
+
+/**
+ * The name of the current model entities are in scope of.
+ *
+ * @see Helper::setEntity()
+ * @var string
+ */
+	protected $_modelScope;
+
+/**
+ * The name of the current model association entities are in scope of.
+ *
+ * @see Helper::setEntity()
+ * @var string
+ */
+	protected $_association;
+
+/**
+ * The dot separated list of elements the current field entity is for.
+ *
+ * @see Helper::setEntity()
+ * @var string
+ */
+	protected $_entityPath;
 
 /**
  * Default Constructor
@@ -122,6 +154,7 @@ class Helper extends Object {
  *
  * @param string $method Method to invoke
  * @param array $params Array of params for the method.
+ * @return void
  */
 	public function __call($method, $params) {
 		trigger_error(__d('cake_dev', 'Method %1$s::%2$s does not exist', get_class($this), $method), E_USER_WARNING);
@@ -157,7 +190,9 @@ class Helper extends Object {
 /**
  * Provides backwards compatiblity access for setting values to the request object.
  *
- * @return void
+ * @param string $name Name of the property being accessed.
+ * @param mixed $value
+ * @return mixed Return the $value
  */
 	public function __set($name, $value) {
 		switch ($name) {
@@ -182,7 +217,7 @@ class Helper extends Object {
  *    the reverse routing features of CakePHP.
  * @param boolean $full If true, the full base URL will be prepended to the result
  * @return string  Full translated URL with base path.
- * @link http://book.cakephp.org/view/1448/url
+ * @link http://book.cakephp.org/2.0/en/views/helpers.html
  */
 	public function url($url = null, $full = false) {
 		return h(Router::url($url, $full));
@@ -265,10 +300,10 @@ class Helper extends Object {
  * content is the best way to prevent all possible attacks.
  *
  * @param mixed $output Either an array of strings to clean or a single string to clean.
- * @return cleaned content for output
+ * @return string|array cleaned content for output
  */
 	public function clean($output) {
-		$this->__reset();
+		$this->_reset();
 		if (empty($output)) {
 			return null;
 		}
@@ -278,9 +313,9 @@ class Helper extends Object {
 			}
 			return $return;
 		}
-		$this->__tainted = $output;
-		$this->__clean();
-		return $this->__cleaned;
+		$this->_tainted = $output;
+		$this->_clean();
+		return $this->_cleaned;
 	}
 
 /**
@@ -321,8 +356,9 @@ class Helper extends Object {
  * @param string $insertBefore String to be inserted before options.
  * @param string $insertAfter String to be inserted after options.
  * @return string Composed attributes.
+ * @deprecated This method has been moved to HtmlHelper
  */
-	public function _parseAttributes($options, $exclude = null, $insertBefore = ' ', $insertAfter = null) {
+	protected function _parseAttributes($options, $exclude = null, $insertBefore = ' ', $insertAfter = null) {
 		if (!is_string($options)) {
 			$options = (array) $options + array('escape' => true);
 
@@ -352,7 +388,9 @@ class Helper extends Object {
  *
  * @param string $key The name of the attribute to create
  * @param string $value The value of the attribute to create.
+ * @param boolean $escape Define if the value must be escaped
  * @return string The composed attribute.
+ * @deprecated This method has been moved to HtmlHelper
  */
 	protected function _formatAttribute($key, $value, $escape = true) {
 		$attribute = '';
@@ -380,146 +418,76 @@ class Helper extends Object {
  * @return void
  */
 	public function setEntity($entity, $setScope = false) {
-		$view = $this->_View;
-		if ($setScope) {
-			$view->modelScope = false;
-		} elseif (!empty($view->entityPath) && $view->entityPath == $entity) {
-			return;
-		}
-
 		if ($entity === null) {
-			$view->model = null;
-			$view->association = null;
-			$view->modelId = null;
-			$view->modelScope = false;
-			$view->entityPath = null;
-			return;
+			$this->_modelScope = false;
 		}
-
-		$view->entityPath = $entity;
-		$model = $view->model;
-		$sameScope = $hasField = false;
+		if ($setScope === true) {
+			$this->_modelScope = $entity;
+		}
 		$parts = array_values(Set::filter(explode('.', $entity), true));
-
 		if (empty($parts)) {
 			return;
 		}
-
 		$count = count($parts);
-		if ($count === 1) {
-			$sameScope = true;
+		$lastPart = isset($parts[$count - 1]) ? $parts[$count - 1] : null;
+
+		// Either 'body' or 'date.month' type inputs.
+		if (
+			($count === 1 && $this->_modelScope && $setScope == false) ||
+			(
+				$count === 2 &&
+				in_array($lastPart, $this->_fieldSuffixes) &&
+				$this->_modelScope &&
+				$parts[0] !== $this->_modelScope
+			)
+		) {
+			$entity = $this->_modelScope . '.' . $entity;
+		}
+
+		// 0.name, 0.created.month style inputs.  Excludes inputs with the modelScope in them.
+		if (
+			$count >= 2 && 
+			is_numeric($parts[0]) && 
+			!is_numeric($parts[1]) && 
+			$this->_modelScope && 
+			strpos($entity, $this->_modelScope) === false
+		) {
+			$entity = $this->_modelScope . '.' . $entity;
+		}
+
+		$this->_association = null;
+
+		$isHabtm = (
+			isset($this->fieldset[$this->_modelScope]['fields'][$parts[0]]['type']) &&
+			$this->fieldset[$this->_modelScope]['fields'][$parts[0]]['type'] === 'multiple' &&
+			$count == 1
+		);
+
+		// habtm models are special
+		if ($count == 1 && $isHabtm) {
+			$this->_association = $parts[0];
+			$entity = $parts[0] . '.' . $parts[0];
 		} else {
-			if (is_numeric($parts[0])) {
-				$sameScope = true;
-			}
-			$reverse = array_reverse($parts);
-			$field = array_shift($reverse);
-			while(!empty($reverse)) {
-				$subject = array_shift($reverse);
-				if (is_numeric($subject)) {
-					continue;
-				}
-				if (ClassRegistry::isKeySet($subject)) {
-					$model = $subject;
+			// check for associated model.
+			$reversed = array_reverse($parts);
+			foreach ($reversed as $i => $part) {
+				if ($i > 0 && preg_match('/^[A-Z]/', $part)) {
+					$this->_association = $part;
 					break;
 				}
 			}
 		}
+		$this->_entityPath = $entity;
+		return;
+	}
 
-		if (ClassRegistry::isKeySet($model)) {
-			$ModelObj = ClassRegistry::getObject($model);
-			for ($i = 0; $i < $count; $i++) {
-				if (
-					is_a($ModelObj, 'Model') && 
-					($ModelObj->hasField($parts[$i]) || 
-					array_key_exists($parts[$i], $ModelObj->validate))
-				) {
-					$hasField = $i;
-					if ($hasField === 0 || ($hasField === 1 && is_numeric($parts[0]))) {
-						$sameScope = true;
-					}
-					break;
-				}
-			}
-
-			if ($sameScope === true && in_array($parts[0], array_keys($ModelObj->hasAndBelongsToMany))) {
-				$sameScope = false;
-			}
-		}
-
-		if (!$view->association && $parts[0] == $view->field && $view->field != $view->model) {
-			array_unshift($parts, $model);
-			$hasField = true;
-		}
-		$view->field = $view->modelId = $view->fieldSuffix = $view->association = null;
-
-		switch (count($parts)) {
-			case 1:
-				if ($view->modelScope === false) {
-					$view->model = $parts[0];
-				} else {
-					$view->field = $parts[0];
-					if ($sameScope === false) {
-						$view->association = $parts[0];
-					}
-				}
-			break;
-			case 2:
-				if ($view->modelScope === false) {
-					list($view->model, $view->field) = $parts;
-				} elseif ($sameScope === true && $hasField === 0) {
-					list($view->field, $view->fieldSuffix) = $parts;
-				} elseif ($sameScope === true && $hasField === 1) {
-					list($view->modelId, $view->field) = $parts;
-				} else {
-					list($view->association, $view->field) = $parts;
-				}
-			break;
-			case 3:
-				if ($sameScope === true && $hasField === 1) {
-					list($view->modelId, $view->field, $view->fieldSuffix) = $parts;
-				} elseif ($hasField === 2) {
-					list($view->association, $view->modelId, $view->field) = $parts;
-				} else {
-					list($view->association, $view->field, $view->fieldSuffix) = $parts;
-				}
-			break;
-			case 4:
-				if ($parts[0] === $view->model) {
-					list($view->model, $view->modelId, $view->field, $view->fieldSuffix) = $parts;
-				} else {
-					list($view->association, $view->modelId, $view->field, $view->fieldSuffix) = $parts;
-				}
-			break;
-			default:
-				$reverse = array_reverse($parts);
-
-				if ($hasField) {
-						$view->field = $field;
-						if (!is_numeric($reverse[1]) && $reverse[1] != $model) {
-							$view->field = $reverse[1];
-							$view->fieldSuffix = $field;
-						}
-				}
-				if (is_numeric($parts[0])) {
-					$view->modelId = $parts[0];
-				} elseif ($view->model == $parts[0] && is_numeric($parts[1])) {
-					$view->modelId = $parts[1];
-				}
-				$view->association = $model;
-			break;
-		}
-
-		if (!isset($view->model) || empty($view->model)) {
-			$view->model = $view->association;
-			$view->association = null;
-		} elseif ($view->model === $view->association) {
-			$view->association = null;
-		}
-
-		if ($setScope) {
-			$view->modelScope = true;
-		}
+/**
+ * Returns the entity reference of the current context as an array of identity parts
+ *
+ * @return array An array containing the identity elements of an entity
+ */
+	public function entity() {
+		return explode('.', $this->_entityPath);
 	}
 
 /**
@@ -528,46 +496,27 @@ class Helper extends Object {
  * @return string
  */
 	public function model() {
-		if (!empty($this->_View->association)) {
-			return $this->_View->association;
-		} else {
-			return $this->_View->model;
+		if ($this->_association) {
+			return $this->_association;
 		}
-	}
-
-/**
- * Gets the ID of the currently-used model of the rendering context.
- *
- * @return mixed
- */
-	public function modelID() {
-		return $this->_View->modelId;
+		return $this->_modelScope;
 	}
 
 /**
  * Gets the currently-used model field of the rendering context.
+ * Strips off fieldsuffixes such as year, month, day, hour, min, meridian
+ * when the current entity is longer than 2 elements.
  *
  * @return string
  */
 	public function field() {
-		return $this->_View->field;
-	}
-
-/**
- * Returns false if given FORM field has no errors. Otherwise it returns the constant set in
- * the array Model->validationErrors.
- *
- * @param string $model Model name as a string
- * @param string $field Fieldname as a string
- * @param integer $modelID Unique index identifying this record within the form
- * @return boolean True on errors.
- */
-	public function tagIsInvalid($model = null, $field = null, $modelID = null) {
-		$errors = $this->validationErrors;
-		$entity = $this->_View->entity();
-		if (!empty($entity)) {
-			return Set::extract($errors, join('.', $entity));
+		$entity = $this->entity();
+		$count = count($entity);
+		$last = $entity[$count - 1];
+		if ($count > 2 && in_array($last, $this->_fieldSuffixes)) {
+			$last = isset($entity[$count - 2]) ? $entity[$count - 2] : null;
 		}
+		return $last;
 	}
 
 /**
@@ -590,7 +539,7 @@ class Helper extends Object {
 			return $this->domId();
 		}
 
-		$entity = $this->_View->entity();
+		$entity = $this->entity();
 		$model = array_shift($entity);
 		$dom = $model . join('', array_map(array('Inflector', 'camelize'), $entity));
 
@@ -612,7 +561,6 @@ class Helper extends Object {
  * @param string $key The name of the attribute to be set, defaults to 'name'
  * @return mixed If an array was given for $options, an array with $key set will be returned.
  *   If a string was supplied a string will be returned.
- * @access protected
  * @todo Refactor this method to not have as many input/output options.
  */
 	protected function _name($options = array(), $field = null, $key = 'name') {
@@ -636,7 +584,7 @@ class Helper extends Object {
 				$name = $field;
 			break;
 			default:
-				$name = 'data[' . implode('][', $this->_View->entity()) . ']';
+				$name = 'data[' . implode('][', $this->entity()) . ']';
 			break;
 		}
 
@@ -657,7 +605,6 @@ class Helper extends Object {
  * @param string $key The name of the attribute to be set, defaults to 'value'
  * @return mixed If an array was given for $options, an array with $key set will be returned.
  *   If a string was supplied a string will be returned.
- * @access public
  * @todo Refactor this method to not have as many input/output options.
  */
 	public function value($options = array(), $field = null, $key = 'value') {
@@ -678,9 +625,9 @@ class Helper extends Object {
 		$result = null;
 		$data = $this->request->data;
 
-		$entity = $this->_View->entity();
+		$entity = $this->entity();
 		if (!empty($data) && !empty($entity)) {
-			$result = Set::extract($data, join('.', $entity));
+			$result = Set::extract(implode('.', $entity), $data);
 		}
 
 		$habtmKey = $this->field();
@@ -689,13 +636,7 @@ class Helper extends Object {
 		} elseif (empty($result) && isset($data[$habtmKey]) && is_array($data[$habtmKey])) {
 			if (ClassRegistry::isKeySet($habtmKey)) {
 				$model = ClassRegistry::getObject($habtmKey);
-				$result = $this->__selectedArray($data[$habtmKey], $model->primaryKey);
-			}
-		}
-
-		if (is_array($result)) {
-			if (array_key_exists($this->_View->fieldSuffix, $result)) {
-				$result = $result[$this->_View->fieldSuffix];
+				$result = $this->_selectedArray($data[$habtmKey], $model->primaryKey);
 			}
 		}
 
@@ -731,7 +672,7 @@ class Helper extends Object {
 		$options = $this->_name($options);
 		$options = $this->value($options);
 		$options = $this->domId($options);
-		if ($this->tagIsInvalid()) {
+		if ($this->tagIsInvalid() !== false) {
 			$options = $this->addClass($options, 'form-error');
 		}
 		return $options;
@@ -819,9 +760,8 @@ class Helper extends Object {
  * @param mixed $data
  * @param string $key
  * @return array
- * @access private
  */
-	function __selectedArray($data, $key = 'id') {
+	protected function _selectedArray($data, $key = 'id') {
 		if (!is_array($data)) {
 			$model = $data;
 			if (!empty($this->request->data[$model][$model])) {
@@ -833,54 +773,54 @@ class Helper extends Object {
 		}
 		$array = array();
 		if (!empty($data)) {
-			foreach ($data as $var) {
-				$array[$var[$key]] = $var[$key];
+			foreach ($data as $row) {
+				if (isset($row[$key])) {
+					$array[$row[$key]] = $row[$key];
+				}
 			}
 		}
-		return $array;
+		return empty($array) ? null : $array;
 	}
 
 /**
  * Resets the vars used by Helper::clean() to null
  *
  * @return void
- * @access private
  */
-	function __reset() {
-		$this->__tainted = null;
-		$this->__cleaned = null;
+	protected function _reset() {
+		$this->_tainted = null;
+		$this->_cleaned = null;
 	}
 
 /**
  * Removes harmful content from output
  *
  * @return void
- * @access private
  */
-	function __clean() {
+	protected function _clean() {
 		if (get_magic_quotes_gpc()) {
-			$this->__cleaned = stripslashes($this->__tainted);
+			$this->_cleaned = stripslashes($this->_tainted);
 		} else {
-			$this->__cleaned = $this->__tainted;
+			$this->_cleaned = $this->_tainted;
 		}
 
-		$this->__cleaned = str_replace(array("&amp;", "&lt;", "&gt;"), array("&amp;amp;", "&amp;lt;", "&amp;gt;"), $this->__cleaned);
-		$this->__cleaned = preg_replace('#(&\#*\w+)[\x00-\x20]+;#u', "$1;", $this->__cleaned);
-		$this->__cleaned = preg_replace('#(&\#x*)([0-9A-F]+);*#iu', "$1$2;", $this->__cleaned);
-		$this->__cleaned = html_entity_decode($this->__cleaned, ENT_COMPAT, "UTF-8");
-		$this->__cleaned = preg_replace('#(<[^>]+[\x00-\x20\"\'\/])(on|xmlns)[^>]*>#iUu', "$1>", $this->__cleaned);
-		$this->__cleaned = preg_replace('#([a-z]*)[\x00-\x20]*=[\x00-\x20]*([\`\'\"]*)[\\x00-\x20]*j[\x00-\x20]*a[\x00-\x20]*v[\x00-\x20]*a[\x00-\x20]*s[\x00-\x20]*c[\x00-\x20]*r[\x00-\x20]*i[\x00-\x20]*p[\x00-\x20]*t[\x00-\x20]*:#iUu', '$1=$2nojavascript...', $this->__cleaned);
-		$this->__cleaned = preg_replace('#([a-z]*)[\x00-\x20]*=([\'\"]*)[\x00-\x20]*v[\x00-\x20]*b[\x00-\x20]*s[\x00-\x20]*c[\x00-\x20]*r[\x00-\x20]*i[\x00-\x20]*p[\x00-\x20]*t[\x00-\x20]*:#iUu', '$1=$2novbscript...', $this->__cleaned);
-		$this->__cleaned = preg_replace('#([a-z]*)[\x00-\x20]*=*([\'\"]*)[\x00-\x20]*-moz-binding[\x00-\x20]*:#iUu','$1=$2nomozbinding...', $this->__cleaned);
-		$this->__cleaned = preg_replace('#([a-z]*)[\x00-\x20]*=([\'\"]*)[\x00-\x20]*data[\x00-\x20]*:#Uu', '$1=$2nodata...', $this->__cleaned);
-		$this->__cleaned = preg_replace('#(<[^>]+)style[\x00-\x20]*=[\x00-\x20]*([\`\'\"]*).*expression[\x00-\x20]*\([^>]*>#iU', "$1>", $this->__cleaned);
-		$this->__cleaned = preg_replace('#(<[^>]+)style[\x00-\x20]*=[\x00-\x20]*([\`\'\"]*).*behaviour[\x00-\x20]*\([^>]*>#iU', "$1>", $this->__cleaned);
-		$this->__cleaned = preg_replace('#(<[^>]+)style[\x00-\x20]*=[\x00-\x20]*([\`\'\"]*).*s[\x00-\x20]*c[\x00-\x20]*r[\x00-\x20]*i[\x00-\x20]*p[\x00-\x20]*t[\x00-\x20]*:*[^>]*>#iUu', "$1>", $this->__cleaned);
-		$this->__cleaned = preg_replace('#</*\w+:\w[^>]*>#i', "", $this->__cleaned);
+		$this->_cleaned = str_replace(array("&amp;", "&lt;", "&gt;"), array("&amp;amp;", "&amp;lt;", "&amp;gt;"), $this->_cleaned);
+		$this->_cleaned = preg_replace('#(&\#*\w+)[\x00-\x20]+;#u', "$1;", $this->_cleaned);
+		$this->_cleaned = preg_replace('#(&\#x*)([0-9A-F]+);*#iu', "$1$2;", $this->_cleaned);
+		$this->_cleaned = html_entity_decode($this->_cleaned, ENT_COMPAT, "UTF-8");
+		$this->_cleaned = preg_replace('#(<[^>]+[\x00-\x20\"\'\/])(on|xmlns)[^>]*>#iUu', "$1>", $this->_cleaned);
+		$this->_cleaned = preg_replace('#([a-z]*)[\x00-\x20]*=[\x00-\x20]*([\`\'\"]*)[\\x00-\x20]*j[\x00-\x20]*a[\x00-\x20]*v[\x00-\x20]*a[\x00-\x20]*s[\x00-\x20]*c[\x00-\x20]*r[\x00-\x20]*i[\x00-\x20]*p[\x00-\x20]*t[\x00-\x20]*:#iUu', '$1=$2nojavascript...', $this->_cleaned);
+		$this->_cleaned = preg_replace('#([a-z]*)[\x00-\x20]*=([\'\"]*)[\x00-\x20]*v[\x00-\x20]*b[\x00-\x20]*s[\x00-\x20]*c[\x00-\x20]*r[\x00-\x20]*i[\x00-\x20]*p[\x00-\x20]*t[\x00-\x20]*:#iUu', '$1=$2novbscript...', $this->_cleaned);
+		$this->_cleaned = preg_replace('#([a-z]*)[\x00-\x20]*=*([\'\"]*)[\x00-\x20]*-moz-binding[\x00-\x20]*:#iUu','$1=$2nomozbinding...', $this->_cleaned);
+		$this->_cleaned = preg_replace('#([a-z]*)[\x00-\x20]*=([\'\"]*)[\x00-\x20]*data[\x00-\x20]*:#Uu', '$1=$2nodata...', $this->_cleaned);
+		$this->_cleaned = preg_replace('#(<[^>]+)style[\x00-\x20]*=[\x00-\x20]*([\`\'\"]*).*expression[\x00-\x20]*\([^>]*>#iU', "$1>", $this->_cleaned);
+		$this->_cleaned = preg_replace('#(<[^>]+)style[\x00-\x20]*=[\x00-\x20]*([\`\'\"]*).*behaviour[\x00-\x20]*\([^>]*>#iU', "$1>", $this->_cleaned);
+		$this->_cleaned = preg_replace('#(<[^>]+)style[\x00-\x20]*=[\x00-\x20]*([\`\'\"]*).*s[\x00-\x20]*c[\x00-\x20]*r[\x00-\x20]*i[\x00-\x20]*p[\x00-\x20]*t[\x00-\x20]*:*[^>]*>#iUu', "$1>", $this->_cleaned);
+		$this->_cleaned = preg_replace('#</*\w+:\w[^>]*>#i', "", $this->_cleaned);
 		do {
-			$oldstring = $this->__cleaned;
-			$this->__cleaned = preg_replace('#</*(applet|meta|xml|blink|link|style|script|embed|object|iframe|frame|frameset|ilayer|layer|bgsound|title|base)[^>]*>#i', "", $this->__cleaned);
-		} while ($oldstring != $this->__cleaned);
-		$this->__cleaned = str_replace(array("&amp;", "&lt;", "&gt;"), array("&amp;amp;", "&amp;lt;", "&amp;gt;"), $this->__cleaned);
+			$oldstring = $this->_cleaned;
+			$this->_cleaned = preg_replace('#</*(applet|meta|xml|blink|link|style|script|embed|object|iframe|frame|frameset|ilayer|layer|bgsound|title|base)[^>]*>#i', "", $this->_cleaned);
+		} while ($oldstring != $this->_cleaned);
+		$this->_cleaned = str_replace(array("&amp;", "&lt;", "&gt;"), array("&amp;amp;", "&amp;lt;", "&amp;gt;"), $this->_cleaned);
 	}
 }

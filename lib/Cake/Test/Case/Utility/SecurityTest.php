@@ -5,14 +5,14 @@
  * PHP 5
  *
  * CakePHP(tm) Tests <http://book.cakephp.org/view/1196/Testing>
- * Copyright 2005-2010, Cake Software Foundation, Inc. (http://cakefoundation.org)
+ * Copyright 2005-2011, Cake Software Foundation, Inc. (http://cakefoundation.org)
  *
  * Licensed under The MIT License
  * Redistributions of files must retain the above copyright notice
  *
- * @copyright     Copyright 2005-2010, Cake Software Foundation, Inc. (http://cakefoundation.org)
+ * @copyright     Copyright 2005-2011, Cake Software Foundation, Inc. (http://cakefoundation.org)
  * @link          http://book.cakephp.org/view/1196/Testing CakePHP(tm) Tests
- * @package       cake.tests.cases.libs
+ * @package       Cake.Test.Case.Utility
  * @since         CakePHP(tm) v 1.2.0.5432
  * @license       MIT License (http://www.opensource.org/licenses/mit-license.php)
  */
@@ -21,7 +21,7 @@ App::uses('Security', 'Utility');
 /**
  * SecurityTest class
  *
- * @package       cake.tests.cases.libs
+ * @package       Cake.Test.Case.Utility
  */
 class SecurityTest extends CakeTestCase {
 
@@ -29,44 +29,40 @@ class SecurityTest extends CakeTestCase {
  * sut property
  *
  * @var mixed null
- * @access public
  */
 	public $sut = null;
 
 /**
  * testInactiveMins method
  *
- * @access public
  * @return void
  */
-	function testInactiveMins() {
+	public function testInactiveMins() {
 		Configure::write('Security.level', 'high');
-		$this->assertEqual(10, Security::inactiveMins());
+		$this->assertEquals(10, Security::inactiveMins());
 
 		Configure::write('Security.level', 'medium');
-		$this->assertEqual(100, Security::inactiveMins());
+		$this->assertEquals(100, Security::inactiveMins());
 
 		Configure::write('Security.level', 'low');
-		$this->assertEqual(300, Security::inactiveMins());
+		$this->assertEquals(300, Security::inactiveMins());
 	}
 
 /**
  * testGenerateAuthkey method
  *
- * @access public
  * @return void
  */
-	function testGenerateAuthkey() {
-		$this->assertEqual(strlen(Security::generateAuthKey()), 40);
+	public function testGenerateAuthkey() {
+		$this->assertEquals(strlen(Security::generateAuthKey()), 40);
 	}
 
 /**
  * testValidateAuthKey method
  *
- * @access public
  * @return void
  */
-	function testValidateAuthKey() {
+	public function testValidateAuthKey() {
 		$authKey = Security::generateAuthKey();
 		$this->assertTrue(Security::validateAuthKey($authKey));
 	}
@@ -74,47 +70,46 @@ class SecurityTest extends CakeTestCase {
 /**
  * testHash method
  *
- * @access public
  * @return void
  */
-	function testHash() {
+	public function testHash() {
 		$_hashType = Security::$hashType;
 
 		$key = 'someKey';
 		$hash = 'someHash';
 
-		$this->assertIdentical(strlen(Security::hash($key, null, false)), 40);
-		$this->assertIdentical(strlen(Security::hash($key, 'sha1', false)), 40);
-		$this->assertIdentical(strlen(Security::hash($key, null, true)), 40);
-		$this->assertIdentical(strlen(Security::hash($key, 'sha1', true)), 40);
+		$this->assertSame(strlen(Security::hash($key, null, false)), 40);
+		$this->assertSame(strlen(Security::hash($key, 'sha1', false)), 40);
+		$this->assertSame(strlen(Security::hash($key, null, true)), 40);
+		$this->assertSame(strlen(Security::hash($key, 'sha1', true)), 40);
 
 		$result = Security::hash($key, null, $hash);
-		$this->assertIdentical($result, 'e38fcb877dccb6a94729a81523851c931a46efb1');
+		$this->assertSame($result, 'e38fcb877dccb6a94729a81523851c931a46efb1');
 
 		$result = Security::hash($key, 'sha1', $hash);
-		$this->assertIdentical($result, 'e38fcb877dccb6a94729a81523851c931a46efb1');
+		$this->assertSame($result, 'e38fcb877dccb6a94729a81523851c931a46efb1');
 
 		$hashType = 'sha1';
 		Security::setHash($hashType);
-		$this->assertIdentical(Security::$hashType, $hashType);
-		$this->assertIdentical(strlen(Security::hash($key, null, true)), 40);
-		$this->assertIdentical(strlen(Security::hash($key, null, false)), 40);
+		$this->assertSame(Security::$hashType, $hashType);
+		$this->assertSame(strlen(Security::hash($key, null, true)), 40);
+		$this->assertSame(strlen(Security::hash($key, null, false)), 40);
 
-		$this->assertIdentical(strlen(Security::hash($key, 'md5', false)), 32);
-		$this->assertIdentical(strlen(Security::hash($key, 'md5', true)), 32);
+		$this->assertSame(strlen(Security::hash($key, 'md5', false)), 32);
+		$this->assertSame(strlen(Security::hash($key, 'md5', true)), 32);
 
 		$hashType = 'md5';
 		Security::setHash($hashType);
-		$this->assertIdentical(Security::$hashType, $hashType);
-		$this->assertIdentical(strlen(Security::hash($key, null, false)), 32);
-		$this->assertIdentical(strlen(Security::hash($key, null, true)), 32);
+		$this->assertSame(Security::$hashType, $hashType);
+		$this->assertSame(strlen(Security::hash($key, null, false)), 32);
+		$this->assertSame(strlen(Security::hash($key, null, true)), 32);
 
 		if (!function_exists('hash') && !function_exists('mhash')) {
-			$this->assertIdentical(strlen(Security::hash($key, 'sha256', false)), 32);
-			$this->assertIdentical(strlen(Security::hash($key, 'sha256', true)), 32);
+			$this->assertSame(strlen(Security::hash($key, 'sha256', false)), 32);
+			$this->assertSame(strlen(Security::hash($key, 'sha256', true)), 32);
 		} else {
-			$this->assertIdentical(strlen(Security::hash($key, 'sha256', false)), 64);
-			$this->assertIdentical(strlen(Security::hash($key, 'sha256', true)), 64);
+			$this->assertSame(strlen(Security::hash($key, 'sha256', false)), 64);
+			$this->assertSame(strlen(Security::hash($key, 'sha256', true)), 64);
 		}
 
 		Security::setHash($_hashType);
@@ -123,10 +118,9 @@ class SecurityTest extends CakeTestCase {
 /**
  * testCipher method
  *
- * @access public
  * @return void
  */
-	function testCipher() {
+	public function testCipher() {
 		$length = 10;
 		$txt = '';
 		for ($i = 0; $i < $length; $i++) {
@@ -134,26 +128,33 @@ class SecurityTest extends CakeTestCase {
 		}
 		$key = 'my_key';
 		$result = Security::cipher($txt, $key);
-		$this->assertEqual(Security::cipher($result, $key), $txt);
+		$this->assertEquals(Security::cipher($result, $key), $txt);
 
 		$txt = '';
 		$key = 'my_key';
 		$result = Security::cipher($txt, $key);
-		$this->assertEqual(Security::cipher($result, $key), $txt);
-		
+		$this->assertEquals(Security::cipher($result, $key), $txt);
+
 		$txt = 123456;
 		$key = 'my_key';
 		$result = Security::cipher($txt, $key);
-		$this->assertEqual(Security::cipher($result, $key), $txt);
+		$this->assertEquals(Security::cipher($result, $key), $txt);
 
 		$txt = '123456';
 		$key = 'my_key';
 		$result = Security::cipher($txt, $key);
-		$this->assertEqual(Security::cipher($result, $key), $txt);
+		$this->assertEquals(Security::cipher($result, $key), $txt);
+	}
 
+/**
+ * testCipherEmptyKey method
+ *
+ * @expectedException PHPUnit_Framework_Error
+ * @return void
+ */
+	public function testCipherEmptyKey() {
 		$txt = 'some_text';
 		$key = '';
-		$this->expectError();
 		$result = Security::cipher($txt, $key);
 	}
 }

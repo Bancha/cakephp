@@ -5,14 +5,14 @@
  * PHP 5
  *
  * CakePHP(tm) : Rapid Development Framework (http://cakephp.org)
- * Copyright 2005-2010, Cake Software Foundation, Inc. (http://cakefoundation.org)
+ * Copyright 2005-2011, Cake Software Foundation, Inc. (http://cakefoundation.org)
  *
  * Licensed under The MIT License
  * Redistributions of files must retain the above copyright notice.
  *
- * @copyright     Copyright 2005-2010, Cake Software Foundation, Inc. (http://cakefoundation.org)
+ * @copyright     Copyright 2005-2011, Cake Software Foundation, Inc. (http://cakefoundation.org)
  * @link          http://cakephp.org CakePHP(tm) Project
- * @package       cake.libs.view
+ * @package       Cake.View
  * @since         CakePHP(tm) v 1.2.0.5714
  * @license       MIT License (http://www.opensource.org/licenses/mit-license.php)
  */
@@ -38,7 +38,7 @@ App::uses('CakeRequest', 'Network');
  *
  * {{{
  * class ExampleController extends AppController {
- *		function download () {
+ *		public function download () {
  *			$this->viewClass = 'Media';
  *			$params = array(
  *				'id' => 'example.zip',
@@ -52,7 +52,7 @@ App::uses('CakeRequest', 'Network');
  * }
  * }}}
  *
- * @package cake.libs.view
+ * @package       Cake.View
  */
 class MediaView extends View {
 /**
@@ -72,9 +72,9 @@ class MediaView extends View {
 /**
  * Constructor
  *
- * @param object $controller The controller with viewVars
+ * @param Controller $controller The controller with viewVars
  */
-	function __construct($controller = null) {
+	public function __construct($controller = null) {
 		parent::__construct($controller);
 		if (is_object($controller) && isset($controller->response)) {
 			$this->response = $controller->response;
@@ -86,9 +86,12 @@ class MediaView extends View {
 /**
  * Display or download the given file
  *
+ * @param string $view Not used
+ * @param string $layout Not used
  * @return mixed
+ * @throws NotFoundException
  */
-	function render() {
+	public function render($view = null, $layout = null) {
 		$name = $download = $extension = $id = $modified = $path = $cache = $mimeType = $compress = null;
 		extract($this->viewVars, EXTR_OVERWRITE);
 

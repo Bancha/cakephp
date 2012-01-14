@@ -5,32 +5,32 @@
  * PHP 5
  *
  * CakePHP(tm) : Rapid Development Framework (http://cakephp.org)
- * Copyright 2005-2010, Cake Software Foundation, Inc. (http://cakefoundation.org)
+ * Copyright 2005-2011, Cake Software Foundation, Inc. (http://cakefoundation.org)
  *
  * Licensed under The MIT License
  * Redistributions of files must retain the above copyright notice.
  *
- * @copyright     Copyright 2005-2010, Cake Software Foundation, Inc. (http://cakefoundation.org)
+ * @copyright     Copyright 2005-2011, Cake Software Foundation, Inc. (http://cakefoundation.org)
  * @link          http://cakephp.org CakePHP(tm) Project
- * @package       cake.console.shells.tasks
  * @since         CakePHP(tm) v 1.2.0.5012
  * @license       MIT License (http://www.opensource.org/licenses/mit-license.php)
  */
+
+App::uses('AppShell', 'Console/Command');
 App::uses('File', 'Utility');
 App::uses('Folder', 'Utility');
 
 /**
  * Language string extractor
  *
- * @package       cake.console.shells.tasks
+ * @package       Cake.Console.Command.Task
  */
-class ExtractTask extends Shell {
+class ExtractTask extends AppShell {
 
 /**
  * Paths to use when looking for strings
  *
  * @var string
- * @access protected
  */
 	protected $_paths = array();
 
@@ -38,7 +38,6 @@ class ExtractTask extends Shell {
  * Files from where to extract
  *
  * @var array
- * @access protected
  */
 	protected $_files = array();
 
@@ -46,7 +45,6 @@ class ExtractTask extends Shell {
  * Merge all domains string into the default.pot file
  *
  * @var boolean
- * @access protected
  */
 	protected $_merge = false;
 
@@ -54,7 +52,6 @@ class ExtractTask extends Shell {
  * Current file being processed
  *
  * @var string
- * @access protected
  */
 	protected $_file = null;
 
@@ -62,7 +59,6 @@ class ExtractTask extends Shell {
  * Contains all content waiting to be write
  *
  * @var string
- * @access protected
  */
 	protected $_storage = array();
 
@@ -70,7 +66,6 @@ class ExtractTask extends Shell {
  * Extracted tokens
  *
  * @var array
- * @access protected
  */
 	protected $_tokens = array();
 
@@ -78,7 +73,6 @@ class ExtractTask extends Shell {
  * Extracted strings
  *
  * @var array
- * @access protected
  */
 	protected $_strings = array();
 
@@ -86,7 +80,6 @@ class ExtractTask extends Shell {
  * Destination path
  *
  * @var string
- * @access protected
  */
 	protected $_output = null;
 
@@ -98,10 +91,23 @@ class ExtractTask extends Shell {
 	protected $_exclude = array();
 
 /**
+ * Holds whether this call should extract model validation messages
+ *
+ * @var boolean
+ */
+	protected $_extractValidation = true;
+
+/**
+ * Holds the validation string domain to use for validation messages when extracting
+ *
+ * @var boolean
+ */
+	protected $_validationDomain = 'default';
+
+/**
  * Execution method always used for tasks
  *
  * @return void
- * @access public
  */
 	public function execute() {
 		if (!empty($this->params['exclude'])) {
@@ -112,8 +118,15 @@ class ExtractTask extends Shell {
 		}
 		if (isset($this->params['paths'])) {
 			$this->_paths = explode(',', $this->params['paths']);
+		} else if (isset($this->params['plugin'])) {
+			$plugin = Inflector::camelize($this->params['plugin']);
+			if (!CakePlugin::loaded($plugin)) {
+				CakePlugin::load($plugin);
+			}
+			$this->_paths = array(CakePlugin::path($plugin));
+			$this->params['plugin'] = $plugin;
 		} else {
-			$defaultPath = APP_PATH;
+			$defaultPath = APP;
 			$message = __d('cake_console', "What is the path you would like to extract?\n[Q]uit [D]one");
 			while (true) {
 				$response = $this->in($message, null, $defaultPath);
@@ -133,12 +146,25 @@ class ExtractTask extends Shell {
 			}
 		}
 
+		if (!empty($this->params['exclude-plugins']) && $this->_isExtractingApp()) {
+			$this->_exclude = array_merge($this->_exclude, App::path('plugins'));
+		}
+
+		if (!empty($this->params['ignore-model-validation']) || (!$this->_isExtractingApp() && empty($plugin))) {
+			$this->_extractValidation = false;
+		}
+		if (!empty($this->params['validation-domain'])) {
+			$this->_validationDomain = $this->params['validation-domain'];
+		}
+
 		if (isset($this->params['output'])) {
 			$this->_output = $this->params['output'];
+		} else if (isset($this->params['plugin'])) {
+			$this->_output = $this->_paths[0] . DS . 'Locale';
 		} else {
-			$message = __d('cake_console', "What is the path you would like to output?\n[Q]uit", $this->_paths[0] . DS . 'locale');
+			$message = __d('cake_console', "What is the path you would like to output?\n[Q]uit", $this->_paths[0] . DS . 'Locale');
 			while (true) {
-				$response = $this->in($message, null, $this->_paths[0] . DS . 'locale');
+				$response = $this->in($message, null, rtrim($this->_paths[0], DS) . DS . 'Locale');
 				if (strtoupper($response) === 'Q') {
 					$this->out(__d('cake_console', 'Extract Aborted'));
 					$this->_stop();
@@ -163,6 +189,7 @@ class ExtractTask extends Shell {
 		if (empty($this->_files)) {
 			$this->_searchFiles();
 		}
+		$this->_output = rtrim($this->_output, DS) . DS;
 		$this->_extract();
 	}
 
@@ -170,7 +197,6 @@ class ExtractTask extends Shell {
  * Extract text
  *
  * @return void
- * @access protected
  */
 	protected function _extract() {
 		$this->out();
@@ -184,10 +210,12 @@ class ExtractTask extends Shell {
 		$this->out(__d('cake_console', 'Output Directory: ') . $this->_output);
 		$this->hr();
 		$this->_extractTokens();
+		$this->_extractValidationMessages();
 		$this->_buildFiles();
 		$this->_writeFiles();
 		$this->_paths = $this->_files = $this->_storage = array();
 		$this->_strings = $this->_tokens = array();
+		$this->_extractValidation = true;
 		$this->out();
 		$this->out(__d('cake_console', 'Done.'));
 	}
@@ -208,44 +236,31 @@ class ExtractTask extends Shell {
 			))
 			->addOption('output', array('help' => __d('cake_console', 'Full path to output directory.')))
 			->addOption('files', array('help' => __d('cake_console', 'Comma separated list of files.')))
+			->addOption('exclude-plugins', array(
+				'boolean' => true,
+				'default' => true,
+				'help' => __d('cake_console', 'Ignores all files in plugins if this command is run inside from the same app directory.')
+			))
+			->addOption('plugin', array(
+				'help' => __d('cake_console', 'Extracts tokens only from the plugin specified and puts the result in the plugin\'s Locale directory.')
+			))
+			->addOption('ignore-model-validation', array(
+				'boolean' => true,
+				'default' => false,
+				'help' => __d('cake_console', 'Ignores validation messages in the $validate property. If this flag is not set and the command is run from the same app directory, all messages in model validation rules will be extracted as tokens.')
+			))
+			->addOption('validation-domain', array(
+				'help' => __d('cake_console', 'If set to a value, the localization domain to be used for model validation messages.')
+			))
 			->addOption('exclude', array(
 				'help' => __d('cake_console', 'Comma separated list of directories to exclude. Any path containing a path segment with the provided values will be skipped. E.g. test,vendors')
 			));
 	}
 
 /**
- * Show help options
- *
- * @return void
- */
-	public function help() {
-		$this->out(__d('cake_console', 'CakePHP Language String Extraction:'));
-		$this->hr();
-		$this->out(__d('cake_console', 'The Extract script generates .pot file(s) with translations'));
-		$this->out(__d('cake_console', 'By default the .pot file(s) will be place in the locale directory of -app'));
-		$this->out(__d('cake_console', 'By default -app is ROOT/app'));
-		$this->hr();
-		$this->out(__d('cake_console', 'Usage: cake i18n extract <command> <param1> <param2>...'));
-		$this->out();
-		$this->out(__d('cake_console', 'Params:'));
-		$this->out(__d('cake_console', '   -app [path...]: directory where your application is located'));
-		$this->out(__d('cake_console', '   -root [path...]: path to install'));
-		$this->out(__d('cake_console', '   -core [path...]: path to cake directory'));
-		$this->out(__d('cake_console', '   -paths [comma separated list of paths]'));
-		$this->out(__d('cake_console', '   -merge [yes|no]: Merge all domains strings into the default.pot file'));
-		$this->out(__d('cake_console', '   -output [path...]: Full path to output directory'));
-		$this->out(__d('cake_console', '   -files: [comma separated list of files]'));
-		$this->out();
-		$this->out(__d('cake_console', 'Commands:'));
-		$this->out(__d('cake_console', '   cake i18n extract help: Shows this help message.'));
-		$this->out();
-	}
-
-/**
  * Extract tokens out of all files to be processed
  *
  * @return void
- * @access protected
  */
 	protected function _extractTokens() {
 		foreach ($this->_files as $file) {
@@ -278,7 +293,6 @@ class ExtractTask extends Shell {
  * @param string $functionName Function name that indicates translatable string (e.g: '__')
  * @param array $map Array containing what variables it will find (e.g: domain, singular, plural)
  * @return void
- * @access protected
  */
 	protected function _parse($functionName, $map) {
 		$count = 0;
@@ -322,10 +336,86 @@ class ExtractTask extends Shell {
 	}
 
 /**
+ * Looks for models in the application and extracts the validation messages
+ * to be added to the translation map
+ *
+ * @return void
+ */
+	protected function _extractValidationMessages() {
+		if (!$this->_extractValidation) {
+			return;
+		}
+		App::uses('AppModel', 'Model');
+		$plugin = null;
+		if (!empty($this->params['plugin'])) {
+			App::uses($this->params['plugin'] . 'AppModel', $this->params['plugin'] . '.Model');
+			$plugin = $this->params['plugin'] . '.';
+		}
+		$models = App::objects($plugin . 'Model', null, false);
+
+		foreach ($models as $model) {
+			App::uses($model, $plugin . 'Model');
+			$reflection = new ReflectionClass($model);
+			if (!$reflection->isSubClassOf('Model')) {
+				continue;
+			}
+			$properties = $reflection->getDefaultProperties();
+			$validate = $properties['validate'];
+			if (empty($validate)) {
+				continue;
+			}
+
+			$file = $reflection->getFileName();
+			$domain = $this->_validationDomain;
+			if (!empty($properties['validationDomain'])) {
+				$domain = $properties['validationDomain'];
+			}
+			foreach ($validate as $field => $rules) {
+				$this->_processValidationRules($field, $rules, $file, $domain);
+			}
+		}
+	}
+
+/**
+ * Process a validation rule for a field and looks for a message to be added
+ * to the translation map
+ *
+ * @param string $field the name of the field that is being processed
+ * @param array $rules the set of validation rules for the field
+ * @param string $file the file name where this validation rule was found
+ * @param string $domain default domain to bind the validations to
+ * @return void
+ */
+	protected function _processValidationRules($field, $rules, $file, $domain) {
+		if (is_array($rules)) {
+
+			$dims = Set::countDim($rules);
+			if ($dims == 1 || ($dims == 2 && isset($rules['message']))) {
+				$rules = array($rules);
+			}
+
+			foreach ($rules as $rule => $validateProp) {
+				$message = null;
+				if (isset($validateProp['message'])) {
+					if (is_array($validateProp['message'])) {
+						$message = $validateProp['message'][0];
+					} else {
+						$message = $validateProp['message'];
+					}
+				} elseif (is_string($rule)) {
+					$message = $rule;
+				}
+				if ($message) {
+					$this->_strings[$domain][$message][$file][] = 'validation for field ' . $field;
+				}
+			}
+		}
+	}
+
+/**
  * Build the translate template file contents out of obtained strings
  *
  * @return void
- * @access protected
  */
 	protected function _buildFiles() {
 		foreach ($this->_strings as $domain => $strings) {
@@ -359,8 +449,10 @@ class ExtractTask extends Shell {
 /**
  * Prepare a file to be stored
  *
+ * @param string $domain
+ * @param string $header
+ * @param string $sentence
  * @return void
- * @access protected
  */
 	protected function _store($domain, $header, $sentence) {
 		if (!isset($this->_storage[$domain])) {
@@ -377,7 +469,6 @@ class ExtractTask extends Shell {
  * Write the files that need to be stored
  *
  * @return void
- * @access protected
  */
 	protected function _writeFiles() {
 		$overwriteAll = false;
@@ -413,7 +504,6 @@ class ExtractTask extends Shell {
  * Build the translation template header
  *
  * @return string Translation template header
- * @access protected
  */
 	protected function _writeHeader() {
 		$output  = "# LANGUAGE translation of CakePHP Application\n";
@@ -433,14 +523,13 @@ class ExtractTask extends Shell {
 		$output .= "\"Plural-Forms: nplurals=INTEGER; plural=EXPRESSION;\\n\"\n\n";
 		return $output;
 	}
-	
+
 /**
  * Get the strings from the position forward
  *
- * @param int $position Actual position on tokens array
- * @param int $target Number of strings to extract
+ * @param integer $position Actual position on tokens array
+ * @param integer $target Number of strings to extract
  * @return array Strings extracted
- * @access protected
  */
 	protected function _getStrings(&$position, $target) {
 		$strings = array();
@@ -467,7 +556,6 @@ class ExtractTask extends Shell {
  *
  * @param string $string String to format
  * @return string Formatted string
- * @access protected
  */
 	protected function _formatString($string) {
 		$quote = substr($string, 0, 1);
@@ -489,7 +577,6 @@ class ExtractTask extends Shell {
  * @param string $marker Marker found
  * @param integer $count Count
  * @return void
- * @access protected
  */
 	protected function _markerError($file, $line, $marker, $count) {
 		$this->out(__d('cake_console', "Invalid marker content in %s:%s\n* %s(", $file, $line, $marker), true);
@@ -519,12 +606,18 @@ class ExtractTask extends Shell {
  * Search files that may contain translatable strings
  *
  * @return void
- * @access protected
  */
 	protected function _searchFiles() {
 		$pattern = false;
 		if (!empty($this->_exclude)) {
-			$pattern = '/[\/\\\\]' . implode('|', $this->_exclude) . '[\/\\\\]/';
+			$exclude = array();
+			foreach ($this->_exclude as $e) {
+				if (DS !== '\\' && $e[0] !== DS) {
+					$e = DS . $e;
+				}
+				$exclude[] = preg_quote($e, '/');
+			}
+			$pattern =  '/' . implode('|', $exclude) . '/';
 		}
 		foreach ($this->_paths as $path) {
 			$Folder = new Folder($path);
@@ -539,5 +632,15 @@ class ExtractTask extends Shell {
 			}
 			$this->_files = array_merge($this->_files, $files);
 		}
+	}
+
+/**
+ * Returns whether this execution is meant to extract string only from directories in folder represented by the
+ * APP constant, i.e. this task is extracting strings from same application.
+ *
+ * @return boolean
+ */
+	protected function _isExtractingApp() {
+		return $this->_paths === array(APP);
 	}
 }

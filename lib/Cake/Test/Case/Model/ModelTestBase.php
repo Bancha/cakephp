@@ -5,14 +5,14 @@
  * PHP 5
  *
  * CakePHP(tm) Tests <http://book.cakephp.org/view/1196/Testing>
- * Copyright 2005-2010, Cake Software Foundation, Inc. (http://cakefoundation.org)
+ * Copyright 2005-2011, Cake Software Foundation, Inc. (http://cakefoundation.org)
  *
  * Licensed under The MIT License
  * Redistributions of files must retain the above copyright notice
  *
- * @copyright     Copyright 2005-2010, Cake Software Foundation, Inc. (http://cakefoundation.org)
+ * @copyright     Copyright 2005-2011, Cake Software Foundation, Inc. (http://cakefoundation.org)
  * @link          http://book.cakephp.org/view/1196/Testing CakePHP(tm) Tests
- * @package       cake.tests.cases.libs.model
+ * @package       Cake.Test.Case.Model
  * @since         CakePHP(tm) v 1.2.0.4206
  * @license       MIT License (http://www.opensource.org/licenses/mit-license.php)
  */
@@ -21,12 +21,10 @@ App::uses('Model', 'Model');
 App::uses('AppModel', 'Model');
 require_once dirname(__FILE__) . DS . 'models.php';
 
-PHP_CodeCoverage_Filter::getInstance()->addFileToBlacklist(__FILE__, 'DEFAULT');
-
 /**
  * ModelBaseTest
  *
- * @package       cake.tests.cases.libs.model
+ * @package       Cake.Test.Case.Model
  */
 abstract class BaseModelTest extends CakeTestCase {
 
@@ -34,7 +32,6 @@ abstract class BaseModelTest extends CakeTestCase {
  * autoFixtures property
  *
  * @var bool false
- * @access public
  */
 	public $autoFixtures = false;
 
@@ -42,14 +39,12 @@ abstract class BaseModelTest extends CakeTestCase {
  * Whether backup global state for each test method or not
  *
  * @var bool false
- * @access public
  */
 	public $backupGlobals = false;
 /**
  * fixtures property
  *
  * @var array
- * @access public
  */
 	public $fixtures = array(
 		'core.category', 'core.category_thread', 'core.user', 'core.my_category', 'core.my_product',
@@ -78,10 +73,9 @@ abstract class BaseModelTest extends CakeTestCase {
 /**
  * setUp method
  *
- * @access public
  * @return void
  */
-	function setUp() {
+	public function setUp() {
 		parent::setUp();
 		$this->debug = Configure::read('debug');
 	}
@@ -89,10 +83,9 @@ abstract class BaseModelTest extends CakeTestCase {
 /**
  * tearDown method
  *
- * @access public
  * @return void
  */
-	function tearDown() {
+	public function tearDown() {
 		parent::tearDown();
 		Configure::write('debug', $this->debug);
 		ClassRegistry::flush();

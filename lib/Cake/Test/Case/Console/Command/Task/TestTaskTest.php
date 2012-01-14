@@ -7,14 +7,14 @@
  * PHP 5
  *
  * CakePHP :  Rapid Development Framework (http://cakephp.org)
- * Copyright 2006-2010, Cake Software Foundation, Inc.
+ * Copyright 2005-2011, Cake Software Foundation, Inc.
  *
  * Licensed under The MIT License
  * Redistributions of files must retain the above copyright notice.
  *
- * @copyright     Copyright 2006-2010, Cake Software Foundation, Inc.
+ * @copyright     Copyright 2005-2011, Cake Software Foundation, Inc.
  * @link          http://cakephp.org CakePHP Project
- * @package       cake.tests.cases.console.libs.tasks
+ * @package       Cake.Test.Case.Console.Command.Task
  * @since         CakePHP v 1.2.0.7726
  * @license       MIT License (http://www.opensource.org/licenses/mit-license.php)
  */
@@ -31,8 +31,8 @@ App::uses('Model', 'Model');
 /**
  * Test Article model
  *
- * @package cake
- * @package    cake.tests.cases.console.libs.tasks
+ * @package       Cake.Test.Case.Console.Command.Task
+ * @package       Cake.Test.Case.Console.Command.Task
  */
 class TestTaskArticle extends Model {
 
@@ -40,7 +40,6 @@ class TestTaskArticle extends Model {
  * Model name
  *
  * @var string
- * @access public
  */
 	public $name = 'TestTaskArticle';
 
@@ -48,7 +47,6 @@ class TestTaskArticle extends Model {
  * Table name to use
  *
  * @var string
- * @access public
  */
 	public $useTable = 'articles';
 
@@ -56,7 +54,6 @@ class TestTaskArticle extends Model {
  * HasMany Associations
  *
  * @var array
- * @access public
  */
 	public $hasMany = array(
 		'Comment' => array(
@@ -69,7 +66,6 @@ class TestTaskArticle extends Model {
  * Has and Belongs To Many Associations
  *
  * @var array
- * @access public
  */
 	public $hasAndBelongsToMany = array(
 		'Tag' => array(
@@ -108,8 +104,8 @@ class TestTaskArticle extends Model {
 /**
  * Tag Testing Model
  *
- * @package cake
- * @package    cake.tests.cases.console.libs.tasks
+ * @package       Cake.Test.Case.Console.Command.Task
+ * @package       Cake.Test.Case.Console.Command.Task
  */
 class TestTaskTag extends Model {
 
@@ -117,7 +113,6 @@ class TestTaskTag extends Model {
  * Model name
  *
  * @var string
- * @access public
  */
 	public $name = 'TestTaskTag';
 
@@ -125,7 +120,6 @@ class TestTaskTag extends Model {
  * Table name
  *
  * @var string
- * @access public
  */
 	public $useTable = 'tags';
 
@@ -133,7 +127,6 @@ class TestTaskTag extends Model {
  * Has and Belongs To Many Associations
  *
  * @var array
- * @access public
  */
 	public $hasAndBelongsToMany = array(
 		'Article' => array(
@@ -148,8 +141,8 @@ class TestTaskTag extends Model {
 /**
  * Simulated plugin
  *
- * @package cake
- * @package    cake.tests.cases.console.libs.tasks
+ * @package       Cake.Test.Case.Console.Command.Task
+ * @package       Cake.Test.Case.Console.Command.Task
  */
 class TestTaskAppModel extends Model {
 }
@@ -157,8 +150,8 @@ class TestTaskAppModel extends Model {
 /**
  * Testing AppMode (TaskComment)
  *
- * @package cake
- * @package    cake.tests.cases.console.libs.tasks
+ * @package       Cake.Test.Case.Console.Command.Task
+ * @package       Cake.Test.Case.Console.Command.Task
  */
 class TestTaskComment extends TestTaskAppModel {
 
@@ -166,7 +159,6 @@ class TestTaskComment extends TestTaskAppModel {
  * Model name
  *
  * @var string
- * @access public
  */
 	public $name = 'TestTaskComment';
 
@@ -174,7 +166,6 @@ class TestTaskComment extends TestTaskAppModel {
  * Table name
  *
  * @var string
- * @access public
  */
 	public $useTable = 'comments';
 
@@ -182,7 +173,6 @@ class TestTaskComment extends TestTaskAppModel {
  * Belongs To Associations
  *
  * @var array
- * @access public
  */
 	public $belongsTo = array(
 		'Article' => array(
@@ -195,8 +185,8 @@ class TestTaskComment extends TestTaskAppModel {
 /**
  * Test Task Comments Controller
  *
- * @package cake
- * @package    cake.tests.cases.console.libs.tasks
+ * @package       Cake.Test.Case.Console.Command.Task
+ * @package       Cake.Test.Case.Console.Command.Task
  */
 class TestTaskCommentsController extends Controller {
 
@@ -204,7 +194,6 @@ class TestTaskCommentsController extends Controller {
  * Controller Name
  *
  * @var string
- * @access public
  */
 	public $name = 'TestTaskComments';
 
@@ -212,7 +201,6 @@ class TestTaskCommentsController extends Controller {
  * Models to use
  *
  * @var array
- * @access public
  */
 	public $uses = array('TestTaskComment', 'TestTaskTag');
 }
@@ -220,7 +208,7 @@ class TestTaskCommentsController extends Controller {
 /**
  * TestTaskTest class
  *
- * @package       cake.tests.cases.console.libs.tasks
+ * @package       Cake.Test.Case.Console.Command.Task
  */
 class TestTaskTest extends CakeTestCase {
 
@@ -228,7 +216,6 @@ class TestTaskTest extends CakeTestCase {
  * Fixtures
  *
  * @var string
- * @access public
  */
 	public $fixtures = array('core.article', 'core.comment', 'core.articles_tag', 'core.tag');
 
@@ -273,14 +260,14 @@ class TestTaskTest extends CakeTestCase {
 		$file = TESTS . 'Case' . DS . 'Model' . DS . 'MyClassTest.php';
 
 		$this->Task->expects($this->at(1))->method('createFile')
-			->with($file, new PHPUnit_Framework_Constraint_IsAnything());
+			->with($file, $this->anything());
 
 		$this->Task->expects($this->at(3))->method('createFile')
-			->with($file, new PHPUnit_Framework_Constraint_IsAnything());
+			->with($file, $this->anything());
 
 		$file = TESTS . 'Case' . DS . 'Controller' . DS . 'CommentsControllerTest.php';
 		$this->Task->expects($this->at(5))->method('createFile')
-			->with($file, new PHPUnit_Framework_Constraint_IsAnything());
+			->with($file, $this->anything());
 
 		$this->Task->bake('Model', 'MyClass');
 		$this->Task->bake('Model', 'MyClass');
@@ -293,10 +280,10 @@ class TestTaskTest extends CakeTestCase {
  *
  * @return void
  */
-	function testMethodIntrospection() {
+	public function testMethodIntrospection() {
 		$result = $this->Task->getTestableMethods('TestTaskArticle');
 		$expected = array('dosomething', 'dosomethingelse');
-		$this->assertEqual(array_map('strtolower', $result), $expected);
+		$this->assertEquals($expected, array_map('strtolower', $result));
 	}
 
 /**
@@ -310,7 +297,7 @@ class TestTaskTest extends CakeTestCase {
 		$expected = array('plugin.test_task.test_task_comment', 'app.articles_tags',
 			'app.test_task_article', 'app.test_task_tag');
 
-		$this->assertEqual(sort($result), sort($expected));
+		$this->assertEquals(sort($expected), sort($result));
 	}
 
 /**
@@ -324,7 +311,7 @@ class TestTaskTest extends CakeTestCase {
 		$expected = array('plugin.test_task.test_task_comment', 'app.articles_tags',
 			'app.test_task_article', 'app.test_task_tag');
 
-		$this->assertEqual(sort($result), sort($expected));
+		$this->assertEquals(sort($result), sort($expected));
 	}
 
 /**
@@ -340,7 +327,7 @@ class TestTaskTest extends CakeTestCase {
 		$this->Task->getObjectType();
 
 		$result = $this->Task->getObjectType();
-		$this->assertEqual($result, $this->Task->classTypes['Controller']);
+		$this->assertEquals($this->Task->classTypes['Controller'], $result);
 	}
 
 /**
@@ -374,19 +361,17 @@ class TestTaskTest extends CakeTestCase {
  */
 	public function testGetClassName() {
 		$objects = App::objects('model');
-		$skip = $this->skipIf(empty($objects), 'No models in app, this test will fail.');
-		if ($skip) {
-			return;
-		}
+		$this->skipIf(empty($objects), 'No models in app.');
+
 		$this->Task->expects($this->at(0))->method('in')->will($this->returnValue('MyCustomClass'));
 		$this->Task->expects($this->at(1))->method('in')->will($this->returnValue(1));
 
 		$result = $this->Task->getClassName('Model');
-		$this->assertEqual($result, 'MyCustomClass');
+		$this->assertEquals($result, 'MyCustomClass');
 
 		$result = $this->Task->getClassName('Model');
 		$options = App::objects('model');
-		$this->assertEqual($result, $options[0]);
+		$this->assertEquals($options[0], $result);
 	}
 
 /**
@@ -401,7 +386,7 @@ class TestTaskTest extends CakeTestCase {
 
 		$result = $this->Task->getUserFixtures();
 		$expected = array('app.pizza', 'app.topping', 'app.side_dish');
-		$this->assertEqual($expected, $result);
+		$this->assertEquals($expected, $result);
 	}
 
 /**
@@ -411,19 +396,28 @@ class TestTaskTest extends CakeTestCase {
  */
 	public function testGetRealClassname() {
 		$result = $this->Task->getRealClassname('Model', 'Post');
-		$this->assertEqual($result, 'Post');
+		$this->assertEquals('Post', $result);
 
 		$result = $this->Task->getRealClassname('Controller', 'Posts');
-		$this->assertEqual($result, 'PostsController');
+		$this->assertEquals('PostsController', $result);
+
+		$result = $this->Task->getRealClassname('Controller', 'PostsController');
+		$this->assertEquals('PostsController', $result);
 
 		$result = $this->Task->getRealClassname('Helper', 'Form');
-		$this->assertEqual($result, 'FormHelper');
+		$this->assertEquals('FormHelper', $result);
+
+		$result = $this->Task->getRealClassname('Helper', 'FormHelper');
+		$this->assertEquals('FormHelper', $result);
 
 		$result = $this->Task->getRealClassname('Behavior', 'Containable');
-		$this->assertEqual($result, 'ContainableBehavior');
+		$this->assertEquals('ContainableBehavior', $result);
+
+		$result = $this->Task->getRealClassname('Behavior', 'ContainableBehavior');
+		$this->assertEquals('ContainableBehavior', $result);
 
 		$result = $this->Task->getRealClassname('Component', 'Auth');
-		$this->assertEqual($result, 'AuthComponent');
+		$this->assertEquals('AuthComponent', $result);
 	}
 
 /**
@@ -497,15 +491,15 @@ class TestTaskTest extends CakeTestCase {
 	public function testGenerateConstructor() {
 		$result = $this->Task->generateConstructor('controller', 'PostsController');
 		$expected = "new TestPostsController();\n\t\t\$this->Posts->constructClasses();\n";
-		$this->assertEqual($expected, $result);
+		$this->assertEquals($expected, $result);
 
 		$result = $this->Task->generateConstructor('model', 'Post');
 		$expected = "ClassRegistry::init('Post');\n";
-		$this->assertEqual($expected, $result);
+		$this->assertEquals($expected, $result);
 
 		$result = $this->Task->generateConstructor('helper', 'FormHelper');
 		$expected = "new FormHelper();\n";
-		$this->assertEqual($expected, $result);
+		$this->assertEquals($expected, $result);
 	}
 
 /**
@@ -528,9 +522,9 @@ class TestTaskTest extends CakeTestCase {
 
 		//fake plugin path
 		CakePlugin::load('TestTest', array('path' =>  APP . 'Plugin' . DS . 'TestTest' . DS));
-		$path =  APP . 'Plugin' . DS . 'TestTest' . DS . 'tests' . DS . 'Case' . DS . 'View' . DS . 'Helper' . DS  .'FormHelperTest.php';
+		$path =  APP . 'Plugin' . DS . 'TestTest' . DS . 'Test' . DS . 'Case' . DS . 'View' . DS . 'Helper' . DS  .'FormHelperTest.php';
 		$this->Task->expects($this->once())->method('createFile')
-			->with($path, new PHPUnit_Framework_Constraint_IsAnything());
+			->with($path, $this->anything());
 
 		$this->Task->bake('Helper', 'Form');
 		CakePlugin::unload();
@@ -541,7 +535,7 @@ class TestTaskTest extends CakeTestCase {
  *
  * @return void
  */
-	function testInteractiveWithPlugin() {
+	public function testInteractiveWithPlugin() {
 		$testApp = CAKE . 'Test' . DS . 'test_app' . DS . 'Plugin' . DS;
 		App::build(array(
 			'plugins' => array($testApp)
@@ -549,7 +543,7 @@ class TestTaskTest extends CakeTestCase {
 		CakePlugin::load('TestPlugin');
 
 		$this->Task->plugin = 'TestPlugin';
-		$path = $testApp . 'TestPlugin' . DS . 'tests' . DS . 'Case' . DS . 'View' . DS . 'Helper' . DS . 'OtherHelperHelperTest.php';
+		$path = $testApp . 'TestPlugin' . DS . 'Test' . DS . 'Case' . DS . 'View' . DS . 'Helper' . DS . 'OtherHelperTest.php';
 		$this->Task->expects($this->any())
 			->method('in')
 			->will($this->onConsecutiveCalls(
@@ -568,39 +562,48 @@ class TestTaskTest extends CakeTestCase {
 		$this->Task->execute();
 	}
 
+	public static function caseFileNameProvider() {
+		return array(
+			array('Model', 'Post', 'Case' . DS . 'Model' . DS . 'PostTest.php'),
+			array('Helper', 'Form', 'Case' . DS . 'View' . DS . 'Helper' . DS . 'FormHelperTest.php'),
+			array('Controller', 'Posts', 'Case' . DS . 'Controller' . DS . 'PostsControllerTest.php'),
+			array('Behavior', 'Containable', 'Case' . DS . 'Model' . DS . 'Behavior' . DS . 'ContainableBehaviorTest.php'),
+			array('Component', 'Auth', 'Case' . DS . 'Controller' . DS . 'Component' . DS . 'AuthComponentTest.php'),
+			array('model', 'Post', 'Case' . DS . 'Model' . DS . 'PostTest.php'),
+			array('helper', 'Form', 'Case' . DS . 'View' . DS . 'Helper' . DS . 'FormHelperTest.php'),
+			array('controller', 'Posts', 'Case' . DS . 'Controller' . DS . 'PostsControllerTest.php'),
+			array('behavior', 'Containable', 'Case' . DS . 'Model' . DS . 'Behavior' . DS . 'ContainableBehaviorTest.php'),
+			array('component', 'Auth', 'Case' . DS . 'Controller' . DS . 'Component' . DS . 'AuthComponentTest.php'),
+		);
+	}
+
 /**
  * Test filename generation for each type + plugins
  *
+ * @dataProvider caseFileNameProvider
  * @return void
  */
-	public function testTestCaseFileName() {
-		$this->Task->path = '/my/path/tests/';
+	public function testTestCaseFileName($type, $class, $expected) {
+		$this->Task->path = DS . 'my' . DS . 'path' . DS . 'tests' . DS;
 
-		$result = $this->Task->testCaseFileName('Model', 'Post');
-		$expected = $this->Task->path . 'Case' . DS . 'Model' . DS . 'PostTest.php';
-		$this->assertEqual($expected, $result);
+		$result = $this->Task->testCaseFileName($type, $class);
+		$expected = $this->Task->path . $expected;
+		$this->assertEquals($expected, $result);
+	}
 
-		$result = $this->Task->testCaseFileName('Helper', 'Form');
-		$expected = $this->Task->path . 'Case' . DS . 'View' . DS . 'Helper' . DS . 'FormHelperTest.php';
-		$this->assertEqual($expected, $result);
-
-		$result = $this->Task->testCaseFileName('Controller', 'Posts');
-		$expected = $this->Task->path . 'Case' . DS . 'Controller' . DS . 'PostsControllerTest.php';
-		$this->assertEqual($expected, $result);
-
-		$result = $this->Task->testCaseFileName('Behavior', 'Containable');
-		$expected = $this->Task->path . 'Case' . DS . 'Model' . DS . 'Behavior' . DS . 'ContainableBehaviorTest.php';
-		$this->assertEqual($expected, $result);
-
-		$result = $this->Task->testCaseFileName('Component', 'Auth');
-		$expected = $this->Task->path . 'Case' . DS . 'Controller' . DS  . 'Component' . DS . 'AuthComponentTest.php';
-		$this->assertEqual($expected, $result);
+/**
+ * Test filename generation for plugins.
+ *
+ * @return void
+ */
+	public function testTestCaseFileNamePlugin() {
+		$this->Task->path = DS . 'my' . DS . 'path' . DS . 'tests' . DS;
 
 		CakePlugin::load('TestTest', array('path' =>  APP . 'Plugin' . DS . 'TestTest' . DS ));
 		$this->Task->plugin = 'TestTest';
 		$result = $this->Task->testCaseFileName('Model', 'Post');
-		$expected =  APP . 'Plugin' . DS . 'TestTest' . DS . 'tests' . DS . 'Case' . DS . 'Model' . DS . 'PostTest.php';
-		$this->assertEqual($expected, $result);
+		$expected =  APP . 'Plugin' . DS . 'TestTest' . DS . 'Test' . DS . 'Case' . DS . 'Model' . DS . 'PostTest.php';
+		$this->assertEquals($expected, $result);
 	}
 
 /**
@@ -614,8 +617,8 @@ class TestTaskTest extends CakeTestCase {
 		$this->Task->expects($this->once())->method('isLoadableClass')->will($this->returnValue(true));
 		$this->Task->expects($this->once())->method('createFile')
 			->with(
-				new PHPUnit_Framework_Constraint_IsAnything(),
-				new PHPUnit_Framework_Constraint_PCREMatch('/class TestTaskTagTestCase extends CakeTestCase/')
+				$this->anything(),
+				$this->stringContains('class TestTaskTagTestCase extends CakeTestCase')
 			);
 		$this->Task->execute();
 	}
@@ -630,10 +633,58 @@ class TestTaskTest extends CakeTestCase {
 		$this->Task->expects($this->at(0))->method('in')->will($this->returnValue('TestTaskTag'));
 		$this->Task->expects($this->once())->method('createFile')
 			->with(
-				new PHPUnit_Framework_Constraint_IsAnything(),
-				new PHPUnit_Framework_Constraint_PCREMatch('/class TestTaskTagTestCase extends CakeTestCase/')
+				$this->anything(),
+				$this->stringContains('class TestTaskTagTestCase extends CakeTestCase')
 			);
 		$this->Task->expects($this->any())->method('isLoadableClass')->will($this->returnValue(true));
 		$this->Task->execute();
+	}
+
+/**
+ * test execute with type and class name defined and lower case.
+ *
+ * @return void
+ */
+	public function testExecuteWithTwoArgsLowerCase() {
+		$this->Task->args = array('model', 'TestTaskTag');
+		$this->Task->expects($this->at(0))->method('in')->will($this->returnValue('TestTaskTag'));
+		$this->Task->expects($this->once())->method('createFile')
+			->with(
+				$this->anything(),
+				$this->stringContains('class TestTaskTagTestCase extends CakeTestCase')
+			);
+		$this->Task->expects($this->any())->method('isLoadableClass')->will($this->returnValue(true));
+		$this->Task->execute();
+	}
+
+/**
+ * Data provider for mapType() tests.
+ *
+ * @return array
+ */
+	public static function mapTypeProvider() {
+		return array(
+			array('controller', null, 'Controller'),
+			array('Controller', null, 'Controller'),
+			array('component', null, 'Controller/Component'),
+			array('Component', null, 'Controller/Component'),
+			array('model', null, 'Model'),
+			array('Model', null, 'Model'),
+			array('behavior', null, 'Model/Behavior'),
+			array('Behavior', null, 'Model/Behavior'),
+			array('helper', null, 'View/Helper'),
+			array('Helper', null, 'View/Helper'),
+			array('Helper', 'DebugKit', 'DebugKit.View/Helper'),
+		);
+	}
+
+/**
+ * Test that mapType returns the correct package names.
+ *
+ * @dataProvider mapTypeProvider
+ * @return void
+ */
+	public function testMapType($original, $plugin, $expected) {
+		$this->assertEquals($expected, $this->Task->mapType($original, $plugin));
 	}
 }

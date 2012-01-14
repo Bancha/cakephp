@@ -1,15 +1,18 @@
 <?php
 /**
+ * DigestAuthenticateTest file
+ *
+ * PHP 5
  *
  * CakePHP(tm) : Rapid Development Framework (http://cakephp.org)
- * Copyright 2005-2010, Cake Software Foundation, Inc. (http://cakefoundation.org)
+ * Copyright 2005-2011, Cake Software Foundation, Inc. (http://cakefoundation.org)
  *
  * Licensed under The MIT License
  * Redistributions of files must retain the above copyright notice.
  *
- * @copyright     Copyright 2005-2010, Cake Software Foundation, Inc. (http://cakefoundation.org)
+ * @copyright     Copyright 2005-2011, Cake Software Foundation, Inc. (http://cakefoundation.org)
  * @link          http://cakephp.org CakePHP(tm) Project
- * @package       cake.tests.cases.libs.controller.components.auth
+ * @package       Cake.Test.Case.Controller.Component.Auth
  * @since         CakePHP(tm) v 2.0
  * @license       MIT License (http://www.opensource.org/licenses/mit-license.php)
  */
@@ -24,7 +27,7 @@ require_once  CAKE . 'Test' . DS . 'Case' . DS . 'Model' . DS . 'models.php';
 /**
  * Test case for DigestAuthentication
  *
- * @package cake.test.cases.controller.components.auth
+ * @package       Cake.Test.Case.Controller.Component.Auth
  */
 class DigestAuthenticateTest extends CakeTestCase {
 
@@ -35,7 +38,7 @@ class DigestAuthenticateTest extends CakeTestCase {
  *
  * @return void
  */
-	function setUp() {
+	public function setUp() {
 		parent::setUp();
 		$this->Collection = $this->getMock('ComponentCollection');
 		$this->server = $_SERVER;
@@ -48,7 +51,8 @@ class DigestAuthenticateTest extends CakeTestCase {
 		));
 
 		$password = DigestAuthenticate::password('mariano', 'cake', 'localhost');
-		ClassRegistry::init('User')->updateAll(array('password' => '"' . $password . '"'));
+		$User = ClassRegistry::init('User');
+		$User->updateAll(array('password' => $User->getDataSource()->value($password)));
 
 		$_SERVER['REQUEST_METHOD'] = 'GET';
 		$this->response = $this->getMock('CakeResponse');
@@ -59,7 +63,7 @@ class DigestAuthenticateTest extends CakeTestCase {
  *
  * @return void
  */
-	function tearDown() {
+	public function tearDown() {
 		parent::tearDown();
 		$_SERVER = $this->server;
 	}
@@ -69,7 +73,7 @@ class DigestAuthenticateTest extends CakeTestCase {
  *
  * @return void
  */
-	function testConstructor() {
+	public function testConstructor() {
 		$object = new DigestAuthenticate($this->Collection, array(
 			'userModel' => 'AuthUser',
 			'fields' => array('username' => 'user', 'password' => 'password'),
@@ -86,7 +90,7 @@ class DigestAuthenticateTest extends CakeTestCase {
  *
  * @return void
  */
-	function testAuthenticateNoData() {
+	public function testAuthenticateNoData() {
 		$request = new CakeRequest('posts/index', false);
 
 		$this->response->expects($this->once())
@@ -101,7 +105,7 @@ class DigestAuthenticateTest extends CakeTestCase {
  *
  * @return void
  */
-	function testAuthenticateWrongUsername() {
+	public function testAuthenticateWrongUsername() {
 		$request = new CakeRequest('posts/index', false);
 		$request->addParams(array('pass' => array(), 'named' => array()));
 
@@ -136,7 +140,7 @@ DIGEST;
  *
  * @return void
  */
-	function testAuthenticateChallenge() {
+	public function testAuthenticateChallenge() {
 		$request = new CakeRequest('posts/index', false);
 		$request->addParams(array('pass' => array(), 'named' => array()));
 
@@ -160,7 +164,7 @@ DIGEST;
  *
  * @return void
  */
-	function testAuthenticateSuccess() {
+	public function testAuthenticateSuccess() {
 		$request = new CakeRequest('posts/index', false);
 		$request->addParams(array('pass' => array(), 'named' => array()));
 
@@ -191,7 +195,7 @@ DIGEST;
  *
  * @return void
  */
-	function testAuthenticateFailReChallenge() {
+	public function testAuthenticateFailReChallenge() {
 		$this->auth->settings['scope'] = array('user' => 'nate');
 		$request = new CakeRequest('posts/index', false);
 		$request->addParams(array('pass' => array(), 'named' => array()));
@@ -225,10 +229,9 @@ DIGEST;
 /**
  * testParseDigestAuthData method
  *
- * @access public
  * @return void
  */
-	function testParseAuthData() {
+	public function testParseAuthData() {
 		$digest = <<<DIGEST
 			Digest username="Mufasa",
 			realm="testrealm@host.com",
@@ -263,7 +266,7 @@ DIGEST;
  *
  * @return void
  */
-	function testParseAuthEmailAddress() {
+	public function testParseAuthEmailAddress() {
 		$digest = <<<DIGEST
 			Digest username="mark@example.com",
 			realm="testrealm@host.com",
@@ -287,7 +290,7 @@ DIGEST;
 			'opaque' => '5ccc069c403ebaf9f0171e9517f40e41'
 		);
 		$result = $this->auth->parseAuthData($digest);
-		$this->assertIdentical($expected, $result);
+		$this->assertSame($expected, $result);
 	}
 
 /**
@@ -295,7 +298,7 @@ DIGEST;
  *
  * @return void
  */
-	function testPassword() {
+	public function testPassword() {
 		$result = DigestAuthenticate::password('mark', 'password', 'localhost');
 		$expected = md5('mark:localhost:password');
 		$this->assertEquals($expected, $result);

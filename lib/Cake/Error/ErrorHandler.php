@@ -7,14 +7,14 @@
  * PHP 5
  *
  * CakePHP(tm) : Rapid Development Framework (http://cakephp.org)
- * Copyright 2005-2010, Cake Software Foundation, Inc. (http://cakefoundation.org)
+ * Copyright 2005-2011, Cake Software Foundation, Inc. (http://cakefoundation.org)
  *
  * Licensed under The MIT License
  * Redistributions of files must retain the above copyright notice.
  *
- * @copyright     Copyright 2005-2010, Cake Software Foundation, Inc. (http://cakefoundation.org)
+ * @copyright     Copyright 2005-2011, Cake Software Foundation, Inc. (http://cakefoundation.org)
  * @link          http://cakephp.org CakePHP(tm) Project
- * @package       cake.libs.error
+ * @package       Cake.Error
  * @since         CakePHP(tm) v 0.10.5.1732
  * @license       MIT License (http://www.opensource.org/licenses/mit-license.php)
  */
@@ -26,7 +26,7 @@ App::uses('AppController', 'Controller');
 
 /**
  *
- * Error Handler provides basic error and exception handling for your application. It captures and 
+ * Error Handler provides basic error and exception handling for your application. It captures and
  * handles all unhandled exceptions and errors. Displays helpful framework errors when debug > 1.
  *
  * ### Uncaught exceptions
@@ -46,8 +46,8 @@ App::uses('AppController', 'Controller');
  * #### Create your own Exception handler with `Exception.handler`
  *
  * This gives you full control over the exception handling process.  The class you choose should be
- * loaded in your app/config/bootstrap.php, so its available to handle any exceptions.  You can
- * define the handler as any callback type. Using Exception.handler overrides all other exception 
+ * loaded in your app/Config/bootstrap.php, so its available to handle any exceptions.  You can
+ * define the handler as any callback type. Using Exception.handler overrides all other exception
  * handling settings and logic.
  *
  * #### Using `AppController::appError();`
@@ -67,8 +67,8 @@ App::uses('AppController', 'Controller');
  *
  * #### Logging exceptions
  *
- * Using the built-in exception handling, you can log all the exceptions 
- * that are dealt with by ErrorHandler by setting `Exception.log` to true in your core.php. 
+ * Using the built-in exception handling, you can log all the exceptions
+ * that are dealt with by ErrorHandler by setting `Exception.log` to true in your core.php.
  * Enabling this will log every exception to CakeLog and the configured loggers.
  *
  * ### PHP errors
@@ -92,7 +92,7 @@ App::uses('AppController', 'Controller');
  *
  * Would enable handling for all non Notice errors.
  *
- * @package       cake.libs.error
+ * @package       Cake.Error
  * @see ExceptionRenderer for more information on how to customize exception rendering.
  */
 class ErrorHandler {
@@ -100,9 +100,10 @@ class ErrorHandler {
 /**
  * Set as the default exception handler by the CakePHP bootstrap process.
  *
- * This will either use an AppError class if your application has one,
+ * This will either use custom exception renderer class if configured,
  * or use the default ExceptionRenderer.
  *
+ * @param Exception $exception
  * @return void
  * @see http://php.net/manual/en/function.set-exception-handler.php
  */
@@ -138,7 +139,7 @@ class ErrorHandler {
 
 /**
  * Set as the default error handler by CakePHP. Use Configure::write('Error.handler', $callback), to use your own
- * error handling methods.  This function will use Debugger to display errors when debug > 0.  And 
+ * error handling methods.  This function will use Debugger to display errors when debug > 0.  And
  * will log errors to CakeLog, when debug == 0.
  *
  * You can use Configure::write('Error.level', $value); to set what type of errors will be handled here.
@@ -156,7 +157,7 @@ class ErrorHandler {
 			return false;
 		}
 		$errorConfig = Configure::read('Error');
-		list($error, $log) = self::_mapErrorCode($code);
+		list($error, $log) = self::mapErrorCode($code);
 
 		$debug = Configure::read('debug');
 		if ($debug) {
@@ -185,10 +186,10 @@ class ErrorHandler {
 /**
  * Map an error code into an Error word, and log location.
  *
- * @param int $code Error code to map
+ * @param integer $code Error code to map
  * @return array Array of error word, and log location.
  */
-	protected static function _mapErrorCode($code) {
+	public static function mapErrorCode($code) {
 		$error = $log = null;
 		switch ($code) {
 			case E_PARSE:

@@ -1,18 +1,18 @@
 <?php
 /**
- * BasicMethodTest file
+ * BasicAuthenticationTest file
  *
  * PHP 5
  *
  * CakePHP(tm) Tests <http://book.cakephp.org/view/1196/Testing>
- * Copyright 2005-2010, Cake Software Foundation, Inc. (http://cakefoundation.org)
+ * Copyright 2005-2011, Cake Software Foundation, Inc. (http://cakefoundation.org)
  *
  * Licensed under The MIT License
  * Redistributions of files must retain the above copyright notice
  *
- * @copyright     Copyright 2005-2010, Cake Software Foundation, Inc. (http://cakefoundation.org)
+ * @copyright     Copyright 2005-2011, Cake Software Foundation, Inc. (http://cakefoundation.org)
  * @link          http://book.cakephp.org/view/1196/Testing CakePHP(tm) Tests
- * @package       cake.tests.cases.libs.http
+ * @package       Cake.Test.Case.Network.Http
  * @since         CakePHP(tm) v 2.0.0
  * @license       MIT License (http://www.opensource.org/licenses/mit-license.php)
  */
@@ -23,9 +23,9 @@ App::uses('BasicAuthentication', 'Network/Http');
 /**
  * BasicMethodTest class
  *
- * @package       cake.tests.cases.libs.http
+ * @package       Cake.Test.Case.Network.Http
  */
-class BasicMethodTest extends CakeTestCase {
+class BasicAuthenticationTest extends CakeTestCase {
 
 /**
  * testAuthentication method
@@ -41,7 +41,7 @@ class BasicMethodTest extends CakeTestCase {
 		);
 
 		BasicAuthentication::authentication($http, $auth);
-		$this->assertEqual($http->request['header']['Authorization'], 'Basic bWFyazpzZWNyZXQ=');
+		$this->assertEquals($http->request['header']['Authorization'], 'Basic bWFyazpzZWNyZXQ=');
 	}
 
 /**
@@ -58,7 +58,7 @@ class BasicMethodTest extends CakeTestCase {
 		);
 
 		BasicAuthentication::proxyAuthentication($http, $proxy);
-		$this->assertEqual($http->request['header']['Proxy-Authorization'], 'Basic bWFyazpzZWNyZXQ=');
+		$this->assertEquals($http->request['header']['Proxy-Authorization'], 'Basic bWFyazpzZWNyZXQ=');
 	}
 
 }

@@ -5,14 +5,14 @@
  * PHP 5
  *
  * CakePHP(tm) Tests <http://book.cakephp.org/view/1196/Testing>
- * Copyright 2005-2010, Cake Software Foundation, Inc. (http://cakefoundation.org)
+ * Copyright 2005-2011, Cake Software Foundation, Inc. (http://cakefoundation.org)
  *
  * Licensed under The MIT License
  * Redistributions of files must retain the above copyright notice
  *
- * @copyright     Copyright 2005-2010, Cake Software Foundation, Inc. (http://cakefoundation.org)
+ * @copyright     Copyright 2005-2011, Cake Software Foundation, Inc. (http://cakefoundation.org)
  * @link          http://book.cakephp.org/view/1196/Testing CakePHP(tm) Tests
- * @package       cake.tests.lib
+ * @package       Cake.TestSuite.templates
  * @since         CakePHP(tm) v 1.2.0.4433
  * @license       MIT License (http://www.opensource.org/licenses/mit-license.php)
  */
@@ -23,6 +23,7 @@
 		<meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
 		<title>CakePHP Test Suite 2.0</title>
 		<style type="text/css">
+			body h2 {color: #777;}
 			h3 {font-size: 170%; padding-top: 1em}
 			a {font-size: 120%}
 			li {line-height: 140%}
@@ -49,24 +50,24 @@
 			ul.tests li.error,
 			ul.tests li.skipped,
 			ul.tests li.fail {
-				background: #fff2f2 url(http://cakephp.org/img/test-fail-icon.png) 5px 5px no-repeat;
+				background: #fff2f2 url(<?php echo $baseDir; ?>img/test-fail-icon.png) 5px 5px no-repeat;
 				border-top: 1px dotted red;
 				border-bottom: 1px dotted red;
 				padding:5px 10px 2px 25px;
 			}
 			ul.tests li.pass {
 				background-color: #f2fff2;
-				background-image: url(http://cakephp.org/img/test-pass-icon.png);
+				background-image: url(<?php echo $baseDir; ?>img/test-pass-icon.png);
 				border-color:green;
 			}
 			ul.tests li.skipped {
 				background-color: #edf1ff;
-				background-image: url(http://cakephp.org/img/test-skip-icon.png);
+				background-image: url(<?php echo $baseDir; ?>img/test-skip-icon.png);
 				border-color:navy;
 			}
 			ul.tests li.error {
 				background-color: #ffffe5;
-				background-image: url(http://cakephp.org/img/test-error-icon.png);
+				background-image: url(<?php echo $baseDir; ?>img/test-error-icon.png);
 				border-color: #DF6300;
 			}
 			ul.tests li div { margin: 5px 0 8px 0; }

@@ -1,4 +1,5 @@
 <?php
+App::import('Model', 'ConnectionManager');
 /**
  * Washes strings from unwanted noise.
  *
@@ -7,14 +8,14 @@
  * PHP 5
  *
  * CakePHP(tm) : Rapid Development Framework (http://cakephp.org)
- * Copyright 2005-2010, Cake Software Foundation, Inc. (http://cakefoundation.org)
+ * Copyright 2005-2011, Cake Software Foundation, Inc. (http://cakefoundation.org)
  *
  * Licensed under The MIT License
  * Redistributions of files must retain the above copyright notice.
  *
- * @copyright     Copyright 2005-2010, Cake Software Foundation, Inc. (http://cakefoundation.org)
+ * @copyright     Copyright 2005-2011, Cake Software Foundation, Inc. (http://cakefoundation.org)
  * @link          http://cakephp.org CakePHP(tm) Project
- * @package       cake.libs
+ * @package       Cake.Utility
  * @since         CakePHP(tm) v 0.10.0.1076
  * @license       MIT License (http://www.opensource.org/licenses/mit-license.php)
  */
@@ -25,7 +26,7 @@
  * Removal of alpahnumeric characters, SQL-safe slash-added strings, HTML-friendly strings,
  * and all of the above on arrays.
  *
- * @package       cake.libs
+ * @package       Cake.Utility
  */
 class Sanitize {
 
@@ -121,7 +122,7 @@ class Sanitize {
  */
 	public static function stripWhitespace($str) {
 		$r = preg_replace('/[\n\r\t]+/', '', $str);
-		return preg_replace('/\s{2,}/', ' ', $r);
+		return preg_replace('/\s{2,}/u', ' ', $r);
 	}
 
 /**
@@ -141,7 +142,7 @@ class Sanitize {
  * Strips scripts and stylesheets from output
  *
  * @param string $str String to sanitize
- * @return string String with <script>, <style>, <link> elements removed.
+ * @return string String with <script>, <style>, <link>, <img> elements removed.
  */
 	public static function stripScripts($str) {
 		return preg_replace('/(<link[^>]+rel="[^"]*stylesheet"[^>]*>|<img[^>]*>|style="[^"]*")|<script[^>]*>.*?<\/script>|<style[^>]*>.*?<\/style>|<!--.*?-->/is', '', $str);
@@ -168,13 +169,11 @@ class Sanitize {
  *
  * Will remove all `<b>`, `<p>`, and `<div>` tags from the $dirty string.
  *
- * @param string $str String to sanitize
- * @param string $tag Tag to remove (add more parameters as needed)
+ * @param string $str,... String to sanitize
  * @return string sanitized String
  */
-	public static function stripTags() {
+	public static function stripTags($str) {
 		$params = func_get_args();
-		$str = $params[0];
 
 		for ($i = 1, $count = count($params); $i < $count; $i++) {
 			$str = preg_replace('/<' . $params[$i] . '\b[^>]*>/i', '', $str);
@@ -231,7 +230,7 @@ class Sanitize {
 			return $data;
 		} else {
 			if ($options['odd_spaces']) {
-				$data = str_replace(chr(0xCA), '', str_replace(' ', ' ', $data));
+				$data = str_replace(chr(0xCA), '', $data);
 			}
 			if ($options['encode']) {
 				$data = Sanitize::html($data, array('remove' => $options['remove_html']));
@@ -242,9 +241,6 @@ class Sanitize {
 			if ($options['carriage']) {
 				$data = str_replace("\r", "", $data);
 			}
-
-			$data = str_replace("'", "'", str_replace("!", "!", $data));
-
 			if ($options['unicode']) {
 				$data = preg_replace("/&amp;#([0-9]+);/s", "&#\\1;", $data);
 			}
@@ -255,75 +251,6 @@ class Sanitize {
 				$data = preg_replace("/\\\(?!&amp;#|\?#)/", "\\", $data);
 			}
 			return $data;
-		}
-	}
-
-/**
- * Formats column data from definition in DBO's $columns array
- *
- * @param Model $model The model containing the data to be formatted
- */
-	public static function formatColumns($model) {
-		foreach ($model->data as $name => $values) {
-			if ($name == $model->alias) {
-				$curModel = $model;
-			} elseif (isset($model->{$name}) && is_object($model->{$name}) && is_subclass_of($model->{$name}, 'Model')) {
-				$curModel = $model->{$name};
-			} else {
-				$curModel = null;
-			}
-
-			if ($curModel != null) {
-				foreach ($values as $column => $data) {
-					$colType = $curModel->getColumnType($column);
-
-					if ($colType != null) {
-						$db = ConnectionManager::getDataSource($curModel->useDbConfig);
-						$colData = $db->columns[$colType];
-
-						if (isset($colData['limit']) && strlen(strval($data)) > $colData['limit']) {
-							$data = substr(strval($data), 0, $colData['limit']);
-						}
-
-						if (isset($colData['formatter']) || isset($colData['format'])) {
-
-							switch (strtolower($colData['formatter'])) {
-								case 'date':
-									$data = date($colData['format'], strtotime($data));
-								break;
-								case 'sprintf':
-									$data = sprintf($colData['format'], $data);
-								break;
-								case 'intval':
-									$data = intval($data);
-								break;
-								case 'floatval':
-									$data = floatval($data);
-								break;
-							}
-						}
-						$model->data[$name][$column]=$data;
-						/*
-						switch ($colType) {
-							case 'integer':
-							case 'int':
-								return  $data;
-							break;
-							case 'string':
-							case 'text':
-							case 'binary':
-							case 'date':
-							case 'time':
-							case 'datetime':
-							case 'timestamp':
-							case 'date':
-								return "'" . $data . "'";
-							break;
-						}
-						*/
-					}
-				}
-			}
 		}
 	}
 }

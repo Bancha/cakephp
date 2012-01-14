@@ -5,14 +5,14 @@
  * PHP 5
  *
  * CakePHP(tm) : Rapid Development Framework (http://cakephp.org)
- * Copyright 2005-2010, Cake Software Foundation, Inc. (http://cakefoundation.org)
+ * Copyright 2005-2011, Cake Software Foundation, Inc. (http://cakefoundation.org)
  *
  * Licensed under The MIT License
  * Redistributions of files must retain the above copyright notice.
  *
- * @copyright     Copyright 2005-2010, Cake Software Foundation, Inc. (http://cakefoundation.org)
+ * @copyright     Copyright 2005-2011, Cake Software Foundation, Inc. (http://cakefoundation.org)
  * @link          http://cakephp.org CakePHP(tm) Project
- * @package       cake.libs.cache
+ * @package       Cake.Cache.Engine
  * @since         CakePHP(tm) v 1.2.0.4947
  * @license       MIT License (http://www.opensource.org/licenses/mit-license.php)
  */
@@ -21,7 +21,7 @@
  * Xcache storage engine for cache
  *
  * @link          http://trac.lighttpd.net/xcache/ Xcache
- * @package       cake.libs.cache
+ * @package       Cake.Cache.Engine
  */
 class XcacheEngine extends CacheEngine {
 
@@ -32,7 +32,6 @@ class XcacheEngine extends CacheEngine {
  *  - PHP_AUTH_PW = xcache.admin.password, default cake
  *
  * @var array
- * @access public
  */
 	public $settings = array();
 
@@ -45,7 +44,7 @@ class XcacheEngine extends CacheEngine {
  * @param array $settings array of setting for the engine
  * @return boolean True if the engine has been successfully initialized, false if not
  */
-	public function init($settings) {
+	public function init($settings = array()) {
 		parent::init(array_merge(array(
 			'engine' => 'Xcache',
 			'prefix' => Inflector::slug(APP_DIR) . '_',
@@ -124,15 +123,16 @@ class XcacheEngine extends CacheEngine {
 /**
  * Delete all keys from the cache
  *
+ * @param boolean $check
  * @return boolean True if the cache was successfully cleared, false otherwise
  */
 	public function clear($check) {
-		$this->__auth();
+		$this->_auth();
 		$max = xcache_count(XC_TYPE_VAR);
 		for ($i = 0; $i < $max; $i++) {
 			xcache_clear_cache(XC_TYPE_VAR, $i);
 		}
-		$this->__auth(true);
+		$this->_auth(true);
 		return true;
 	}
 
@@ -144,9 +144,9 @@ class XcacheEngine extends CacheEngine {
  * (see xcache.admin configuration settings)
  *
  * @param boolean $reverse Revert changes
- * @access private
+ * @return void
  */
-	function __auth($reverse = false) {
+	protected function _auth($reverse = false) {
 		static $backup = array();
 		$keys = array('PHP_AUTH_USER' => 'user', 'PHP_AUTH_PW' => 'password');
 		foreach ($keys as $key => $setting) {

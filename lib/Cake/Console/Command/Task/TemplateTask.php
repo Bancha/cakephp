@@ -5,21 +5,27 @@
  * PHP 5
  *
  * CakePHP(tm) : Rapid Development Framework (http://cakephp.org)
- * Copyright 2005-2010, Cake Software Foundation, Inc. (http://cakefoundation.org)
+ * Copyright 2005-2011, Cake Software Foundation, Inc. (http://cakefoundation.org)
  *
  * Licensed under The MIT License
  * Redistributions of files must retain the above copyright notice.
  *
- * @copyright     Copyright 2005-2010, Cake Software Foundation, Inc. (http://cakefoundation.org)
+ * @copyright     Copyright 2005-2011, Cake Software Foundation, Inc. (http://cakefoundation.org)
  * @link          http://cakephp.org CakePHP(tm) Project
- * @package       cake.console.shells.tasks
  * @since         CakePHP(tm) v 1.3
  * @license       MIT License (http://www.opensource.org/licenses/mit-license.php)
  */
 
+App::uses('AppShell', 'Console/Command');
 App::uses('Folder', 'Utility');
 
-class TemplateTask extends Shell {
+/**
+ * Template Task can generate templated output Used in other Tasks.
+ * Acts like a simplified View class.
+ *
+ * @package       Cake.Console.Command.Task
+ */
+class TemplateTask extends AppShell {
 
 /**
  * variables to add to template scope
@@ -39,7 +45,6 @@ class TemplateTask extends Shell {
 /**
  * Initialize callback.  Setup paths for the template task.
  *
- * @access public
  * @return void
  */
 	public function initialize() {
@@ -49,7 +54,7 @@ class TemplateTask extends Shell {
 /**
  * Find the paths to all the installed shell themes in the app.
  *
- * Bake themes are directories not named `skel` inside a `vendors/shells/templates` path.
+ * Bake themes are directories not named `skel` inside a `Console/Templates` path.
  *
  * @return array Array of bake themes that are installed.
  */
@@ -59,15 +64,14 @@ class TemplateTask extends Shell {
 		$separator = DS === '/' ? '/' : '\\\\';
 		$core = preg_replace('#shells' . $separator . '$#', '', $core);
 
-		$Folder = new Folder($core . 'templates' . DS . 'default');
+		$Folder = new Folder($core . 'Templates' . DS . 'default');
 
 		$contents = $Folder->read();
 		$themeFolders = $contents[0];
 
 		$plugins = App::objects('plugin');
 		foreach ($plugins as $plugin) {
-			$paths[] = $this->_pluginPath($plugin) . 'console' . DS . 'shells' . DS;
-			$paths[] = $this->_pluginPath($plugin) . 'vendors' . DS . 'shells' . DS;
+			$paths[] = $this->_pluginPath($plugin) . 'Console' . DS;
 		}
 		$paths[] = $core;
 
@@ -78,18 +82,18 @@ class TemplateTask extends Shell {
 
 		$themes = array();
 		foreach ($paths as $path) {
-			$Folder = new Folder($path . 'templates', false);
+			$Folder = new Folder($path . 'Templates', false);
 			$contents = $Folder->read();
 			$subDirs = $contents[0];
 			foreach ($subDirs as $dir) {
 				if (empty($dir) || preg_match('@^skel$|_skel$@', $dir)) {
 					continue;
 				}
-				$Folder = new Folder($path . 'templates' . DS . $dir);
+				$Folder = new Folder($path . 'Templates' . DS . $dir);
 				$contents = $Folder->read();
 				$subDirs = $contents[0];
 				if (array_intersect($contents[0], $themeFolders)) {
-					$templateDir = $path . 'templates' . DS . $dir . DS;
+					$templateDir = $path . 'Templates' . DS . $dir . DS;
 					$themes[$dir] = $templateDir;
 				}
 			}
@@ -100,7 +104,7 @@ class TemplateTask extends Shell {
 /**
  * Set variable values to the template scope
  *
- * @param mixed $one A string or an array of data.
+ * @param string|array $one A string or an array of data.
  * @param mixed $two Value in case $one is a string (which then works as the key).
  *   Unused if $one is an associative array, otherwise serves as the values to $one's keys.
  * @return void
@@ -127,9 +131,8 @@ class TemplateTask extends Shell {
  *
  * @param string $directory directory / type of thing you want
  * @param string $filename template name
- * @param string $vars Additional vars to set to template scope.
- * @access public
- * @return contents of generated code template
+ * @param array $vars Additional vars to set to template scope.
+ * @return string contents of generated code template
  */
 	public function generate($directory, $filename, $vars = null) {
 		if ($vars !== null) {
@@ -193,10 +196,9 @@ class TemplateTask extends Shell {
  * @param string $path The initial path to look for the file on. If it is not found fallbacks will be used.
  * @param string $directory Subdirectory to look for ie. 'views', 'objects'
  * @param string $filename lower_case_underscored filename you want.
- * @access public
  * @return string filename will exit program if template is not found.
  */
-	public function _findTemplate($path, $directory, $filename) {
+	protected function _findTemplate($path, $directory, $filename) {
 		$themeFile = $path . $directory . DS . $filename . '.ctp';
 		if (file_exists($themeFile)) {
 			return $themeFile;

@@ -5,18 +5,23 @@
  * PHP 5
  *
  * CakePHP(tm) : Rapid Development Framework (http://cakephp.org)
- * Copyright 2005-2010, Cake Software Foundation, Inc. (http://cakefoundation.org)
+ * Copyright 2005-2011, Cake Software Foundation, Inc. (http://cakefoundation.org)
  *
  * Licensed under The MIT License
  * Redistributions of files must retain the above copyright notice.
  *
- * @copyright     Copyright 2005-2010, Cake Software Foundation, Inc. (http://cakefoundation.org)
+ * @copyright     Copyright 2005-2011, Cake Software Foundation, Inc. (http://cakefoundation.org)
  * @link          http://cakephp.org CakePHP(tm) Project
- * @package       cake.libs
+ * @package       Cake.Network.Http
  * @since         CakePHP(tm) v 2.0.0
  * @license       MIT License (http://www.opensource.org/licenses/mit-license.php)
  */
 
+/**
+ * HTTP Response
+ *
+ * @package       Cake.Network.Http
+ */
 class HttpResponse implements ArrayAccess {
 
 /**
@@ -71,6 +76,7 @@ class HttpResponse implements ArrayAccess {
 /**
  * Contructor
  *
+ * @param string $message
  */
 	public function __construct($message = null) {
 		if ($message !== null) {
@@ -91,6 +97,7 @@ class HttpResponse implements ArrayAccess {
  * Get header in case insensitive
  *
  * @param string $name Header name
+ * @param array $headers
  * @return mixed String if header exists or null
  */
 	public function getHeader($name, $headers = null) {
@@ -122,7 +129,7 @@ class HttpResponse implements ArrayAccess {
  *
  * @param string $message Message to parse
  * @return void
- * @throw SocketException
+ * @throws SocketException
  */
 	public function parseResponse($message) {
 		if (!is_string($message)) {
@@ -197,7 +204,7 @@ class HttpResponse implements ArrayAccess {
 		$chunkLength = null;
 
 		while ($chunkLength !== 0) {
-			if (!preg_match("/^([0-9a-f]+) *(?:;(.+)=(.+))?\r\n/iU", $body, $match)) {
+			if (!preg_match('/^([0-9a-f]+) *(?:;(.+)=(.+))?(?:\r\n|\n)/iU', $body, $match)) {
 				throw new SocketException(__d('cake_dev', 'HttpSocket::_decodeChunkedBody - Could not parse malformed chunk.'));
 			}
 
@@ -417,7 +424,7 @@ class HttpResponse implements ArrayAccess {
 /**
  * ArrayAccess - Offset Unset
  *
- * @param mixed @offset
+ * @param mixed $offset
  * @return void
  */
 	public function offsetUnset($offset) {

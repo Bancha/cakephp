@@ -1,18 +1,18 @@
 <?php
 /**
- * HttpSocketTest file
+ * HttpResponseTest file
  *
  * PHP 5
  *
  * CakePHP(tm) Tests <http://book.cakephp.org/view/1196/Testing>
- * Copyright 2005-2010, Cake Software Foundation, Inc. (http://cakefoundation.org)
+ * Copyright 2005-2011, Cake Software Foundation, Inc. (http://cakefoundation.org)
  *
  * Licensed under The MIT License
  * Redistributions of files must retain the above copyright notice
  *
- * @copyright     Copyright 2005-2010, Cake Software Foundation, Inc. (http://cakefoundation.org)
+ * @copyright     Copyright 2005-2011, Cake Software Foundation, Inc. (http://cakefoundation.org)
  * @link          http://book.cakephp.org/view/1196/Testing CakePHP(tm) Tests
- * @package       cake.tests.cases.libs
+ * @package       Cake.Test.Case.Network.Http
  * @since         CakePHP(tm) v 1.2.0.4206
  * @license       MIT License (http://www.opensource.org/licenses/mit-license.php)
  */
@@ -22,7 +22,7 @@ App::uses('HttpResponse', 'Network/Http');
 /**
  * TestHttpResponse class
  *
- * @package       cake.tests.cases.libs
+ * @package       Cake.Test.Case.Network.Http
  */
 class TestHttpResponse extends HttpResponse {
 
@@ -82,7 +82,7 @@ class TestHttpResponse extends HttpResponse {
 /**
  * HttpResponseTest class
  *
- * @package       cake.tests.cases.libs
+ * @package       Cake.Test.Case.Network.Http
  */
 class HttpResponseTest extends CakeTestCase {
 /**
@@ -101,10 +101,10 @@ class HttpResponseTest extends CakeTestCase {
  */
 	public function testBody() {
 		$this->HttpResponse->body = 'testing';
-		$this->assertEqual($this->HttpResponse->body(), 'testing');
+		$this->assertEquals($this->HttpResponse->body(), 'testing');
 
 		$this->HttpResponse->body = null;
-		$this->assertIdentical($this->HttpResponse->body(), '');
+		$this->assertSame($this->HttpResponse->body(), '');
 	}
 
 /**
@@ -114,12 +114,12 @@ class HttpResponseTest extends CakeTestCase {
  */
 	public function testToString() {
 		$this->HttpResponse->body = 'other test';
-		$this->assertEqual($this->HttpResponse->body(), 'other test');
-		$this->assertEqual((string)$this->HttpResponse, 'other test');
+		$this->assertEquals($this->HttpResponse->body(), 'other test');
+		$this->assertEquals((string)$this->HttpResponse, 'other test');
 		$this->assertTrue(strpos($this->HttpResponse, 'test') > 0);
 
 		$this->HttpResponse->body = null;
-		$this->assertEqual((string)$this->HttpResponse, '');
+		$this->assertEquals((string)$this->HttpResponse, '');
 	}
 
 /**
@@ -135,15 +135,15 @@ class HttpResponseTest extends CakeTestCase {
 			'content-Type' => 'text/plain'
 		);
 
-		$this->assertEqual($this->HttpResponse->getHeader('foo'), 'Bar');
-		$this->assertEqual($this->HttpResponse->getHeader('Foo'), 'Bar');
-		$this->assertEqual($this->HttpResponse->getHeader('FOO'), 'Bar');
-		$this->assertEqual($this->HttpResponse->getHeader('header'), 'value');
-		$this->assertEqual($this->HttpResponse->getHeader('Content-Type'), 'text/plain');
-		$this->assertIdentical($this->HttpResponse->getHeader(0), null);
+		$this->assertEquals($this->HttpResponse->getHeader('foo'), 'Bar');
+		$this->assertEquals($this->HttpResponse->getHeader('Foo'), 'Bar');
+		$this->assertEquals($this->HttpResponse->getHeader('FOO'), 'Bar');
+		$this->assertEquals($this->HttpResponse->getHeader('header'), 'value');
+		$this->assertEquals($this->HttpResponse->getHeader('Content-Type'), 'text/plain');
+		$this->assertSame($this->HttpResponse->getHeader(0), null);
 
-		$this->assertEqual($this->HttpResponse->getHeader('foo', false), 'Bar');
-		$this->assertEqual($this->HttpResponse->getHeader('foo', array('foo' => 'not from class')), 'not from class');
+		$this->assertEquals($this->HttpResponse->getHeader('foo', false), 'Bar');
+		$this->assertEquals($this->HttpResponse->getHeader('foo', array('foo' => 'not from class')), 'not from class');
 	}
 
 /**
@@ -320,6 +320,15 @@ class HttpResponseTest extends CakeTestCase {
 
 		$r = $this->HttpResponse->decodeBody($sample['encoded'], $encoding);
 		$this->assertEquals($r, $sample['decoded']);
+
+		$encoding = 'chunked';
+		$sample = array(
+			'encoded' => "19\nThis is a chunked message\r\n0\n",
+			'decoded' => array('body' => "This is a chunked message", 'header' => false)
+		);
+
+		$r = $this->HttpResponse->decodeBody($sample['encoded'], $encoding);
+		$this->assertEquals($r, $sample['decoded'], 'Inconsistent line terminators should be tolerated.');
 	}
 
 /**
@@ -378,11 +387,17 @@ class HttpResponseTest extends CakeTestCase {
 		$r = $this->HttpResponse->decodeChunkedBody($encoded);
 		$this->assertEquals($r['body'], $decoded);
 		$this->assertEquals($r['header'], array('foo-header' => 'bar', 'cake' => 'PHP'));
+	}
 
+/**
+ * testDecodeChunkedBodyError method
+ *
+ * @expectedException SocketException
+ * @return void
+ */
+	public function testDecodeChunkedBodyError() {
 		$encoded = "19\r\nThis is a chunked message\r\nE\r\n\nThat is cool\n\r\n";
-		$this->expectError();
 		$r = $this->HttpResponse->decodeChunkedBody($encoded);
-		$this->assertEquals($r, false);
 	}
 
 /**
@@ -413,17 +428,17 @@ class HttpResponseTest extends CakeTestCase {
 				'value' => 'not=nice',
 			)
 		);
-		$this->assertEqual($cookies, $expected);
+		$this->assertEquals($cookies, $expected);
 
 		$header['Set-Cookie'][] = 'cakephp=great; Secure';
 		$expected['cakephp'] = array('value' => 'great', 'secure' => true);
 		$cookies = $this->HttpResponse->parseCookies($header);
-		$this->assertEqual($cookies, $expected);
+		$this->assertEquals($cookies, $expected);
 
 		$header['Set-Cookie'] = 'foo=bar';
 		unset($expected['people'], $expected['cakephp'], $expected['google']);
 		$cookies = $this->HttpResponse->parseCookies($header);
-		$this->assertEqual($cookies, $expected);
+		$this->assertEquals($cookies, $expected);
 	}
 
 /**
@@ -470,38 +485,38 @@ class HttpResponseTest extends CakeTestCase {
 		$this->HttpResponse->raw = "HTTP/1.1 200 OK\r\nServer: CakePHP\r\nContEnt-Type: text/plain\r\n\r\nThis is a test!";
 
 		$expected1 = "HTTP/1.1 200 OK\r\n";
-		$this->assertEqual($this->HttpResponse['raw']['status-line'], $expected1);
+		$this->assertEquals($this->HttpResponse['raw']['status-line'], $expected1);
 		$expected2 = "Server: CakePHP\r\nContEnt-Type: text/plain\r\n";
-		$this->assertEqual($this->HttpResponse['raw']['header'], $expected2);
+		$this->assertEquals($this->HttpResponse['raw']['header'], $expected2);
 		$expected3 = 'This is a test!';
-		$this->assertEqual($this->HttpResponse['raw']['body'], $expected3);
+		$this->assertEquals($this->HttpResponse['raw']['body'], $expected3);
 		$expected = $expected1 . $expected2 . "\r\n" . $expected3;
-		$this->assertEqual($this->HttpResponse['raw']['response'], $expected);
+		$this->assertEquals($this->HttpResponse['raw']['response'], $expected);
 
 		$expected = 'HTTP/1.1';
-		$this->assertEqual($this->HttpResponse['status']['http-version'], $expected);
+		$this->assertEquals($this->HttpResponse['status']['http-version'], $expected);
 		$expected = 200;
-		$this->assertEqual($this->HttpResponse['status']['code'], $expected);
+		$this->assertEquals($this->HttpResponse['status']['code'], $expected);
 		$expected = 'OK';
-		$this->assertEqual($this->HttpResponse['status']['reason-phrase'], $expected);
+		$this->assertEquals($this->HttpResponse['status']['reason-phrase'], $expected);
 
 		$expected = array(
 			'Server' => 'CakePHP',
 			'ContEnt-Type' => 'text/plain'
 		);
-		$this->assertEqual($this->HttpResponse['header'], $expected);
+		$this->assertEquals($this->HttpResponse['header'], $expected);
 
 		$expected = 'This is a test!';
-		$this->assertEqual($this->HttpResponse['body'], $expected);
+		$this->assertEquals($this->HttpResponse['body'], $expected);
 
 		$expected = array(
 			'foo' => array('value' => 'bar'),
 			'bar' => array('value' => 'foo')
 		);
-		$this->assertEqual($this->HttpResponse['cookies'], $expected);
+		$this->assertEquals($this->HttpResponse['cookies'], $expected);
 
 		$this->HttpResponse->raw = "HTTP/1.1 200 OK\r\n\r\nThis is a test!";
-		$this->assertIdentical($this->HttpResponse['raw']['header'], null);
+		$this->assertSame($this->HttpResponse['raw']['header'], null);
 	}
 
 }

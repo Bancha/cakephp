@@ -1,12 +1,12 @@
 <?php
 /**
  * CakePHP(tm) : Rapid Development Framework (http://cakephp.org)
- * Copyright 2005-2010, Cake Software Foundation, Inc. (http://cakefoundation.org)
+ * Copyright 2005-2011, Cake Software Foundation, Inc. (http://cakefoundation.org)
  *
  * Licensed under The MIT License
  * Redistributions of files must retain the above copyright notice.
  *
- * @copyright     Copyright 2005-2010, Cake Software Foundation, Inc. (http://cakefoundation.org)
+ * @copyright     Copyright 2005-2011, Cake Software Foundation, Inc. (http://cakefoundation.org)
  * @link          http://cakephp.org CakePHP(tm) Project
  * @license       MIT License (http://www.opensource.org/licenses/mit-license.php)
  */
@@ -20,7 +20,7 @@
  * the all support an `enabled` option that controls the enabled/disabled state of the object
  * when loaded.
  *
- * @package cake.libs
+ * @package       Cake.Utility
  * @since CakePHP(tm) v 2.0
  */
 abstract class ObjectCollection {
@@ -29,7 +29,6 @@ abstract class ObjectCollection {
  * List of the currently-enabled objects
  *
  * @var array
- * @access protected
  */
 	protected $_enabled = array();
 
@@ -43,7 +42,7 @@ abstract class ObjectCollection {
 /**
  * Loads a new object onto the collection. Can throw a variety of exceptions
  *
- * Implementations of this class support a `$options['callbacks']` flag which enables/disables
+ * Implementations of this class support a `$options['enabled']` flag which enables/disables
  * a loaded object.
  *
  * @param string $name Name of object to load.
@@ -54,7 +53,7 @@ abstract class ObjectCollection {
 
 /**
  * Trigger a callback method on every object in the collection.
- * Used to trigger methods on objects in the collection.  Will fire the methods in the 
+ * Used to trigger methods on objects in the collection.  Will fire the methods in the
  * order they were attached.
  *
  * ### Options
@@ -69,15 +68,12 @@ abstract class ObjectCollection {
  * - `collectReturn` Set to true to collect the return of each object into an array.
  *    This array of return values will be returned from the trigger() call. Defaults to `false`.
  *
- * - `triggerDisabled` Will trigger the callback on all objects in the collection even the non-enabled
- *    objects. Defaults to false.
- *
  * - `modParams` Allows each object the callback gets called on to modify the parameters to the next object.
  *    Setting modParams to an integer value will allow you to modify the parameter with that index.
  *    Any non-null value will modify the parameter index indicated.
  *    Defaults to false.
- *   
- * 
+ *
+ *
  * @param string $callback Method to fire on all the objects. Its assumed all the objects implement
  *   the method you are calling.
  * @param array $params Array of parameters for the triggered callback.
@@ -94,16 +90,12 @@ abstract class ObjectCollection {
 				'break' => false,
 				'breakOn' => false,
 				'collectReturn' => false,
-				'triggerDisabled' => false,
 				'modParams' => false
 			),
 			$options
 		);
 		$collected = array();
 		$list = $this->_enabled;
-		if ($options['triggerDisabled'] === true) {
-			$list = array_keys($this->_loaded);
-		}
 		if ($options['modParams'] !== false && !isset($params[$options['modParams']])) {
 			throw new CakeException(__d('cake_dev', 'Cannot use modParams with indexes that do not exist.'));
 		}
@@ -143,7 +135,7 @@ abstract class ObjectCollection {
 /**
  * Provide isset access to _loaded
  *
- * @param sting $name Name of object being checked.
+ * @param string $name Name of object being checked.
  * @return boolean
  */
 	public function __isset($name) {
@@ -226,6 +218,7 @@ abstract class ObjectCollection {
  *
  * @param string $name Name of the object
  * @param Object $object The object to use
+ * @return array Loaded objects
  */
 	public function set($name = null, $object = null) {
 		if (!empty($name) && !empty($object)) {
@@ -247,7 +240,8 @@ abstract class ObjectCollection {
 		foreach ($objects as $i => $objectName) {
 			$options = array();
 			if (!is_int($i)) {
-				list($options, $objectName) = array($objectName, $i);
+				$options = (array)$objectName;
+				$objectName = $i;
 			}
 			list($plugin, $name) = pluginSplit($objectName);
 			$normal[$name] = array('class' => $objectName, 'settings' => $options);

@@ -5,26 +5,23 @@
  * PHP 5
  *
  * CakePHP(tm) Tests <http://book.cakephp.org/view/1196/Testing>
- * Copyright 2005-2010, Cake Software Foundation, Inc. (http://cakefoundation.org)
+ * Copyright 2005-2011, Cake Software Foundation, Inc. (http://cakefoundation.org)
  *
  * Licensed under The MIT License
  * Redistributions of files must retain the above copyright notice
  *
- * @copyright     Copyright 2005-2010, Cake Software Foundation, Inc. (http://cakefoundation.org)
+ * @copyright     Copyright 2005-2011, Cake Software Foundation, Inc. (http://cakefoundation.org)
  * @link          http://book.cakephp.org/view/1196/Testing CakePHP(tm) Tests
- * @package       cake.tests.libs
+ * @package       Cake.TestSuite.Fixture
  * @since         CakePHP(tm) v 1.2.0.4667
  * @license       MIT License (http://www.opensource.org/licenses/mit-license.php)
  */
-
-PHP_CodeCoverage_Filter::getInstance()->addFileToBlacklist(__FILE__, 'DEFAULT');
-
 App::uses('CakeSchema', 'Model');
 
 /**
  * Short description for class.
  *
- * @package       cake.tests.lib
+ * @package       Cake.TestSuite.Fixture
  */
 class CakeTestFixture {
 
@@ -168,10 +165,12 @@ class CakeTestFixture {
 			}
 		}
 		$this->Schema->build(array($this->table => $this->fields));
-
-		return (
-			$db->execute($db->createSchema($this->Schema), array('log' => false)) !== false
-		);
+		try {
+			$db->execute($db->createSchema($this->Schema), array('log' => false));
+		} catch (Exception $e) {
+			return false;
+		}
+		return true;
 	}
 
 /**
@@ -185,9 +184,13 @@ class CakeTestFixture {
 			return false;
 		}
 		$this->Schema->build(array($this->table => $this->fields));
-		return (
-			$db->execute($db->dropSchema($this->Schema), array('log' => false)) !== false
-		);
+		try {
+
+			$db->execute($db->dropSchema($this->Schema), array('log' => false));
+		} catch (Exception $e) {
+			return false;
+		}
+		return true;
 	}
 
 /**

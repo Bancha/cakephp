@@ -6,14 +6,14 @@
  * PHP 5
  *
  * CakePHP(tm) : Rapid Development Framework (http://cakephp.org)
- * Copyright 2005-2010, Cake Software Foundation, Inc. (http://cakefoundation.org)
+ * Copyright 2005-2011, Cake Software Foundation, Inc. (http://cakefoundation.org)
  *
  * Licensed under The MIT License
  * Redistributions of files must retain the above copyright notice.
  *
- * @copyright     Copyright 2005-2010, Cake Software Foundation, Inc. (http://cakefoundation.org)
+ * @copyright     Copyright 2005-2011, Cake Software Foundation, Inc. (http://cakefoundation.org)
  * @link          http://cakephp.org CakePHP(tm) Project
- * @package       cake.tests.cases.console.libs.tasks
+ * @package       Cake.Test.Case.Console.Command
  * @since         CakePHP(tm) v 1.3
  * @license       MIT License (http://www.opensource.org/licenses/mit-license.php)
  */
@@ -38,7 +38,6 @@ class BakeShellTest extends CakeTestCase {
  * fixtures
  *
  * @var array
- * @access public
  */
 	public $fixtures = array('core.user');
 
@@ -77,19 +76,18 @@ class BakeShellTest extends CakeTestCase {
 	public function testAllWithModelName() {
 		App::uses('User', 'Model');
 		$userExists = class_exists('User');
-		if ($this->skipIf($userExists, 'User class exists, cannot test `bake all [param]`. %s')) {
-			return;
-		}
+		$this->skipIf($userExists, 'User class exists, cannot test `bake all [param]`.');
+
 		$this->Shell->Model = $this->getMock('ModelTask', array(), array(&$this->Dispatcher));
 		$this->Shell->Controller = $this->getMock('ControllerTask', array(), array(&$this->Dispatcher));
 		$this->Shell->View = $this->getMock('ModelTask', array(), array(&$this->Dispatcher));
 		$this->Shell->DbConfig = $this->getMock('DbConfigTask', array(), array(&$this->Dispatcher));
 
 		$this->Shell->DbConfig->expects($this->once())->method('getConfig')->will($this->returnValue('test'));
-	
+
 		$this->Shell->Model->expects($this->never())->method('getName');
 		$this->Shell->Model->expects($this->once())->method('bake')->will($this->returnValue(true));
-	
+
 		$this->Shell->Controller->expects($this->once())->method('bake')->will($this->returnValue(true));
 		$this->Shell->View->expects($this->once())->method('execute');
 

@@ -6,14 +6,14 @@
  * PHP 5
  *
  * CakePHP(tm) : Rapid Development Framework (http://cakephp.org)
- * Copyright 2005-2010, Cake Software Foundation, Inc. (http://cakefoundation.org)
+ * Copyright 2005-2011, Cake Software Foundation, Inc. (http://cakefoundation.org)
  *
  * Licensed under The MIT License
  * Redistributions of files must retain the above copyright notice.
  *
- * @copyright     Copyright 2005-2010, Cake Software Foundation, Inc. (http://cakefoundation.org)
+ * @copyright     Copyright 2005-2011, Cake Software Foundation, Inc. (http://cakefoundation.org)
  * @link          http://cakephp.org CakePHP(tm) Project
- * @package       cake.libs
+ * @package       Cake.Cache
  * @since         CakePHP(tm) v 1.2.0.4933
  * @license       MIT License (http://www.opensource.org/licenses/mit-license.php)
  */
@@ -41,7 +41,7 @@ App::uses('Inflector', 'Utility');
  * general all Cache operations are supported by all cache engines.  However, Cache::increment() and
  * Cache::decrement() are not supported by File caching.
  *
- * @package    cake.libs
+ * @package       Cake.Cache
  */
 class Cache {
 
@@ -82,7 +82,7 @@ class Cache {
  *
  * `Cache::config('default');`
  *
- * There are 4 built-in caching engines:
+ * There are 5 built-in caching engines:
  *
  * - `FileEngine` - Uses simple files to store content. Poor performance, but good for
  *    storing large objects, or things that are not IO sensitive.
@@ -90,12 +90,13 @@ class Cache {
  * - `MemcacheEngine` - Uses the PECL::Memcache extension and Memcached for storage.
  *   Fast reads/writes, and benefits from memcache being distributed.
  * - `XcacheEngine` - Uses the Xcache extension, an alternative to APC.
+ * - `WincacheEngine` - Uses Windows Cache Extension for PHP. Supports wincache 1.1.0 and higher.
  *
  * The following keys are used in core cache engines:
  *
  * - `duration` Specify how long items in this cache configuration last.
  * - `prefix` Prefix appended to all entries. Good for when you need to share a keyspace
- *    with either another cache config or annother application.
+ *    with either another cache config or another application.
  * - `probability` Probability of hitting a cache gc cleanup.  Setting to 0 will disable
  *    cache::gc from ever being called automatically.
  * - `servers' Used by memcache. Give the address of the memcached servers to use.
@@ -106,7 +107,7 @@ class Cache {
  * - `user` Used by Xcache.  Username for XCache
  * - `password` Used by Xcache.  Password for XCache
  *
- * @see app/config/core.php for configuration settings
+ * @see app/Config/core.php for configuration settings
  * @param string $name Name of the configuration
  * @param array $settings Optional associative array of settings passed to the engine
  * @return array(engine, settings) on success, false on failure
@@ -145,7 +146,8 @@ class Cache {
  * Finds and builds the instance of the required engine class.
  *
  * @param string $name Name of the config array that needs an engine instance built
- * @return void
+ * @return boolean
+ * @throws CacheException
  */
 	protected static function _buildEngine($name) {
 		$config = self::$_config[$name];
@@ -185,7 +187,7 @@ class Cache {
  * the Engine instance is also unset.
  *
  * @param string $name A currently configured cache config you wish to remove.
- * @return boolen success of the removal, returns false when the config does not exist.
+ * @return boolean success of the removal, returns false when the config does not exist.
  */
 	public static function drop($name) {
 		if (!isset(self::$_config[$name])) {
@@ -455,7 +457,7 @@ class Cache {
  * Check if Cache has initialized a working config for the given name.
  *
  * @param string $config name of the configuration to use. Defaults to 'default'
- * @return bool Whether or not the config name has been initialized.
+ * @return boolean Whether or not the config name has been initialized.
  */
 	public static function isInitialized($config = 'default') {
 		if (Configure::read('Cache.disable')) {
@@ -470,8 +472,6 @@ class Cache {
  * @param string $name Name of the configuration to get settings for. Defaults to 'default'
  * @return array list of settings for this engine
  * @see Cache::config()
- * @access public
- * @static
  */
 	public static function settings($name = 'default') {
 		if (!empty(self::$_engines[$name])) {
@@ -484,15 +484,14 @@ class Cache {
 /**
  * Storage engine for CakePHP caching
  *
- * @package       cake.libs
+ * @package       Cake.Cache
  */
 abstract class CacheEngine {
 
 /**
  * Settings of current engine instance
  *
- * @var int
- * @access public
+ * @var array
  */
 	public $settings = array();
 

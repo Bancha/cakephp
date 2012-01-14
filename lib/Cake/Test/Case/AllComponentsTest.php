@@ -5,14 +5,14 @@
  * PHP 5
  *
  * CakePHP(tm) : Rapid Development Framework (http://cakephp.org)
- * Copyright 2005-2010, Cake Software Foundation, Inc. (http://cakefoundation.org)
+ * Copyright 2005-2011, Cake Software Foundation, Inc. (http://cakefoundation.org)
  *
  * Licensed under The MIT License
  * Redistributions of files must retain the above copyright notice.
  *
- * @copyright     Copyright 2005-2010, Cake Software Foundation, Inc. (http://cakefoundation.org)
+ * @copyright     Copyright 2005-2011, Cake Software Foundation, Inc. (http://cakefoundation.org)
  * @link          http://cakephp.org CakePHP(tm) Project
- * @package       cake.tests.cases
+ * @package       Cake.Test.Case
  * @since         CakePHP(tm) v 2.0
  * @license       MIT License (http://www.opensource.org/licenses/mit-license.php)
  */
@@ -22,7 +22,7 @@
  *
  * This test group will run component class tests
  *
- * @package       cake.tests.cases
+ * @package       Cake.Test.Case
  */
 class AllComponentsTest extends PHPUnit_Framework_TestSuite {
 
@@ -36,8 +36,7 @@ class AllComponentsTest extends PHPUnit_Framework_TestSuite {
 
 		$suite->addTestFile(CORE_TEST_CASES . DS . 'Controller' . DS . 'ComponentTest.php');
 		$suite->addTestFile(CORE_TEST_CASES . DS . 'Controller' . DS . 'ComponentCollectionTest.php');
-		$suite->addTestDirectory(CORE_TEST_CASES . DS . 'Controller' . DS . 'Component');
-		$suite->addTestDirectory(CORE_TEST_CASES . DS . 'Controller' . DS . 'Component' . DS . 'Auth');
+		$suite->addTestDirectoryRecursive(CORE_TEST_CASES . DS . 'Controller' . DS . 'Component');
 		return $suite;
 	}
 }

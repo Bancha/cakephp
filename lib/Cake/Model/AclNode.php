@@ -4,14 +4,14 @@
  * PHP 5
  *
  * CakePHP(tm) : Rapid Development Framework (http://cakephp.org)
- * Copyright 2005-2010, Cake Software Foundation, Inc. (http://cakefoundation.org)
+ * Copyright 2005-2011, Cake Software Foundation, Inc. (http://cakefoundation.org)
  *
  * Licensed under The MIT License
  * Redistributions of files must retain the above copyright notice.
  *
- * @copyright     Copyright 2005-2010, Cake Software Foundation, Inc. (http://cakefoundation.org)
+ * @copyright     Copyright 2005-2011, Cake Software Foundation, Inc. (http://cakefoundation.org)
  * @link          http://cakephp.org CakePHP(tm) Project
- * @package       cake.model
+ * @package       Cake.Model
  * @since         CakePHP(tm) v 0.2.9
  * @license       MIT License (http://www.opensource.org/licenses/mit-license.php)
  */
@@ -25,7 +25,7 @@ App::uses('AppModel', 'Model');
  * ACL Node
  *
  *
- * @package       cake.libs.model
+ * @package       Cake.Model
  */
 class AclNode extends AppModel {
 
@@ -33,7 +33,6 @@ class AclNode extends AppModel {
  * Explicitly disable in-memory query caching for ACL models
  *
  * @var boolean
- * @access public
  */
 	public $cacheQueries = false;
 
@@ -41,15 +40,14 @@ class AclNode extends AppModel {
  * ACL models use the Tree behavior
  *
  * @var array
- * @access public
  */
-	public $actsAs = array('Tree' => array('nested'));
+	public $actsAs = array('Tree' => array('type' => 'nested'));
 
 /**
  * Constructor
  *
  */
-	function __construct() {
+	public function __construct() {
 		$config = Configure::read('Acl.database');
 		if (isset($config)) {
 			$this->useDbConfig = $config;
@@ -87,7 +85,7 @@ class AclNode extends AppModel {
 					$db->name("{$type}.rght") . ' >= ' . $db->name("{$type}0.rght")),
 				'fields' => array('id', 'parent_id', 'model', 'foreign_key', 'alias'),
 				'joins' => array(array(
-					'table' => $db->fullTableName($this),
+					'table' => $table,
 					'alias' => "{$type}0",
 					'type' => 'LEFT',
 					'conditions' => array("{$type}0.alias" => $start)
@@ -99,7 +97,7 @@ class AclNode extends AppModel {
 				$j = $i - 1;
 
 				$queryData['joins'][] = array(
-					'table' => $db->fullTableName($this),
+					'table' => $table,
 					'alias' => "{$type}{$i}",
 					'type'  => 'LEFT',
 					'conditions' => array(
@@ -165,7 +163,7 @@ class AclNode extends AppModel {
 				'conditions' => $ref,
 				'fields' => array('id', 'parent_id', 'model', 'foreign_key', 'alias'),
 				'joins' => array(array(
-					'table' => $db->fullTableName($this),
+					'table' => $table,
 					'alias' => "{$type}0",
 					'type' => 'LEFT',
 					'conditions' => array(

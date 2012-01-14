@@ -9,12 +9,12 @@
  * PHP 5
  *
  * CakePHP(tm) : Rapid Development Framework (http://cakephp.org)
- * Copyright 2005-2010, Cake Software Foundation, Inc. (http://cakefoundation.org)
+ * Copyright 2005-2011, Cake Software Foundation, Inc. (http://cakefoundation.org)
  *
  * Licensed under The MIT License
  * Redistributions of files must retain the above copyright notice.
  *
- * @copyright     Copyright 2005-2010, Cake Software Foundation, Inc. (http://cakefoundation.org)
+ * @copyright     Copyright 2005-2011, Cake Software Foundation, Inc. (http://cakefoundation.org)
  * @link          http://cakephp.org CakePHP(tm) Project
  * @since         CakePHP(tm) v 1.2.0.4933
  * @license       MIT License (http://www.opensource.org/licenses/mit-license.php)
@@ -23,15 +23,14 @@
 /**
  * File Storage engine for cache
  *
- * @package       cake.libs.cache
+ * @package       Cake.Cache.Engine
  */
 class FileEngine extends CacheEngine {
 
 /**
  * Instance of SplFileObject class
  *
- * @var _File
- * @access protected
+ * @var File
  */
 	protected $_File = null;
 
@@ -45,7 +44,6 @@ class FileEngine extends CacheEngine {
  *
  * @var array
  * @see CacheEngine::__defaults
- * @access public
  */
 	public $settings = array();
 
@@ -53,7 +51,6 @@ class FileEngine extends CacheEngine {
  * True unless FileEngine::__active(); fails
  *
  * @var boolean
- * @access protected
  */
 	protected $_init = true;
 
@@ -69,8 +66,8 @@ class FileEngine extends CacheEngine {
 	public function init($settings = array()) {
 		parent::init(array_merge(
 			array(
-				'engine' => 'File', 'path' => CACHE, 'prefix'=> 'cake_', 'lock'=> false,
-				'serialize'=> true, 'isWindows' => false
+				'engine' => 'File', 'path' => CACHE, 'prefix'=> 'cake_', 'lock'=> true,
+				'serialize'=> true, 'isWindows' => false, 'mask' => 0664
 			),
 			$settings
 		));
@@ -124,18 +121,19 @@ class FileEngine extends CacheEngine {
 			}
 		}
 
-		if ($this->settings['lock']) {
-			$this->_File->flock(LOCK_EX);
-		}
-
 		$expires = time() + $duration;
 		$contents = $expires . $lineBreak . $data . $lineBreak;
-		$success = $this->_File->ftruncate(0) && $this->_File->fwrite($contents);
 
 		if ($this->settings['lock']) {
-			$this->_File->flock(LOCK_UN);
+		    $this->_File->flock(LOCK_EX);
 		}
-		$this->_File = null;
+
+		$this->_File->rewind();
+		$success = $this->_File->ftruncate(0) && $this->_File->fwrite($contents) && $this->_File->fflush();
+
+		if ($this->settings['lock']) {
+		    $this->_File->flock(LOCK_UN);
+		}
 
 		return $success;
 	}
@@ -160,6 +158,9 @@ class FileEngine extends CacheEngine {
 		$cachetime = intval($this->_File->current());
 
 		if ($cachetime !== false && ($cachetime < $time || ($time + $this->settings['duration']) < $cachetime)) {
+			if ($this->settings['lock']) {
+				$this->_File->flock(LOCK_UN);
+			}
 			return false;
 		}
 
@@ -238,7 +239,9 @@ class FileEngine extends CacheEngine {
 			}
 			$path = $this->_File->getRealPath();
 			$this->_File = null;
-			unlink($path);
+			if (file_exists($path)) {
+				unlink($path);
+			}
 		}
 		$dir->close();
 		return true;
@@ -247,6 +250,8 @@ class FileEngine extends CacheEngine {
 /**
  * Not implemented
  *
+ * @param string $key
+ * @param integer $offset
  * @return void
  * @throws CacheException
  */
@@ -257,6 +262,8 @@ class FileEngine extends CacheEngine {
 /**
  * Not implemented
  *
+ * @param string $key
+ * @param integer $offset
  * @return void
  * @throws CacheException
  */
@@ -265,12 +272,12 @@ class FileEngine extends CacheEngine {
 	}
 
 /**
- * Sets the current cache key this class is managing
+ * Sets the current cache key this class is managing, and creates a writable SplFileObject
+ * for the cache file the key is refering to.
  *
  * @param string $key The key
  * @param boolean $createKey Whether the key should be created if it doesn't exists, or not
  * @return boolean true if the cache key could be set, false otherwise
- * @access protected
  */
 	protected function _setKey($key, $createKey = false) {
 		$path = new SplFileInfo($this->settings['path'] . $key);
@@ -278,12 +285,22 @@ class FileEngine extends CacheEngine {
 		if (!$createKey && !$path->isFile()) {
 			return false;
 		}
-		$old = umask(0);
 		if (empty($this->_File) || $this->_File->getBaseName() !== $key) {
-			$this->_File = $path->openFile('a+');
-		}
-		umask($old);
+			$exists = file_exists($path->getPathname());
+			try {
+				$this->_File = $path->openFile('c+');
+			} catch (Exception $e) {
+				trigger_error($e->getMessage(), E_USER_WARNING);
+				return false;
+			}
+			unset($path);
 
+			if (!$exists && !chmod($this->_File->getPathname(), (int) $this->settings['mask'])) {
+				trigger_error(__d(
+					'cake_dev', 'Could not apply permission mask "%s" on cache file "%s"',
+					array($this->_File->getPathname(), $this->settings['mask'])), E_USER_WARNING);
+			}
+		}
 		return true;
 	}
 
@@ -291,7 +308,6 @@ class FileEngine extends CacheEngine {
  * Determine is cache directory is writable
  *
  * @return boolean
- * @access protected
  */
 	protected function _active() {
 		$dir = new SplFileInfo($this->settings['path']);

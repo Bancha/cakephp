@@ -5,14 +5,14 @@
  * PHP 5
  *
  * CakePHP(tm) : Rapid Development Framework (http://cakephp.org)
- * Copyright 2005-2010, Cake Software Foundation, Inc. (http://cakefoundation.org)
+ * Copyright 2005-2011, Cake Software Foundation, Inc. (http://cakefoundation.org)
  *
  * Licensed under The MIT License
  * Redistributions of files must retain the above copyright notice.
  *
- * @copyright     Copyright 2005-2010, Cake Software Foundation, Inc. (http://cakefoundation.org)
+ * @copyright     Copyright 2005-2011, Cake Software Foundation, Inc. (http://cakefoundation.org)
  * @link          http://cakephp.org CakePHP(tm) Project
- * @package       cake.tests.cases
+ * @package       Cake.Test.Case
  * @since         CakePHP(tm) v 2.0
  * @license       MIT License (http://www.opensource.org/licenses/mit-license.php)
  */
@@ -22,7 +22,7 @@
  *
  * This test group will run model class tests
  *
- * @package       cake.tests.groups
+ * @package       Cake.Test.Case
  */
 class AllModelTest extends PHPUnit_Framework_TestSuite {
 
@@ -36,6 +36,7 @@ class AllModelTest extends PHPUnit_Framework_TestSuite {
 
 		$suite->addTestFile(CORE_TEST_CASES . DS . 'Model' . DS . 'ModelReadTest.php');
 		$suite->addTestFile(CORE_TEST_CASES . DS . 'Model' . DS . 'ModelWriteTest.php');
+		$suite->addTestFile(CORE_TEST_CASES . DS . 'Model' . DS . 'ModelDeleteTest.php');
 		$suite->addTestFile(CORE_TEST_CASES . DS . 'Model' . DS . 'ModelValidationTest.php');
 		$suite->addTestFile(CORE_TEST_CASES . DS . 'Model' . DS . 'ModelIntegrationTest.php');
 		return $suite;

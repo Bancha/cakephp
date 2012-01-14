@@ -4,14 +4,14 @@
  * PHP 5
  *
  * CakePHP(tm) : Rapid Development Framework (http://cakephp.org)
- * Copyright 2005-2010, Cake Software Foundation, Inc. (http://cakefoundation.org)
+ * Copyright 2005-2011, Cake Software Foundation, Inc. (http://cakefoundation.org)
  *
  * Licensed under The MIT License
  * Redistributions of files must retain the above copyright notice.
  *
- * @copyright     Copyright 2005-2010, Cake Software Foundation, Inc. (http://cakefoundation.org)
+ * @copyright     Copyright 2005-2011, Cake Software Foundation, Inc. (http://cakefoundation.org)
  * @link          http://cakephp.org CakePHP(tm) Project
- * @package       cake.console.libs.templates.views
+ * @package       Cake.View.Scaffolds
  * @since         CakePHP(tm) v 0.10.0.1076
  * @license       MIT License (http://www.opensource.org/licenses/mit-license.php)
  */
@@ -28,11 +28,7 @@
 <?php
 $i = 0;
 foreach (${$pluralVar} as ${$singularVar}):
-	$class = null;
-	if ($i++ % 2 == 0) {
-		$class = ' class="altrow"';
-	}
-	echo "<tr{$class}>";
+	echo "<tr>";
 		foreach ($scaffoldFields as $_field) {
 			$isKey = false;
 			if (!empty($associations['belongsTo'])) {
@@ -53,8 +49,8 @@ foreach (${$pluralVar} as ${$singularVar}):
 		echo $this->Html->link(__d('cake', 'View'), array('action' => 'view', ${$singularVar}[$modelClass][$primaryKey]));
 		echo $this->Html->link(__d('cake', 'Edit'), array('action' => 'edit', ${$singularVar}[$modelClass][$primaryKey]));
 		echo $this->Form->postLink(
-			__d('cake', 'Delete'), 
-			array('action' => 'delete', ${$singularVar}[$modelClass][$primaryKey]), 
+			__d('cake', 'Delete'),
+			array('action' => 'delete', ${$singularVar}[$modelClass][$primaryKey]),
 			null,
 			__d('cake', 'Are you sure you want to delete').' #' . ${$singularVar}[$modelClass][$primaryKey]
 		);
@@ -67,13 +63,15 @@ endforeach;
 </table>
 	<p><?php
 	echo $this->Paginator->counter(array(
-		'format' => __d('cake', 'Page %page% of %pages%, showing %current% records out of %count% total, starting on record %start%, ending on %end%')
+		'format' => __d('cake', 'Page {:page} of {:pages}, showing {:current} records out of {:count} total, starting on record {:start}, ending on {:end}')
 	));
 	?></p>
 	<div class="paging">
-	<?php echo $this->Paginator->prev('<< ' . __d('cake', 'previous'), array(), null, array('class' => 'disabled')); ?>
-	 | <?php echo $this->Paginator->numbers(); ?>
-	<?php echo $this->Paginator->next(__d('cake', 'next') .' >>', array(), null, array('class' => 'disabled')); ?>
+	<?php
+		echo $this->Paginator->prev('< ' . __d('cake', 'previous'), array(), null, array('class' => 'prev disabled'));
+		echo $this->Paginator->numbers(array('separator' => ''));
+		echo $this->Paginator->next(__d('cake', 'next') .' >', array(), null, array('class' => 'next disabled'));
+	?>
 	</div>
 </div>
 <div class="actions">

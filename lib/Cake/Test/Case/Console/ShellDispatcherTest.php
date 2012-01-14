@@ -5,14 +5,14 @@
  * PHP 5
  *
  * CakePHP(tm) Tests <http://book.cakephp.org/view/1196/Testing>
- * Copyright 2005-2010, Cake Software Foundation, Inc.
+ * Copyright 2005-2011, Cake Software Foundation, Inc.
  *
  * Licensed under The MIT License
  * Redistributions of files must retain the above copyright notice
  *
- * @copyright     Copyright 2005-2010, Cake Software Foundation, Inc.
+ * @copyright     Copyright 2005-2011, Cake Software Foundation, Inc.
  * @link          http://book.cakephp.org/view/1196/Testing CakePHP(tm) Tests
- * @package       cake.tests.cases.console
+ * @package       Cake.Test.Case.Console
  * @since         CakePHP(tm) v 1.2.0.5432
  * @license       MIT License (http://www.opensource.org/licenses/mit-license.php)
  */
@@ -22,7 +22,7 @@ App::uses('ShellDispatcher', 'Console');
 /**
  * TestShellDispatcher class
  *
- * @package       cake.tests.cases.console
+ * @package       Cake.Test.Case.Console
  */
 class TestShellDispatcher extends ShellDispatcher {
 
@@ -30,7 +30,6 @@ class TestShellDispatcher extends ShellDispatcher {
  * params property
  *
  * @var array
- * @access public
  */
 	public $params = array();
 
@@ -38,7 +37,6 @@ class TestShellDispatcher extends ShellDispatcher {
  * stopped property
  *
  * @var string
- * @access public
  */
 	public $stopped = null;
 
@@ -46,7 +44,6 @@ class TestShellDispatcher extends ShellDispatcher {
  * TestShell
  *
  * @var mixed
- * @access public
  */
 	public $TestShell;
 
@@ -104,7 +101,7 @@ class TestShellDispatcher extends ShellDispatcher {
 /**
  * ShellDispatcherTest
  *
- * @package       cake.tests.cases.libs
+ * @package       Cake.Test.Case.Console
  */
 class ShellDispatcherTest extends CakeTestCase {
 
@@ -132,6 +129,7 @@ class ShellDispatcherTest extends CakeTestCase {
  * @return void
  */
 	public function tearDown() {
+		parent::tearDown();
 		CakePlugin::unload();
 	}
 
@@ -154,22 +152,22 @@ class ShellDispatcherTest extends CakeTestCase {
 		$expected = array(
 			'app' => 'new',
 			'webroot' => 'webroot',
-			'working' => '/var/www/htdocs/new',
-			'root' => '/var/www/htdocs'
+			'working' => str_replace('/', DS, '/var/www/htdocs/new'),
+			'root' => str_replace('/', DS,'/var/www/htdocs')
 		);
 		$Dispatcher->parseParams($params);
-		$this->assertEqual($expected, $Dispatcher->params);
+		$this->assertEquals($expected, $Dispatcher->params);
 
 		$params = array('cake.php');
 		$expected = array(
 			'app' => 'app',
 			'webroot' => 'webroot',
-			'working' => str_replace('\\', '/', dirname(CAKE_CORE_INCLUDE_PATH) . DS . 'app'),
-			'root' => str_replace('\\', '/', dirname(CAKE_CORE_INCLUDE_PATH)),
+			'working' => str_replace('\\', DS, dirname(CAKE_CORE_INCLUDE_PATH) . DS . 'app'),
+			'root' => str_replace('\\', DS, dirname(CAKE_CORE_INCLUDE_PATH)),
 		);
 		$Dispatcher->params = $Dispatcher->args = array();
 		$Dispatcher->parseParams($params);
-		$this->assertEqual($expected, $Dispatcher->params);
+		$this->assertEquals($expected, $Dispatcher->params);
 
 		$params = array(
 			'cake.php',
@@ -179,12 +177,12 @@ class ShellDispatcherTest extends CakeTestCase {
 		$expected = array(
 			'app' => 'new',
 			'webroot' => 'webroot',
-			'working' => str_replace('\\', '/', dirname(CAKE_CORE_INCLUDE_PATH) . DS . 'new'),
-			'root' => str_replace('\\', '/', dirname(CAKE_CORE_INCLUDE_PATH))
+			'working' => str_replace('\\', DS, dirname(CAKE_CORE_INCLUDE_PATH) . DS . 'new'),
+			'root' => str_replace('\\', DS, dirname(CAKE_CORE_INCLUDE_PATH))
 		);
 		$Dispatcher->params = $Dispatcher->args = array();
 		$Dispatcher->parseParams($params);
-		$this->assertEqual($expected, $Dispatcher->params);
+		$this->assertEquals($expected, $Dispatcher->params);
 
 		$params = array(
 			'./cake.php',
@@ -198,13 +196,13 @@ class ShellDispatcherTest extends CakeTestCase {
 		$expected = array(
 			'app' => 'new',
 			'webroot' => 'webroot',
-			'working' => str_replace('\\', '/', dirname(CAKE_CORE_INCLUDE_PATH) . DS . 'new'),
-			'root' => str_replace('\\', '/', dirname(CAKE_CORE_INCLUDE_PATH))
+			'working' => str_replace('\\', DS, dirname(CAKE_CORE_INCLUDE_PATH) . DS . 'new'),
+			'root' => str_replace('\\', DS, dirname(CAKE_CORE_INCLUDE_PATH))
 		);
 
 		$Dispatcher->params = $Dispatcher->args = array();
 		$Dispatcher->parseParams($params);
-		$this->assertEqual($expected, $Dispatcher->params);
+		$this->assertEquals($expected, $Dispatcher->params);
 
 		$params = array(
 			'./console/cake.php',
@@ -217,12 +215,12 @@ class ShellDispatcherTest extends CakeTestCase {
 		$expected = array(
 			'app' => 'new',
 			'webroot' => 'webroot',
-			'working' => str_replace('\\', '/', dirname(CAKE_CORE_INCLUDE_PATH) . DS . 'new'),
-			'root' => str_replace('\\', '/', dirname(CAKE_CORE_INCLUDE_PATH))
+			'working' => str_replace('\\', DS, dirname(CAKE_CORE_INCLUDE_PATH) . DS . 'new'),
+			'root' => str_replace('\\', DS, dirname(CAKE_CORE_INCLUDE_PATH))
 		);
 		$Dispatcher->params = $Dispatcher->args = array();
 		$Dispatcher->parseParams($params);
-		$this->assertEqual($expected, $Dispatcher->params);
+		$this->assertEquals($expected, $Dispatcher->params);
 
 		$params = array(
 			'./console/cake.php',
@@ -235,8 +233,8 @@ class ShellDispatcherTest extends CakeTestCase {
 		);
 		$expected = array(
 			'app' => 'new',
-			'working' => str_replace('\\', '/', dirname(CAKE_CORE_INCLUDE_PATH) . DS . 'new'),
-			'root' => str_replace('\\', '/', dirname(CAKE_CORE_INCLUDE_PATH)),
+			'working' => str_replace('\\', DS, dirname(CAKE_CORE_INCLUDE_PATH) . DS . 'new'),
+			'root' => str_replace('\\', DS, dirname(CAKE_CORE_INCLUDE_PATH)),
 			'webroot' => 'webroot'
 		);
 		$Dispatcher->params = $Dispatcher->args = array();
@@ -258,17 +256,17 @@ class ShellDispatcherTest extends CakeTestCase {
 		$expected = array(
 			'app' => 'app',
 			'webroot' => 'webroot',
-			'working' => str_replace('\\', '/', dirname(CAKE_CORE_INCLUDE_PATH) . DS . 'app'),
-			'root' => str_replace('\\', '/', dirname(CAKE_CORE_INCLUDE_PATH)),
+			'working' => str_replace('\\', DS, dirname(CAKE_CORE_INCLUDE_PATH) . DS . 'app'),
+			'root' => str_replace('\\', DS, dirname(CAKE_CORE_INCLUDE_PATH)),
 		);
 		$Dispatcher->params = $Dispatcher->args = array();
 		$Dispatcher->parseParams($params);
-		$this->assertEqual($expected, $Dispatcher->params);
+		$this->assertEquals($expected, $Dispatcher->params);
 
 		$expected = array(
 			'./console/cake.php', 'schema', 'run', 'create', '-dry', '-f', '-name', 'DbAcl'
 		);
-		$this->assertEqual($expected, $Dispatcher->args);
+		$this->assertEquals($expected, $Dispatcher->args);
 
 		$params = array(
 			'/cake/1.2.x.x/cake/console/cake.php',
@@ -284,12 +282,12 @@ class ShellDispatcherTest extends CakeTestCase {
 		$expected = array(
 			'app' => 'app',
 			'webroot' => 'webroot',
-			'working' => '/cake/1.2.x.x/app',
-			'root' => '/cake/1.2.x.x',
+			'working' => str_replace('/', DS, '/cake/1.2.x.x/app'),
+			'root' => str_replace('/', DS, '/cake/1.2.x.x'),
 		);
 		$Dispatcher->params = $Dispatcher->args = array();
 		$Dispatcher->parseParams($params);
-		$this->assertEqual($expected, $Dispatcher->params);
+		$this->assertEquals($expected, $Dispatcher->params);
 
 		$params = array(
 			'cake.php',
@@ -308,7 +306,7 @@ class ShellDispatcherTest extends CakeTestCase {
 
 		$Dispatcher->params = $Dispatcher->args = array();
 		$Dispatcher->parseParams($params);
-		$this->assertEqual($expected, $Dispatcher->params);
+		$this->assertEquals($expected, $Dispatcher->params);
 
 		$params = array(
 			'cake.php',
@@ -326,7 +324,7 @@ class ShellDispatcherTest extends CakeTestCase {
 		);
 		$Dispatcher->params = $Dispatcher->args = array();
 		$Dispatcher->parseParams($params);
-		$this->assertEqual($expected, $Dispatcher->params);
+		$this->assertEquals($expected, $Dispatcher->params);
 
 		$params = array(
 			'cake.php',
@@ -346,7 +344,7 @@ class ShellDispatcherTest extends CakeTestCase {
 		);
 		$Dispatcher->params = $Dispatcher->args = array();
 		$Dispatcher->parseParams($params);
-		$this->assertEqual($expected, $Dispatcher->params);
+		$this->assertEquals($expected, $Dispatcher->params);
 
 		$params = array(
 			'/home/amelo/dev/cake-common/cake/console/cake.php',
@@ -365,25 +363,46 @@ class ShellDispatcherTest extends CakeTestCase {
 		);
 		$Dispatcher->params = $Dispatcher->args = array();
 		$Dispatcher->parseParams($params);
-		$this->assertEqual($expected, $Dispatcher->params);
+		$this->assertEquals($expected, $Dispatcher->params);
 
 		$params = array(
-			'cake.php',
-			'-working',
-			'D:\www',
+			'/cake/1.2.x.x/cake/console/cake.php',
 			'bake',
-			'my_app',
+			'-app',
+			'new',
+			'-app',
+			'old',
+			'-working',
+			'/var/www/htdocs'
 		);
 		$expected = array(
-			'working' => 'D:\www',
-			'app' => 'www',
-			'root' => 'D:',
-			'webroot' => 'webroot'
+			'app' => 'old',
+			'webroot' => 'webroot',
+			'working' => str_replace('/', DS, '/var/www/htdocs/old'),
+			'root' => str_replace('/', DS,'/var/www/htdocs')
 		);
-
-		$Dispatcher->params = $Dispatcher->args = array();
 		$Dispatcher->parseParams($params);
-		$this->assertEqual($expected, $Dispatcher->params);
+		$this->assertEquals($expected, $Dispatcher->params);
+
+		if (DS === '\\') {
+			$params = array(
+				'cake.php',
+				'-working',
+				'D:\www',
+				'bake',
+				'my_app',
+			);
+			$expected = array(
+				'working' => 'D:\\\\www',
+				'app' => 'www',
+				'root' => 'D:\\',
+				'webroot' => 'webroot'
+			);
+
+			$Dispatcher->params = $Dispatcher->args = array();
+			$Dispatcher->parseParams($params);
+			$this->assertEquals($expected, $Dispatcher->params);
+		}
 	}
 
 /**
@@ -392,13 +411,17 @@ class ShellDispatcherTest extends CakeTestCase {
  * @return void
  */
 	public function testGetShell() {
-		$this->skipIf(class_exists('SampleShell'), '%s SampleShell Class already loaded');
-		$this->skipIf(class_exists('ExampleShell'), '%s ExampleShell Class already loaded');
+		$this->skipIf(class_exists('SampleShell'), 'SampleShell Class already loaded.');
+		$this->skipIf(class_exists('ExampleShell'), 'ExampleShell Class already loaded.');
 
 		$Dispatcher = new TestShellDispatcher();
 
 		$result = $Dispatcher->getShell('sample');
 		$this->assertInstanceOf('SampleShell', $result);
+
+		$Dispatcher = new TestShellDispatcher();
+		$result = $Dispatcher->getShell('test_plugin.example');
+		$this->assertInstanceOf('ExampleShell', $result);
 
 		$Dispatcher = new TestShellDispatcher();
 		$result = $Dispatcher->getShell('TestPlugin.example');
@@ -425,7 +448,7 @@ class ShellDispatcherTest extends CakeTestCase {
 		$Dispatcher->args = array('mock_with_main');
 		$result = $Dispatcher->dispatch();
 		$this->assertTrue($result);
-		$this->assertEqual($Dispatcher->args, array());
+		$this->assertEquals($Dispatcher->args, array());
 	}
 
 /**
@@ -473,7 +496,7 @@ class ShellDispatcherTest extends CakeTestCase {
 		$Dispatcher->args = array('mock_with_main_not_a');
 		$result = $Dispatcher->dispatch();
 		$this->assertTrue($result);
-		$this->assertEqual($Dispatcher->args, array());
+		$this->assertEquals($Dispatcher->args, array());
 
 		$Shell = new MockWithMainNotAShell($Dispatcher);
 		$this->mockObjects[] = $Shell;
@@ -506,7 +529,7 @@ class ShellDispatcherTest extends CakeTestCase {
 		$Dispatcher->args = array('mock_without_main_not_a');
 		$result = $Dispatcher->dispatch();
 		$this->assertTrue($result);
-		$this->assertEqual($Dispatcher->args, array());
+		$this->assertEquals($Dispatcher->args, array());
 
 		$Shell = new MockWithoutMainNotAShell($Dispatcher);
 		$this->mockObjects[] = $Shell;
@@ -528,24 +551,24 @@ class ShellDispatcherTest extends CakeTestCase {
 		$Dispatcher = new TestShellDispatcher();
 
 		$Dispatcher->args = array('a', 'b', 'c');
-		$this->assertEqual($Dispatcher->shiftArgs(), 'a');
-		$this->assertIdentical($Dispatcher->args, array('b', 'c'));
+		$this->assertEquals($Dispatcher->shiftArgs(), 'a');
+		$this->assertSame($Dispatcher->args, array('b', 'c'));
 
 		$Dispatcher->args = array('a' => 'b', 'c', 'd');
-		$this->assertEqual($Dispatcher->shiftArgs(), 'b');
-		$this->assertIdentical($Dispatcher->args, array('c', 'd'));
+		$this->assertEquals($Dispatcher->shiftArgs(), 'b');
+		$this->assertSame($Dispatcher->args, array('c', 'd'));
 
 		$Dispatcher->args = array('a', 'b' => 'c', 'd');
-		$this->assertEqual($Dispatcher->shiftArgs(), 'a');
-		$this->assertIdentical($Dispatcher->args, array('b' => 'c', 'd'));
+		$this->assertEquals($Dispatcher->shiftArgs(), 'a');
+		$this->assertSame($Dispatcher->args, array('b' => 'c', 'd'));
 
 		$Dispatcher->args = array(0 => 'a',  2 => 'b', 30 => 'c');
-		$this->assertEqual($Dispatcher->shiftArgs(), 'a');
-		$this->assertIdentical($Dispatcher->args, array(0 => 'b', 1 => 'c'));
+		$this->assertEquals($Dispatcher->shiftArgs(), 'a');
+		$this->assertSame($Dispatcher->args, array(0 => 'b', 1 => 'c'));
 
 		$Dispatcher->args = array();
 		$this->assertNull($Dispatcher->shiftArgs());
-		$this->assertIdentical($Dispatcher->args, array());
+		$this->assertSame($Dispatcher->args, array());
 	}
 
 }

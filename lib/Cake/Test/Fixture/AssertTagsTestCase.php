@@ -1,11 +1,8 @@
 <?php
-
-PHP_CodeCoverage_Filter::getInstance()->addFileToBlacklist(__FILE__, 'DEFAULT');
-
 /**
  * This class helpes in indirectly testing the functionaliteies of CakeTestCase::assertTags
  *
- * @package       cake.tests.fixtures
+ * @package       Cake.Test.Fixture
  */
 class AssertTagsTestCase extends CakeTestCase {
 
@@ -14,7 +11,7 @@ class AssertTagsTestCase extends CakeTestCase {
  *
  * @return void
  */
-	function testAssertTagsQuotes() {
+	public function testAssertTagsQuotes() {
 		$input = '<a href="/test.html" class="active">My link</a>';
 		$pattern = array(
 			'a' => array('href' => '/test.html', 'class' => 'active'),
@@ -43,10 +40,9 @@ class AssertTagsTestCase extends CakeTestCase {
 /**
  * testNumericValuesInExpectationForAssertTags
  *
- * @access public
  * @return void
  */
-	function testNumericValuesInExpectationForAssertTags() {
+	public function testNumericValuesInExpectationForAssertTags() {
 		$value = 220985;
 
 		$input = '<p><strong>' . $value . '</strong></p>';
@@ -93,10 +89,9 @@ class AssertTagsTestCase extends CakeTestCase {
  /**
  * testBadAssertTags
  *
- * @access public
  * @return void
  */
-	function testBadAssertTags() {
+	public function testBadAssertTags() {
 		$input = '<a href="/test.html" class="active">My link</a>';
 		$pattern = array(
 			'a' => array('hRef' => '/test.html', 'clAss' => 'active'),
@@ -109,10 +104,9 @@ class AssertTagsTestCase extends CakeTestCase {
 /**
  * testBadAssertTags
  *
- * @access public
  * @return void
  */
-	function testBadAssertTags2() {
+	public function testBadAssertTags2() {
 		$input = '<a href="/test.html" class="active">My link</a>';
 		$pattern = array(
 			'<a' => array('href' => '/test.html', 'class' => 'active'),

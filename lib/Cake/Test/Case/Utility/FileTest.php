@@ -5,14 +5,14 @@
  * PHP 5
  *
  * CakePHP(tm) Tests <http://book.cakephp.org/view/1196/Testing>
- * Copyright 2005-2010, Cake Software Foundation, Inc. (http://cakefoundation.org)
+ * Copyright 2005-2011, Cake Software Foundation, Inc. (http://cakefoundation.org)
  *
  * Licensed under The MIT License
  * Redistributions of files must retain the above copyright notice
  *
- * @copyright     Copyright 2005-2010, Cake Software Foundation, Inc. (http://cakefoundation.org)
+ * @copyright     Copyright 2005-2011, Cake Software Foundation, Inc. (http://cakefoundation.org)
  * @link          http://book.cakephp.org/view/1196/Testing CakePHP(tm) Tests
- * @package       cake.tests.cases.libs
+ * @package       Cake.Test.Case.Utility
  * @since         CakePHP(tm) v 1.2.0.4206
  * @license       MIT License (http://www.opensource.org/licenses/mit-license.php)
  */
@@ -22,7 +22,7 @@ App::uses('Folder', 'Utility');
 /**
  * FileTest class
  *
- * @package       cake.tests.cases.libs
+ * @package       Cake.Test.Case.Utility
  */
 class FileTest extends CakeTestCase {
 
@@ -30,7 +30,6 @@ class FileTest extends CakeTestCase {
  * File property
  *
  * @var mixed null
- * @access public
  */
 	public $File = null;
 
@@ -39,7 +38,7 @@ class FileTest extends CakeTestCase {
  *
  * @return void
  */
-	function setUp() {
+	public function setUp() {
 		parent::setUp();
 		$file = __FILE__;
 		$this->File = new File($file);
@@ -50,7 +49,7 @@ class FileTest extends CakeTestCase {
  *
  * @return void
  */
-	function teardown() {
+	public function teardown() {
 		parent::teardown();
 		$this->File->close();
 		unset($this->File);
@@ -59,103 +58,101 @@ class FileTest extends CakeTestCase {
 /**
  * testBasic method
  *
- * @access public
  * @return void
  */
-	function testBasic() {
+	public function testBasic() {
 		$file = __FILE__;
 
 		$result = $this->File->pwd();
 		$expecting = $file;
-		$this->assertEqual($result, $expecting);
+		$this->assertEquals($expecting, $result);
 
 		$result = $this->File->name;
 		$expecting = basename(__FILE__);
-		$this->assertEqual($result, $expecting);
+		$this->assertEquals($expecting, $result);
 
 		$result = $this->File->info();
 		$expecting = array(
 			'dirname' => dirname(__FILE__), 'basename' => basename(__FILE__),
 			'extension' => 'php', 'filename' =>'FileTest'
 		);
-		$this->assertEqual($result, $expecting);
+		$this->assertEquals($expecting, $result);
 
 		$result = $this->File->ext();
 		$expecting = 'php';
-		$this->assertEqual($result, $expecting);
+		$this->assertEquals($expecting, $result);
 
 		$result = $this->File->name();
 		$expecting = 'FileTest';
-		$this->assertEqual($result, $expecting);
+		$this->assertEquals($expecting, $result);
 
 		$result = $this->File->md5();
 		$expecting = md5_file($file);
-		$this->assertEqual($result, $expecting);
+		$this->assertEquals($expecting, $result);
 
 		$result = $this->File->md5(true);
 		$expecting = md5_file($file);
-		$this->assertEqual($result, $expecting);
+		$this->assertEquals($expecting, $result);
 
 		$result = $this->File->size();
 		$expecting = filesize($file);
-		$this->assertEqual($result, $expecting);
+		$this->assertEquals($expecting, $result);
 
 		$result = $this->File->owner();
 		$expecting = fileowner($file);
-		$this->assertEqual($result, $expecting);
+		$this->assertEquals($expecting, $result);
 
 		$result = $this->File->group();
 		$expecting = filegroup($file);
-		$this->assertEqual($result, $expecting);
+		$this->assertEquals($expecting, $result);
 
 		$result = $this->File->Folder();
-		$this->assertIsA($result, 'Folder');
+		$this->assertInstanceOf('Folder', $result);
 
-		$this->skipIf(DIRECTORY_SEPARATOR === '\\', '%s File permissions tests not supported on Windows');
+		$this->skipIf(DIRECTORY_SEPARATOR === '\\', 'File permissions tests not supported on Windows.');
+
 		$result = $this->File->perms();
-		$expecting = '0644';
-		$this->assertEqual($result, $expecting);
+		$expecting = decoct(0644 & ~umask());
+		$this->assertEquals($expecting, $result);
 	}
 
 /**
  * testRead method
  *
- * @access public
  * @return void
  */
-	function testRead() {
+	public function testRead() {
 		$file = __FILE__;
 		$this->File = new File($file);
 
 		$result = $this->File->read();
 		$expecting = file_get_contents(__FILE__);
-		$this->assertEqual($result, $expecting);
+		$this->assertEquals($expecting, $result);
 		$this->assertTrue(!is_resource($this->File->handle));
 
 		$this->File->lock = true;
 		$result = $this->File->read();
 		$expecting = file_get_contents(__FILE__);
-		$this->assertEqual($result, trim($expecting));
+		$this->assertEquals($result, trim($expecting));
 		$this->File->lock = null;
 
 		$data = $expecting;
 		$expecting = substr($data, 0, 3);
 		$result = $this->File->read(3);
-		$this->assertEqual($result, $expecting);
+		$this->assertEquals($expecting, $result);
 		$this->assertTrue(is_resource($this->File->handle));
 
 		$expecting = substr($data, 3, 3);
 		$result = $this->File->read(3);
-		$this->assertEqual($result, $expecting);
+		$this->assertEquals($expecting, $result);
 	}
 
 /**
  * testOffset method
  *
- * @access public
  * @return void
  */
-	function testOffset() {
+	public function testOffset() {
 		$this->File->close();
 
 		$result = $this->File->offset();
@@ -168,27 +165,26 @@ class FileTest extends CakeTestCase {
 
 		$result = $this->File->offset();
 		$expecting = 0;
-		$this->assertIdentical($result, $expecting);
+		$this->assertSame($result, $expecting);
 
 		$data = file_get_contents(__FILE__);
 		$success = $this->File->offset(5);
 		$expecting = substr($data, 5, 3);
 		$result = $this->File->read(3);
 		$this->assertTrue($success);
-		$this->assertEqual($result, $expecting);
+		$this->assertEquals($expecting, $result);
 
 		$result = $this->File->offset();
 		$expecting = 5+3;
-		$this->assertIdentical($result, $expecting);
+		$this->assertSame($result, $expecting);
 	}
 
 /**
  * testOpen method
  *
- * @access public
  * @return void
  */
-	function testOpen() {
+	public function testOpen() {
 		$this->File->handle = null;
 
 		$r = $this->File->open();
@@ -210,10 +206,9 @@ class FileTest extends CakeTestCase {
 /**
  * testClose method
  *
- * @access public
  * @return void
  */
-	function testClose() {
+	public function testClose() {
 		$this->File->handle = null;
 		$this->assertFalse(is_resource($this->File->handle));
 		$this->assertTrue($this->File->close());
@@ -228,10 +223,9 @@ class FileTest extends CakeTestCase {
 /**
  * testCreate method
  *
- * @access public
  * @return void
  */
-	function testCreate() {
+	public function testCreate() {
 		$tmpFile = TMP.'tests'.DS.'cakephp.file.test.tmp';
 		$File = new File($tmpFile, true, 0777);
 		$this->assertTrue($File->exists());
@@ -240,13 +234,12 @@ class FileTest extends CakeTestCase {
 /**
  * testOpeningNonExistantFileCreatesIt method
  *
- * @access public
  * @return void
  */
-	function testOpeningNonExistantFileCreatesIt() {
+	public function testOpeningNonExistantFileCreatesIt() {
 		$someFile = new File(TMP . 'some_file.txt', false);
 		$this->assertTrue($someFile->open());
-		$this->assertEqual($someFile->read(), '');
+		$this->assertEquals('', $someFile->read());
 		$someFile->close();
 		$someFile->delete();
 	}
@@ -254,10 +247,9 @@ class FileTest extends CakeTestCase {
 /**
  * testPrepare method
  *
- * @access public
  * @return void
  */
-	function testPrepare() {
+	public function testPrepare() {
 		$string = "some\nvery\ncool\r\nteststring here\n\n\nfor\r\r\n\n\r\n\nhere";
 		if (DS == '\\') {
 			$expected = "some\r\nvery\r\ncool\r\nteststring here\r\n\r\n\r\n";
@@ -265,20 +257,19 @@ class FileTest extends CakeTestCase {
 		} else {
 			$expected = "some\nvery\ncool\nteststring here\n\n\nfor\n\n\n\n\nhere";
 		}
-		$this->assertIdentical(File::prepare($string), $expected);
+		$this->assertSame(File::prepare($string), $expected);
 
 		$expected = "some\r\nvery\r\ncool\r\nteststring here\r\n\r\n\r\n";
 		$expected .= "for\r\n\r\n\r\n\r\n\r\nhere";
-		$this->assertIdentical(File::prepare($string, true), $expected);
+		$this->assertSame(File::prepare($string, true), $expected);
 	}
 
 /**
  * testReadable method
  *
- * @access public
  * @return void
  */
-	function testReadable() {
+	public function testReadable() {
 		$someFile = new File(TMP . 'some_file.txt', false);
 		$this->assertTrue($someFile->open());
 		$this->assertTrue($someFile->readable());
@@ -289,10 +280,9 @@ class FileTest extends CakeTestCase {
 /**
  * testWritable method
  *
- * @access public
  * @return void
  */
-	function testWritable() {
+	public function testWritable() {
 		$someFile = new File(TMP . 'some_file.txt', false);
 		$this->assertTrue($someFile->open());
 		$this->assertTrue($someFile->writable());
@@ -303,10 +293,9 @@ class FileTest extends CakeTestCase {
 /**
  * testExecutable method
  *
- * @access public
  * @return void
  */
-	function testExecutable() {
+	public function testExecutable() {
 		$someFile = new File(TMP . 'some_file.txt', false);
 		$this->assertTrue($someFile->open());
 		$this->assertFalse($someFile->executable());
@@ -317,14 +306,13 @@ class FileTest extends CakeTestCase {
 /**
  * testLastAccess method
  *
- * @access public
  * @return void
  */
-	function testLastAccess() {
+	public function testLastAccess() {
 		$someFile = new File(TMP . 'some_file.txt', false);
 		$this->assertFalse($someFile->lastAccess());
 		$this->assertTrue($someFile->open());
-		$this->assertEqual($someFile->lastAccess(), time());
+		$this->assertEquals($someFile->lastAccess(), time());
 		$someFile->close();
 		$someFile->delete();
 	}
@@ -332,16 +320,15 @@ class FileTest extends CakeTestCase {
 /**
  * testLastChange method
  *
- * @access public
  * @return void
  */
-	function testLastChange() {
+	public function testLastChange() {
 		$someFile = new File(TMP . 'some_file.txt', false);
 		$this->assertFalse($someFile->lastChange());
 		$this->assertTrue($someFile->open('r+'));
-		$this->assertEqual($someFile->lastChange(), time());
+		$this->assertEquals($someFile->lastChange(), time());
 		$someFile->write('something');
-		$this->assertEqual($someFile->lastChange(), time());
+		$this->assertEquals($someFile->lastChange(), time());
 		$someFile->close();
 		$someFile->delete();
 	}
@@ -349,10 +336,9 @@ class FileTest extends CakeTestCase {
 /**
  * testWrite method
  *
- * @access public
  * @return void
  */
-	function testWrite() {
+	public function testWrite() {
 		if (!$tmpFile = $this->_getTmpFile()) {
 			return false;
 		};
@@ -369,7 +355,7 @@ class FileTest extends CakeTestCase {
 			$r = $TmpFile->write($data);
 			$this->assertTrue($r);
 			$this->assertTrue(file_exists($tmpFile));
-			$this->assertEqual($data, file_get_contents($tmpFile));
+			$this->assertEquals($data, file_get_contents($tmpFile));
 			$this->assertTrue(is_resource($TmpFile->handle));
 			$TmpFile->close();
 
@@ -380,10 +366,9 @@ class FileTest extends CakeTestCase {
 /**
  * testAppend method
  *
- * @access public
  * @return void
  */
-	function testAppend() {
+	public function testAppend() {
 		if (!$tmpFile = $this->_getTmpFile()) {
 			return false;
 		};
@@ -401,7 +386,7 @@ class FileTest extends CakeTestCase {
 			$this->assertTrue($r);
 			$this->assertTrue(file_exists($tmpFile));
 			$data = $data.$fragment;
-			$this->assertEqual($data, file_get_contents($tmpFile));
+			$this->assertEquals($data, file_get_contents($tmpFile));
 			$TmpFile->close();
 		}
 	}
@@ -409,13 +394,12 @@ class FileTest extends CakeTestCase {
 /**
  * testDelete method
  *
- * @access public
  * @return void
  */
-	function testDelete() {
+	public function testDelete() {
 		if (!$tmpFile = $this->_getTmpFile()) {
 			return false;
-		};
+		}
 
 		if (!file_exists($tmpFile)) {
 			touch($tmpFile);
@@ -432,12 +416,29 @@ class FileTest extends CakeTestCase {
 	}
 
 /**
- * testCopy method
+ * Windows has issues unlinking files if there are
+ * active filehandles open.
  *
- * @access public
  * @return void
  */
-	function testCopy() {
+	function testDeleteAfterRead() {
+		if (!$tmpFile = $this->_getTmpFile()) {
+			return false;
+		}
+		if (!file_exists($tmpFile)) {
+			touch($tmpFile);
+		}
+		$File =& new File($tmpFile);
+		$File->read();
+		$this->assertTrue($File->delete());
+	}
+
+/**
+ * testCopy method
+ *
+ * @return void
+ */
+	public function testCopy() {
 		$dest = TMP . 'tests' . DS . 'cakephp.file.test.tmp';
 		$file = __FILE__;
 		$this->File = new File($file);
@@ -464,7 +465,6 @@ class FileTest extends CakeTestCase {
  * getTmpFile method
  *
  * @param bool $paintSkip
- * @access protected
  * @return void
  */
 	function _getTmpFile($paintSkip = true) {
@@ -474,17 +474,12 @@ class FileTest extends CakeTestCase {
 		};
 
 		if ($paintSkip) {
-			$caller = 'test';
-			if (function_exists('debug_backtrace')) {
-				$trace = debug_backtrace();
-				$caller = $trace[1]['function'] . '()';
-			}
-			$assertLine = new SimpleStackTrace(array(__FUNCTION__));
-			$assertLine = $assertLine->traceMethod();
-			$shortPath = substr($tmpFile, strlen(ROOT));
+			$trace = debug_backtrace();
+			$caller = $trace[0]['function'];
+			$shortPath = dirname($tmpFile);
 
-			$message = __d('cake_dev', '[FileTest] Skipping %s because "%s" not writeable!', $caller, $shortPath).$assertLine;
-			$this->_reporter->paintSkip($message);
+			$message = __d('cake_dev', '[FileTest] Skipping %s because "%s" not writeable!', $caller, $shortPath);
+			$this->markTestSkipped($message);
 		}
 		return false;
 	}

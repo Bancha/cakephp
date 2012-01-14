@@ -6,14 +6,14 @@
  * PHP 5
  *
  * CakePHP(tm) : Rapid Development Framework (http://cakephp.org)
- * Copyright 2005-2010, Cake Software Foundation, Inc. (http://cakefoundation.org)
+ * Copyright 2005-2011, Cake Software Foundation, Inc. (http://cakefoundation.org)
  *
  * Licensed under The MIT License
  * Redistributions of files must retain the above copyright notice.
  *
- * @copyright     Copyright 2005-2010, Cake Software Foundation, Inc. (http://cakefoundation.org)
+ * @copyright     Copyright 2005-2011, Cake Software Foundation, Inc. (http://cakefoundation.org)
  * @link          http://cakephp.org CakePHP(tm) Project
- * @package       cake.libs.cache
+ * @package       Cake.Cache.Engine
  * @since         CakePHP(tm) v 1.2.0.4933
  * @license       MIT License (http://www.opensource.org/licenses/mit-license.php)
  */
@@ -21,7 +21,7 @@
 /**
  * APC storage engine for cache
  *
- * @package       cake.libs.cache
+ * @package       Cake.Cache.Engine
  */
 class ApcEngine extends CacheEngine {
 
@@ -37,7 +37,7 @@ class ApcEngine extends CacheEngine {
  */
 	public function init($settings = array()) {
 		parent::init(array_merge(array('engine' => 'Apc', 'prefix' => Inflector::slug(APP_DIR) . '_'), $settings));
-		return function_exists('apc_cache_info');
+		return function_exists('apc_dec');
 	}
 
 /**
@@ -49,7 +49,11 @@ class ApcEngine extends CacheEngine {
  * @return boolean True if the data was successfully cached, false on failure
  */
 	public function write($key, $value, $duration) {
-		$expires = time() + $duration;
+		if ($duration == 0) {
+			$expires = 0;
+		} else {
+			$expires = time() + $duration;
+		}
 		apc_store($key.'_expires', $expires, $duration);
 		return apc_store($key, $value, $duration);
 	}
@@ -63,7 +67,7 @@ class ApcEngine extends CacheEngine {
 	public function read($key) {
 		$time = time();
 		$cachetime = intval(apc_fetch($key.'_expires'));
-		if ($cachetime < $time || ($time + $this->settings['duration']) < $cachetime) {
+		if ($cachetime !== 0 && ($cachetime < $time || ($time + $this->settings['duration']) < $cachetime)) {
 			return false;
 		}
 		return apc_fetch($key);
@@ -104,10 +108,23 @@ class ApcEngine extends CacheEngine {
 /**
  * Delete all keys from the cache.  This will clear every cache config using APC.
  *
- * @return boolean True if the cache was successfully cleared, false otherwise
+ * @param boolean $check If true, nothing will be cleared, as entries are removed
+ *    from APC as they expired.  This flag is really only used by FileEngine.
+ * @return boolean True Returns true.
  */
 	public function clear($check) {
-		return apc_clear_cache('user');
+		if ($check) {
+			return true;
+		}
+		$info = apc_cache_info('user');
+		$cacheKeys = $info['cache_list'];
+		unset($info);
+		foreach ($cacheKeys as $key) {
+			if (strpos($key['info'], $this->settings['prefix']) === 0) {
+				apc_delete($key['info']);
+			}
+		}
+		return true;
 	}
 
 }

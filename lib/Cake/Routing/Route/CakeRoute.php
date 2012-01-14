@@ -9,14 +9,14 @@
  * PHP5
  *
  * CakePHP(tm) : Rapid Development Framework (http://cakephp.org)
- * Copyright 2005-2010, Cake Software Foundation, Inc. (http://cakefoundation.org)
+ * Copyright 2005-2011, Cake Software Foundation, Inc. (http://cakefoundation.org)
  *
  * Licensed under The MIT License
  * Redistributions of files must retain the above copyright notice.
  *
- * @copyright     Copyright 2005-2010, Cake Software Foundation, Inc. (http://cakefoundation.org)
+ * @copyright     Copyright 2005-2011, Cake Software Foundation, Inc. (http://cakefoundation.org)
  * @link          http://cakephp.org CakePHP(tm) Project
- * @package       cake.libs.route
+ * @package       Cake.Routing.Route
  * @since         CakePHP(tm) v 1.3
  * @license       MIT License (http://www.opensource.org/licenses/mit-license.php)
  */
@@ -27,7 +27,6 @@ class CakeRoute {
  * `/:controller/:action/:id` has 3 key elements
  *
  * @var array
- * @access public
  */
 	public $keys = array();
 
@@ -35,7 +34,6 @@ class CakeRoute {
  * An array of additional parameters for the Route.
  *
  * @var array
- * @access public
  */
 	public $options = array();
 
@@ -43,7 +41,6 @@ class CakeRoute {
  * Default parameters for a Route
  *
  * @var array
- * @access public
  */
 	public $defaults = array();
 
@@ -51,7 +48,6 @@ class CakeRoute {
  * The routes template string.
  *
  * @var string
- * @access public
  */
 	public $template = null;
 
@@ -60,7 +56,6 @@ class CakeRoute {
  * template
  *
  * @var string
- * @access protected
  */
 	protected $_greedy = false;
 
@@ -68,7 +63,6 @@ class CakeRoute {
  * The compiled route regular expresssion
  *
  * @var string
- * @access protected
  */
 	protected $_compiledRoute = null;
 
@@ -76,9 +70,8 @@ class CakeRoute {
  * HTTP header shortcut map.  Used for evaluating header-based route expressions.
  *
  * @var array
- * @access private
  */
-	private $__headerMap = array(
+	protected $_headerMap = array(
 		'type' => 'content_type',
 		'method' => 'request_method',
 		'server' => 'server_name'
@@ -89,8 +82,7 @@ class CakeRoute {
  *
  * @param string $template Template string with parameter placeholders
  * @param array $defaults Array of defaults for the route.
- * @param string $params Array of parameters and additional options for the Route
- * @return void
+ * @param array $options Array of additional options for the Route
  */
 	public function __construct($template, $defaults = array(), $options = array()) {
 		$this->template = $template;
@@ -156,7 +148,7 @@ class CakeRoute {
 			}
 			$names[] = $name;
 		}
-		if (preg_match('#\/\*$#', $route, $m)) {
+		if (preg_match('#\/\*$#', $route)) {
 			$parsed = preg_replace('#/\\\\\*$#', '(?:/(?P<_args_>.*))?', $parsed);
 			$this->_greedy = true;
 		}
@@ -188,8 +180,8 @@ class CakeRoute {
 		}
 		foreach ($this->defaults as $key => $val) {
 			if ($key[0] === '[' && preg_match('/^\[(\w+)\]$/', $key, $header)) {
-				if (isset($this->__headerMap[$header[1]])) {
-					$header = $this->__headerMap[$header[1]];
+				if (isset($this->_headerMap[$header[1]])) {
+					$header = $this->_headerMap[$header[1]];
 				} else {
 					$header = 'http_' . $header[1];
 				}
@@ -226,7 +218,7 @@ class CakeRoute {
 			}
 			$route[$key] = $value;
 		}
-		
+
 		if (isset($route['_args_'])) {
 			list($pass, $named) = $this->_parseArgs($route['_args_'], $route);
 			$route['pass'] = array_merge($route['pass'], $pass);
@@ -280,10 +272,11 @@ class CakeRoute {
 			$separatorIsPresent = strpos($param, $namedConfig['separator']) !== false;
 			if ((!isset($this->options['named']) || !empty($this->options['named'])) && $separatorIsPresent) {
 				list($key, $val) = explode($namedConfig['separator'], $param, 2);
+				$val = rawurldecode($val);
 				$hasRule = isset($rules[$key]);
-				$passIt = (!$hasRule && !$greedy) || ($hasRule && !$this->_matchNamed($key, $val, $rules[$key], $context));
+				$passIt = (!$hasRule && !$greedy) || ($hasRule && !$this->_matchNamed($val, $rules[$key], $context));
 				if ($passIt) {
-					$pass[] = $param;
+					$pass[] = rawurldecode($param);
 				} else {
 					if (preg_match_all('/\[([A-Za-z0-9_-]+)?\]/', $key, $matches, PREG_SET_ORDER)) {
 						$matches = array_reverse($matches);
@@ -304,7 +297,7 @@ class CakeRoute {
 					$named = array_merge_recursive($named, array($key => $val));
 				}
 			} else {
-				$pass[] = $param;
+				$pass[] = rawurldecode($param);
 			}
 		}
 		return array($pass, $named);
@@ -314,13 +307,12 @@ class CakeRoute {
  * Return true if a given named $param's $val matches a given $rule depending on $context. Currently implemented
  * rule types are controller, action and match that can be combined with each other.
  *
- * @param string $param The name of the named parameter
  * @param string $val The value of the named parameter
  * @param array $rule The rule(s) to apply, can also be a match string
  * @param string $context An array with additional context information (controller / action)
  * @return boolean
  */
-	protected function _matchNamed($param, $val, $rule, $context) {
+	protected function _matchNamed($val, $rule, $context) {
 		if ($rule === true || $rule === false) {
 			return $rule;
 		}
@@ -332,7 +324,7 @@ class CakeRoute {
 		}
 
 		$controllerMatches = (
-			!isset($rule['controller'], $context['controller']) || 
+			!isset($rule['controller'], $context['controller']) ||
 			in_array($context['controller'], (array)$rule['controller'])
 		);
 		if (!$controllerMatches) {
@@ -349,8 +341,8 @@ class CakeRoute {
 	}
 
 /**
- * Apply persistent parameters to a url array. Persistant parameters are a special 
- * key used during route creation to force route parameters to persist when omitted from 
+ * Apply persistent parameters to a url array. Persistant parameters are a special
+ * key used during route creation to force route parameters to persist when omitted from
  * a url array.
  *
  * @param array $url The array to apply persistent parameters to.
@@ -396,6 +388,7 @@ class CakeRoute {
 		}
 
 		$namedConfig = Router::namedConfig();
+		$prefixes = Router::prefixes();
 		$greedyNamed = $namedConfig['greedyNamed'];
 		$allowedNamedParams = $namedConfig['rules'];
 
@@ -410,7 +403,7 @@ class CakeRoute {
 			} elseif ($defaultExists) {
 				continue;
 			}
-			
+
 			// If the key is a routed key, its not different yet.
 			if (array_key_exists($key, $keyNames)) {
 				continue;
@@ -429,7 +422,8 @@ class CakeRoute {
 			// pull out named params if named params are greedy or a rule exists.
 			if (
 				($greedyNamed || isset($allowedNamedParams[$key])) &&
-				($value !== false && $value !== null)
+				($value !== false && $value !== null) &&
+				(!in_array($key, $prefixes))
 			) {
 				$named[$key] = $value;
 				continue;
@@ -471,7 +465,7 @@ class CakeRoute {
 		}
 
 		if (is_array($params['pass'])) {
-			$params['pass'] = implode('/', $params['pass']);
+			$params['pass'] = implode('/', array_map('rawurlencode', $params['pass']));
 		}
 
 		$namedConfig = Router::namedConfig();
@@ -482,10 +476,10 @@ class CakeRoute {
 			foreach ($params['named'] as $key => $value) {
 				if (is_array($value)) {
 					foreach ($value as $namedKey => $namedValue) {
-						$named[] = $key . "[$namedKey]" . $separator . $namedValue;
+						$named[] = $key . "[$namedKey]" . $separator . rawurlencode($namedValue);
 					}
 				} else {
-					$named[] = $key . $separator . $value;
+					$named[] = $key . $separator . rawurlencode($value);
 				}
 			}
 			$params['pass'] = $params['pass'] . '/' . implode('/', $named);

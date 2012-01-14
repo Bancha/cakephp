@@ -9,33 +9,32 @@
  * PHP 5
  *
  * CakePHP(tm) : Rapid Development Framework (http://cakephp.org)
- * Copyright 2005-2010, Cake Software Foundation, Inc. (http://cakefoundation.org)
+ * Copyright 2005-2011, Cake Software Foundation, Inc. (http://cakefoundation.org)
  *
  * Licensed under The MIT License
  * Redistributions of files must retain the above copyright notice.
  *
- * @copyright     Copyright 2005-2010, Cake Software Foundation, Inc. (http://cakefoundation.org)
+ * @copyright     Copyright 2005-2011, Cake Software Foundation, Inc. (http://cakefoundation.org)
  * @link          http://cakephp.org CakePHP(tm) Project
- * @package       cake.console.shells
  * @since         CakePHP(tm) v 1.2.0.5012
  * @license       MIT License (http://www.opensource.org/licenses/mit-license.php)
  */
 
+App::uses('AppShell', 'Console/Command');
 App::uses('Model', 'Model');
 
 /**
  * Bake is a command-line code generation utility for automating programmer chores.
  *
- * @package       cake.console.libs
- * @link          http://book.cakephp.org/view/1522/Code-Generation-with-Bake
+ * @package       Cake.Console.Command
+ * @link          http://book.cakephp.org/2.0/en/console-and-shells/code-generation-with-bake.html
  */
-class BakeShell extends Shell {
+class BakeShell extends AppShell {
 
 /**
  * Contains tasks to load and instantiate
  *
  * @var array
- * @access public
  */
 	public $tasks = array('Project', 'DbConfig', 'Model', 'Controller', 'View', 'Plugin', 'Fixture', 'Test');
 
@@ -49,9 +48,13 @@ class BakeShell extends Shell {
 /**
  * Assign $this->connection to the active task if a connection param is set.
  *
+ * @return void
  */
 	public function startup() {
 		parent::startup();
+		Configure::write('debug', 2);
+		Configure::write('Cache.disable', 1);
+
 		$task = Inflector::classify($this->command);
 		if (isset($this->{$task}) && !in_array($task, array('Project', 'DbConfig'))) {
 			if (isset($this->params['connection'])) {
@@ -63,6 +66,7 @@ class BakeShell extends Shell {
 /**
  * Override main() to handle action
  *
+ * @return mixed
  */
 	public function main() {
 		if (!is_dir($this->DbConfig->path)) {
@@ -126,6 +130,7 @@ class BakeShell extends Shell {
 /**
  * Quickly bake the MVC
  *
+ * @return void
  */
 	public function all() {
 		$this->out('Bake All');

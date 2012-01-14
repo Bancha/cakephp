@@ -3,12 +3,12 @@
  * PHP 5
  *
  * CakePHP(tm) : Rapid Development Framework (http://cakephp.org)
- * Copyright 2005-2010, Cake Software Foundation, Inc. (http://cakefoundation.org)
+ * Copyright 2005-2011, Cake Software Foundation, Inc. (http://cakefoundation.org)
  *
  * Licensed under The MIT License
  * Redistributions of files must retain the above copyright notice.
  *
- * @copyright     Copyright 2005-2010, Cake Software Foundation, Inc. (http://cakefoundation.org)
+ * @copyright     Copyright 2005-2011, Cake Software Foundation, Inc. (http://cakefoundation.org)
  * @link          http://cakephp.org CakePHP(tm) Project
  * @license       MIT License (http://www.opensource.org/licenses/mit-license.php)
  */
@@ -30,7 +30,7 @@ App::uses('BaseAuthenticate', 'Controller/Component/Auth');
  * When configuring FormAuthenticate you can pass in settings to which fields, model and additional conditions
  * are used. See FormAuthenticate::$settings for more information.
  *
- * @package cake.libs.controller.components.auth
+ * @package       Cake.Controller.Component.Auth
  * @since 2.0
  * @see AuthComponent::$authenticate
  */
@@ -38,7 +38,7 @@ class FormAuthenticate extends BaseAuthenticate {
 
 /**
  * Authenticates the identity contained in a request.  Will use the `settings.userModel`, and `settings.fields`
- * to find POST data that is used to find a matching record in the `settings.userModel`.  Will return false if 
+ * to find POST data that is used to find a matching record in the `settings.userModel`.  Will return false if
  * there is no post data, either username or password is missing, of if the scope conditions have not been met.
  *
  * @param CakeRequest $request The request that contains login information.

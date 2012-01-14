@@ -10,14 +10,14 @@
  * PHP 5
  *
  * CakePHP(tm) : Rapid Development Framework (http://cakephp.org)
- * Copyright 2005-2010, Cake Software Foundation, Inc. (http://cakefoundation.org)
+ * Copyright 2005-2011, Cake Software Foundation, Inc. (http://cakefoundation.org)
  *
  * Licensed under The MIT License
  * Redistributions of files must retain the above copyright notice.
  *
- * @copyright     Copyright 2005-2010, Cake Software Foundation, Inc. (http://cakefoundation.org)
+ * @copyright     Copyright 2005-2011, Cake Software Foundation, Inc. (http://cakefoundation.org)
  * @link          http://cakephp.org CakePHP(tm) Project
- * @package       cake.libs
+ * @package       Cake.Model.Datasource
  * @since         CakePHP(tm) v .0.10.0.1222
  * @license       MIT License (http://www.opensource.org/licenses/mit-license.php)
  */
@@ -31,7 +31,7 @@ App::uses('Security', 'Utility');
  * Cake abstracts the handling of sessions. There are several convenient methods to access session information.
  * This class is the implementation of those methods. They are mostly used by the Session Component.
  *
- * @package       cake.libs
+ * @package       Cake.Model.Datasource
  */
 class CakeSession {
 
@@ -133,6 +133,7 @@ class CakeSession {
  *
  * @param string $base The base path for the Session
  * @param boolean $start Should session be started right now
+ * @return void
  */
 	public static function init($base = null, $start = true) {
 		self::$time = time();
@@ -229,7 +230,7 @@ class CakeSession {
 /**
  * Returns the Session id
  *
- * @param id $name string
+ * @param string $id
  * @return string Session id
  */
 	public static function id($id = null) {
@@ -251,10 +252,10 @@ class CakeSession {
  */
 	public static function delete($name) {
 		if (self::check($name)) {
-			self::__overwrite($_SESSION, Set::remove($_SESSION, $name));
+			self::_overwrite($_SESSION, Set::remove($_SESSION, $name));
 			return (self::check($name) == false);
 		}
-		self::__setError(2, __d('cake_dev', "%s doesn't exist", $name));
+		self::_setError(2, __d('cake_dev', "%s doesn't exist", $name));
 		return false;
 	}
 
@@ -263,9 +264,9 @@ class CakeSession {
  *
  * @param array $old Set of old variables => values
  * @param array $new New set of variable => value
- * @access private
+ * @return void
  */
-	private static function __overwrite(&$old, $new) {
+	protected static function _overwrite(&$old, $new) {
 		if (!empty($old)) {
 			foreach ($old as $key => $var) {
 				if (!isset($new[$key])) {
@@ -283,9 +284,8 @@ class CakeSession {
  *
  * @param integer $errorNumber Error to set
  * @return string Error as string
- * @access private
  */
-	private static function __error($errorNumber) {
+	protected static function _error($errorNumber) {
 		if (!is_array(self::$error) || !array_key_exists($errorNumber, self::$error)) {
 			return false;
 		} else {
@@ -300,7 +300,7 @@ class CakeSession {
  */
 	public static function error() {
 		if (self::$lastError) {
-			return self::__error(self::$lastError);
+			return self::_error(self::$lastError);
 		}
 		return false;
 	}
@@ -316,7 +316,7 @@ class CakeSession {
 				self::$valid = true;
 			} else {
 				self::$valid = false;
-				self::__setError(1, 'Session Highjacking Attempted !!!');
+				self::_setError(1, 'Session Highjacking Attempted !!!');
 			}
 		}
 		return self::$valid;
@@ -325,7 +325,7 @@ class CakeSession {
 /**
  * Tests that the user agent is valid and that the session hasn't 'timed out'.
  * Since timeouts are implemented in CakeSession it checks the current self::$time
- * against the time the session is set to expire.  The User agent is only checked 
+ * against the time the session is set to expire.  The User agent is only checked
  * if Session.checkAgent == true.
  *
  * @return boolean
@@ -363,7 +363,7 @@ class CakeSession {
 			return false;
 		}
 		if (is_null($name)) {
-			return self::__returnSessionVars();
+			return self::_returnSessionVars();
 		}
 		if (empty($name)) {
 			return false;
@@ -373,7 +373,7 @@ class CakeSession {
 		if (!is_null($result)) {
 			return $result;
 		}
-		self::__setError(2, "$name doesn't exist");
+		self::_setError(2, "$name doesn't exist");
 		return null;
 	}
 
@@ -382,11 +382,11 @@ class CakeSession {
  *
  * @return mixed Full $_SESSION array, or false on error.
  */
-	private static function __returnSessionVars() {
+	protected static function _returnSessionVars() {
 		if (!empty($_SESSION)) {
 			return $_SESSION;
 		}
-		self::__setError(2, 'No Session vars set');
+		self::_setError(2, 'No Session vars set');
 		return false;
 	}
 
@@ -409,7 +409,7 @@ class CakeSession {
 			$write = array($name => $value);
 		}
 		foreach ($write as $key => $val) {
-			self::__overwrite($_SESSION, Set::insert($_SESSION, $key, $val));
+			self::_overwrite($_SESSION, Set::insert($_SESSION, $key, $val));
 			if (Set::classicExtract($_SESSION, $key) !== $val) {
 				return false;
 			}
@@ -508,7 +508,9 @@ class CakeSession {
 /**
  * Find the handler class and make sure it implements the correct interface.
  *
+ * @param string $handler
  * @return void
+ * @throws CakeSessionException
  */
 	protected static function _getHandler($handler) {
 		list($plugin, $class) = pluginSplit($handler, true);
@@ -526,7 +528,8 @@ class CakeSession {
 /**
  * Get one of the prebaked default session configurations.
  *
- * @return void
+ * @param string $name
+ * @return boolean|array
  */
 	protected static function _defaultConfig($name) {
 		$defaults = array(
@@ -536,8 +539,7 @@ class CakeSession {
 				'cookieTimeout' => 240,
 				'ini' => array(
 					'session.use_trans_sid' => 0,
-					'session.cookie_path' => self::$path,
-					'session.save_handler' => 'files'
+					'session.cookie_path' => self::$path
 				)
 			),
 			'cake' => array(
@@ -647,7 +649,7 @@ class CakeSession {
 			} else {
 				self::destroy();
 				self::$valid = false;
-				self::__setError(1, 'Session Highjacking Attempted !!!');
+				self::_setError(1, 'Session Highjacking Attempted !!!');
 			}
 		} else {
 			self::write('Config.userAgent', self::$_userAgent);
@@ -677,9 +679,8 @@ class CakeSession {
  * @param integer $errorNumber Number of the error
  * @param string $errorMessage Description of the error
  * @return void
- * @access private
  */
-	private static function __setError($errorNumber, $errorMessage) {
+	protected static function _setError($errorNumber, $errorMessage) {
 		if (self::$error === false) {
 			self::$error = array();
 		}
@@ -693,7 +694,7 @@ class CakeSession {
  * Interface for Session handlers.  Custom session handler classes should implement
  * this interface as it allows CakeSession know how to map methods to session_set_save_handler()
  *
- * @package cake.libs
+ * @package       Cake.Model.Datasource
  */
 interface CakeSessionHandlerInterface {
 /**

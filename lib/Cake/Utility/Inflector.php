@@ -7,14 +7,14 @@
  * PHP 5
  *
  * CakePHP(tm) : Rapid Development Framework (http://cakephp.org)
- * Copyright 2005-2010, Cake Software Foundation, Inc. (http://cakefoundation.org)
+ * Copyright 2005-2011, Cake Software Foundation, Inc. (http://cakefoundation.org)
  *
  * Licensed under The MIT License
  * Redistributions of files must retain the above copyright notice.
  *
- * @copyright     Copyright 2005-2010, Cake Software Foundation, Inc. (http://cakefoundation.org)
+ * @copyright     Copyright 2005-2011, Cake Software Foundation, Inc. (http://cakefoundation.org)
  * @link          http://cakephp.org CakePHP(tm) Project
- * @package       cake.libs
+ * @package       Cake.Utility
  * @since         CakePHP(tm) v 0.2.9
  * @license       MIT License (http://www.opensource.org/licenses/mit-license.php)
  */
@@ -25,8 +25,8 @@
  * Inflector pluralizes and singularizes English nouns.
  * Used by Cake's naming conventions throughout the framework.
  *
- * @package       cake.libs
- * @link          http://book.cakephp.org/view/1478/Inflector
+ * @package       Cake.Utility
+ * @link          http://book.cakephp.org/2.0/en/core-utility-libraries/inflector.html
  */
 class Inflector {
 
@@ -67,6 +67,7 @@ class Inflector {
 			'atlas' => 'atlases',
 			'beef' => 'beefs',
 			'brother' => 'brothers',
+			'cafe' => 'cafes',
 			'child' => 'children',
 			'corpus' => 'corpuses',
 			'cow' => 'cows',
@@ -143,7 +144,8 @@ class Inflector {
 			'.*[nrlm]ese', '.*deer', '.*fish', '.*measles', '.*ois', '.*pox', '.*sheep', '.*ss'
 		),
 		'irregular' => array(
-			'waves' => 'wave'
+			'waves' => 'wave',
+			'curves' => 'curve'
 		)
 	);
 
@@ -158,12 +160,12 @@ class Inflector {
 		'debris', 'diabetes', 'djinn', 'eland', 'elk', 'equipment', 'Faroese', 'flounder',
 		'Foochowese', 'gallows', 'Genevese', 'Genoese', 'Gilbertese', 'graffiti',
 		'headquarters', 'herpes', 'hijinks', 'Hottentotese', 'information', 'innings',
-		'jackanapes', 'Kiplingese', 'Kongoese', 'Lucchese', 'mackerel', 'Maltese', 'media',
+		'jackanapes', 'Kiplingese', 'Kongoese', 'Lucchese', 'mackerel', 'Maltese', '.*?media',
 		'mews', 'moose', 'mumps', 'Nankingese', 'news', 'nexus', 'Niasese',
 		'Pekingese', 'Piedmontese', 'pincers', 'Pistoiese', 'pliers', 'Portuguese',
 		'proceedings', 'rabies', 'rice', 'rhinoceros', 'salmon', 'Sarawakese', 'scissors',
 		'sea[- ]bass', 'series', 'Shavese', 'shears', 'siemens', 'species', 'swine', 'testes',
-		'trousers', 'trout','tuna', 'Vermontese', 'Wenchowese', 'whiting', 'wildebeest',
+		'trousers', 'trout', 'tuna', 'Vermontese', 'Wenchowese', 'whiting', 'wildebeest',
 		'Yengeese'
 	);
 
@@ -297,7 +299,6 @@ class Inflector {
  * @param array $rules Array of rules to be added.
  * @param boolean $reset If true, will unset default inflections for all
  *        new rules that are being defined in $rules.
- * @access public
  * @return void
  */
 	public static function rules($type, $rules, $reset = false) {
@@ -318,7 +319,11 @@ class Inflector {
 						if ($reset) {
 							self::${$var}[$rule] = $pattern;
 						} else {
-							self::${$var}[$rule] = array_merge($pattern, self::${$var}[$rule]);
+							if ($rule === 'uninflected') {
+								self::${$var}[$rule] = array_merge($pattern, self::${$var}[$rule]);
+							} else {
+								self::${$var}[$rule] = $pattern + self::${$var}[$rule];
+							}
 						}
 						unset($rules[$rule], self::${$var}['cache' . ucfirst($rule)]);
 						if (isset(self::${$var}['merged'][$rule])) {
@@ -331,7 +336,7 @@ class Inflector {
 						}
 					}
 				}
-				self::${$var}['rules'] = array_merge($rules, self::${$var}['rules']);
+				self::${$var}['rules'] = $rules + self::${$var}['rules'];
 			break;
 		}
 	}
@@ -341,8 +346,7 @@ class Inflector {
  *
  * @param string $word Word in singular
  * @return string Word in plural
- * @access public
- * @link http://book.cakephp.org/view/1479/Class-methods
+ * @link http://book.cakephp.org/2.0/en/core-utility-libraries/inflector.html#Inflector::pluralize
  */
 	public static function pluralize($word) {
 
@@ -386,8 +390,7 @@ class Inflector {
  *
  * @param string $word Word in plural
  * @return string Word in singular
- * @access public
- * @link http://book.cakephp.org/view/1479/Class-methods
+ * @link http://book.cakephp.org/2.0/en/core-utility-libraries/inflector.html#Inflector::singularize
  */
 	public static function singularize($word) {
 
@@ -397,14 +400,14 @@ class Inflector {
 
 		if (!isset(self::$_singular['merged']['uninflected'])) {
 			self::$_singular['merged']['uninflected'] = array_merge(
-				self::$_singular['uninflected'], 
+				self::$_singular['uninflected'],
 				self::$_uninflected
 			);
 		}
 
 		if (!isset(self::$_singular['merged']['irregular'])) {
 			self::$_singular['merged']['irregular'] = array_merge(
-				self::$_singular['irregular'], 
+				self::$_singular['irregular'],
 				array_flip(self::$_plural['irregular'])
 			);
 		}
@@ -437,10 +440,9 @@ class Inflector {
 /**
  * Returns the given lower_case_and_underscored_word as a CamelCased word.
  *
- * @param string $lower_case_and_underscored_word Word to camelize
+ * @param string $lowerCaseAndUnderscoredWord Word to camelize
  * @return string Camelized word. LikeThis.
- * @access public
- * @link http://book.cakephp.org/view/1479/Class-methods
+ * @link http://book.cakephp.org/2.0/en/core-utility-libraries/inflector.html#Inflector::camelize
  */
 	public static function camelize($lowerCaseAndUnderscoredWord) {
 		if (!($result = self::_cache(__FUNCTION__, $lowerCaseAndUnderscoredWord))) {
@@ -455,8 +457,7 @@ class Inflector {
  *
  * @param string $camelCasedWord Camel-cased word to be "underscorized"
  * @return string Underscore-syntaxed version of the $camelCasedWord
- * @access public
- * @link http://book.cakephp.org/view/1479/Class-methods
+ * @link http://book.cakephp.org/2.0/en/core-utility-libraries/inflector.html#Inflector::underscore
  */
 	public static function underscore($camelCasedWord) {
 		if (!($result = self::_cache(__FUNCTION__, $camelCasedWord))) {
@@ -470,10 +471,9 @@ class Inflector {
  * Returns the given underscored_word_group as a Human Readable Word Group.
  * (Underscores are replaced by spaces and capitalized following words.)
  *
- * @param string $lower_case_and_underscored_word String to be made more readable
+ * @param string $lowerCaseAndUnderscoredWord String to be made more readable
  * @return string Human-readable string
- * @access public
- * @link http://book.cakephp.org/view/1479/Class-methods
+ * @link http://book.cakephp.org/2.0/en/core-utility-libraries/inflector.html#Inflector::humanize
  */
 	public static function humanize($lowerCaseAndUnderscoredWord) {
 		if (!($result = self::_cache(__FUNCTION__, $lowerCaseAndUnderscoredWord))) {
@@ -488,8 +488,7 @@ class Inflector {
  *
  * @param string $className Name of class to get database table name for
  * @return string Name of the database table for given class
- * @access public
- * @link http://book.cakephp.org/view/1479/Class-methods
+ * @link http://book.cakephp.org/2.0/en/core-utility-libraries/inflector.html#Inflector::tableize
  */
 	public static function tableize($className) {
 		if (!($result = self::_cache(__FUNCTION__, $className))) {
@@ -504,8 +503,7 @@ class Inflector {
  *
  * @param string $tableName Name of database table to get class name for
  * @return string Class name
- * @access public
- * @link http://book.cakephp.org/view/1479/Class-methods
+ * @link http://book.cakephp.org/2.0/en/core-utility-libraries/inflector.html#Inflector::classify
  */
 	public static function classify($tableName) {
 		if (!($result = self::_cache(__FUNCTION__, $tableName))) {
@@ -520,8 +518,7 @@ class Inflector {
  *
  * @param string $string
  * @return string in variable form
- * @access public
- * @link http://book.cakephp.org/view/1479/Class-methods
+ * @link http://book.cakephp.org/2.0/en/core-utility-libraries/inflector.html#Inflector::variable
  */
 	public static function variable($string) {
 		if (!($result = self::_cache(__FUNCTION__, $string))) {
@@ -539,10 +536,8 @@ class Inflector {
  *
  * @param string $string the string you want to slug
  * @param string $replacement will replace keys in map
- * @param array $map extra elements to map to the replacement
  * @return string
- * @access public
- * @link http://book.cakephp.org/view/1479/Class-methods
+ * @link http://book.cakephp.org/2.0/en/core-utility-libraries/inflector.html#Inflector::slug
  */
 	public static function slug($string, $replacement = '_') {
 		$quotedReplacement = preg_quote($replacement, '/');

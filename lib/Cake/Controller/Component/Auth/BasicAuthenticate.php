@@ -3,12 +3,12 @@
  * PHP 5
  *
  * CakePHP(tm) : Rapid Development Framework (http://cakephp.org)
- * Copyright 2005-2010, Cake Software Foundation, Inc. (http://cakefoundation.org)
+ * Copyright 2005-2011, Cake Software Foundation, Inc. (http://cakefoundation.org)
  *
  * Licensed under The MIT License
  * Redistributions of files must retain the above copyright notice.
  *
- * @copyright     Copyright 2005-2010, Cake Software Foundation, Inc. (http://cakefoundation.org)
+ * @copyright     Copyright 2005-2011, Cake Software Foundation, Inc. (http://cakefoundation.org)
  * @link          http://cakephp.org CakePHP(tm) Project
  * @license       MIT License (http://www.opensource.org/licenses/mit-license.php)
  */
@@ -24,10 +24,10 @@ App::uses('BaseAuthenticate', 'Controller/Component/Auth');
  * Auth must support cookies.
  *
  * ### Using Basic auth
- * 
+ *
  * In your controller's components array, add auth + the required settings.
  * {{{
- *	var $components = array(
+ *	public $components = array(
  *		'Auth' => array(
  *			'authenticate' => array('Basic')
  *		)
@@ -37,7 +37,7 @@ App::uses('BaseAuthenticate', 'Controller/Component/Auth');
  * In your login function just call `$this->Auth->login()` without any checks for POST data.  This
  * will send the authentication headers, and trigger the login dialog in the browser/client.
  *
- * @package cake.libs.controller.components.auth
+ * @package       Cake.Controller.Component.Auth
  * @since 2.0
  */
 class BasicAuthenticate extends BaseAuthenticate {
@@ -76,7 +76,7 @@ class BasicAuthenticate extends BaseAuthenticate {
 	}
 
 /**
- * Authenticate a user using basic HTTP auth.  Will use the configured User model and attempt a 
+ * Authenticate a user using basic HTTP auth.  Will use the configured User model and attempt a
  * login using basic HTTP auth.
  *
  * @param CakeRequest $request The request to authenticate with.
@@ -104,7 +104,7 @@ class BasicAuthenticate extends BaseAuthenticate {
 	public function getUser($request) {
 		$username = env('PHP_AUTH_USER');
 		$pass = env('PHP_AUTH_PW');
-		
+
 		if (empty($username) || empty($pass)) {
 			return false;
 		}

@@ -5,24 +5,28 @@
  * PHP Version 5.x
  *
  * CakePHP(tm) : Rapid Development Framework (http://cakephp.org)
- * Copyright 2005-2009, Cake Software Foundation, Inc. (http://cakefoundation.org)
+ * Copyright 2005-2011, Cake Software Foundation, Inc. (http://cakefoundation.org)
  *
  * Licensed under The MIT License
  * Redistributions of files must retain the above copyright notice.
  *
- * @copyright     Copyright 2005-2009, Cake Software Foundation, Inc. (http://cakefoundation.org)
+ * @copyright     Copyright 2005-2011, Cake Software Foundation, Inc. (http://cakefoundation.org)
  * @link          http://cakephp.org CakePHP(tm) Project
- * @package       cake.libs
+ * @package       Cake.Utility
  * @since         CakePHP(tm) v 1.2.0.3830
  * @license       MIT License (http://www.opensource.org/licenses/mit-license.php)
  */
 
 App::uses('Multibyte', 'I18n');
+// Load multibyte if the extension is missing.
+if (!function_exists('mb_strlen')) {
+	class_exists('Multibyte');
+}
 
 /**
  * Offers different validation methods.
  *
- * @package       cake.libs
+ * @package       Cake.Utility
  * @since         CakePHP v 1.2.0.3830
  */
 class Validation {
@@ -32,7 +36,7 @@ class Validation {
  *
  * @var array
  */
-	private static $__pattern = array(
+	protected static $_pattern = array(
 		'hostname' => '(?:[a-z0-9][-a-z0-9]*\.)*(?:[a-z0-9][-a-z0-9]{0,62})\.(?:(?:[a-z]{2}\.)?[a-z]{2,4}|museum|travel)'
 	);
 
@@ -296,7 +300,7 @@ class Validation {
 		$regex['mdy'] = '%^(?:(?:(?:0?[13578]|1[02])(\\/|-|\\.|\\x20)31)\\1|(?:(?:0?[13-9]|1[0-2])(\\/|-|\\.|\\x20)(?:29|30)\\2))(?:(?:1[6-9]|[2-9]\\d)?\\d{2})$|^(?:0?2(\\/|-|\\.|\\x20)29\\3(?:(?:(?:1[6-9]|[2-9]\\d)?(?:0[48]|[2468][048]|[13579][26])|(?:(?:16|[2468][048]|[3579][26])00))))$|^(?:(?:0?[1-9])|(?:1[0-2]))(\\/|-|\\.|\\x20)(?:0?[1-9]|1\\d|2[0-8])\\4(?:(?:1[6-9]|[2-9]\\d)?\\d{2})$%';
 		$regex['ymd'] = '%^(?:(?:(?:(?:(?:1[6-9]|[2-9]\\d)?(?:0[48]|[2468][048]|[13579][26])|(?:(?:16|[2468][048]|[3579][26])00)))(\\/|-|\\.|\\x20)(?:0?2\\1(?:29)))|(?:(?:(?:1[6-9]|[2-9]\\d)?\\d{2})(\\/|-|\\.|\\x20)(?:(?:(?:0?[13578]|1[02])\\2(?:31))|(?:(?:0?[1,3-9]|1[0-2])\\2(29|30))|(?:(?:0?[1-9])|(?:1[0-2]))\\2(?:0?[1-9]|1\\d|2[0-8]))))$%';
 		$regex['dMy'] = '/^((31(?!\\ (Feb(ruary)?|Apr(il)?|June?|(Sep(?=\\b|t)t?|Nov)(ember)?)))|((30|29)(?!\\ Feb(ruary)?))|(29(?=\\ Feb(ruary)?\\ (((1[6-9]|[2-9]\\d)(0[48]|[2468][048]|[13579][26])|((16|[2468][048]|[3579][26])00)))))|(0?[1-9])|1\\d|2[0-8])\\ (Jan(uary)?|Feb(ruary)?|Ma(r(ch)?|y)|Apr(il)?|Ju((ly?)|(ne?))|Aug(ust)?|Oct(ober)?|(Sep(?=\\b|t)t?|Nov|Dec)(ember)?)\\ ((1[6-9]|[2-9]\\d)\\d{2})$/';
-		$regex['Mdy'] = '/^(?:(((Jan(uary)?|Ma(r(ch)?|y)|Jul(y)?|Aug(ust)?|Oct(ober)?|Dec(ember)?)\\ 31)|((Jan(uary)?|Ma(r(ch)?|y)|Apr(il)?|Ju((ly?)|(ne?))|Aug(ust)?|Oct(ober)?|(Sept|Nov|Dec)(ember)?)\\ (0?[1-9]|([12]\\d)|30))|(Feb(ruary)?\\ (0?[1-9]|1\\d|2[0-8]|(29(?=,?\\ ((1[6-9]|[2-9]\\d)(0[48]|[2468][048]|[13579][26])|((16|[2468][048]|[3579][26])00)))))))\\,?\\ ((1[6-9]|[2-9]\\d)\\d{2}))$/';
+		$regex['Mdy'] = '/^(?:(((Jan(uary)?|Ma(r(ch)?|y)|Jul(y)?|Aug(ust)?|Oct(ober)?|Dec(ember)?)\\ 31)|((Jan(uary)?|Ma(r(ch)?|y)|Apr(il)?|Ju((ly?)|(ne?))|Aug(ust)?|Oct(ober)?|(Sep)(tember)?|(Nov|Dec)(ember)?)\\ (0?[1-9]|([12]\\d)|30))|(Feb(ruary)?\\ (0?[1-9]|1\\d|2[0-8]|(29(?=,?\\ ((1[6-9]|[2-9]\\d)(0[48]|[2468][048]|[13579][26])|((16|[2468][048]|[3579][26])00)))))))\\,?\\ ((1[6-9]|[2-9]\\d)\\d{2}))$/';
 		$regex['My'] = '%^(Jan(uary)?|Feb(ruary)?|Ma(r(ch)?|y)|Apr(il)?|Ju((ly?)|(ne?))|Aug(ust)?|Oct(ober)?|(Sep(?=\\b|t)t?|Nov|Dec)(ember)?)[ /]((1[6-9]|[2-9]\\d)\\d{2})$%';
 		$regex['my'] = '%^(((0[123456789]|10|11|12)([- /.])(([1][9][0-9][0-9])|([2][0-9][0-9][0-9]))))$%';
 
@@ -312,6 +316,38 @@ class Validation {
 	}
 
 /**
+ * Validates a datetime value
+ * All values matching the "date" core validation rule, and the "time" one will be valid
+ *
+ * @param array $check Value to check
+ * @param mixed $dateFormat Format of the date part
+ * Use a string or an array of the keys below. Arrays should be passed as array('dmy', 'mdy', etc)
+ * ## Keys:
+ *
+ *	- dmy 27-12-2006 or 27-12-06 separators can be a space, period, dash, forward slash
+ *	- mdy 12-27-2006 or 12-27-06 separators can be a space, period, dash, forward slash
+ *	- ymd 2006-12-27 or 06-12-27 separators can be a space, period, dash, forward slash
+ *  - dMy 27 December 2006 or 27 Dec 2006
+ *	- Mdy December 27, 2006 or Dec 27, 2006 comma is optional
+ *	- My December 2006 or Dec 2006
+ * 	- my 12/2006 separators can be a space, period, dash, forward slash
+ * @param string $regex Regex for the date part. If a custom regular expression is used this is the only validation that will occur.
+ * @return boolean True if the value is valid, false otherwise
+ * @see Validation::date
+ * @see Validation::time
+ */
+	public static function datetime($check, $dateFormat = 'ymd', $regex = null) {
+		$valid = false;
+		$parts = explode(' ', $check);
+		if (!empty($parts) && count($parts) > 1) {
+			$time = array_pop($parts);
+			$date = implode(' ', $parts);
+			$valid = self::date($date, $dateFormat, $regex) && self::time($time);
+		}
+		return $valid;
+	}
+
+/**
  * Time validation, determines if the string passed is a valid time.
  * Validates time as 24hr (HH:MM) or am/pm ([H]H:MM[a|p]m)
  * Does not allow/validate seconds.
@@ -320,7 +356,7 @@ class Validation {
  * @return boolean Success
  */
 	public static function time($check) {
-		return self::_check($check, '%^((0?[1-9]|1[012])(:[0-5]\d){0,2}([AP]M|[ap]m))$|^([01]\d|2[0-3])(:[0-5]\d){0,2}$%');
+		return self::_check($check, '%^((0?[1-9]|1[012])(:[0-5]\d){0,2} ?([AP]M|[ap]m))$|^([01]\d|2[0-3])(:[0-5]\d){0,2}$%');
 	}
 
 /**
@@ -371,14 +407,14 @@ class Validation {
 		}
 
 		if (is_null($regex)) {
-			$regex = '/^[a-z0-9!#$%&\'*+\/=?^_`{|}~-]+(?:\.[a-z0-9!#$%&\'*+\/=?^_`{|}~-]+)*@' . self::$__pattern['hostname'] . '$/i';
+			$regex = '/^[a-z0-9!#$%&\'*+\/=?^_`{|}~-]+(?:\.[a-z0-9!#$%&\'*+\/=?^_`{|}~-]+)*@' . self::$_pattern['hostname'] . '$/i';
 		}
 		$return = self::_check($check, $regex);
 		if ($deep === false || $deep === null) {
 			return $return;
 		}
 
-		if ($return === true && preg_match('/@(' . self::$__pattern['hostname'] . ')$/i', $check, $regs)) {
+		if ($return === true && preg_match('/@(' . self::$_pattern['hostname'] . ')$/i', $check, $regs)) {
 			if (function_exists('getmxrr') && getmxrr($regs[1], $mxhosts)) {
 				return true;
 			}
@@ -426,7 +462,7 @@ class Validation {
  * Validation of an IP address.
  *
  * @param string $check The string to test.
- * @param string $ipVersion The IP Protocol version to validate against
+ * @param string $type The IP Protocol version to validate against
  * @return boolean Success
  */
 	public static function ip($check, $type = 'both') {
@@ -486,7 +522,7 @@ class Validation {
  * Valid Options
  *
  * - in => provide a list of choices that selections must be made from
- * - max => maximun number of non-zero choices that can be made
+ * - max => maximum number of non-zero choices that can be made
  * - min => minimum number of non-zero choices that can be made
  *
  * @param mixed $check Value to check
@@ -520,7 +556,7 @@ class Validation {
  * Checks if a value is numeric.
  *
  * @param string $check Value to check
- * @return boolean Succcess
+ * @return boolean Success
  */
 	public static function numeric($check) {
 		return is_numeric($check);
@@ -661,14 +697,13 @@ class Validation {
  *
  * @param string $check Value to check
  * @param boolean $strict Require URL to be prefixed by a valid scheme (one of http(s)/ftp(s)/file/news/gopher)
- * @param string $ipVersion The IP Protocol version to validate against
  * @return boolean Success
  */
 	public static function url($check, $strict = false) {
-		self::__populateIp();
-		$validChars = '([' . preg_quote('!"$&\'()*+,-.@_:;=~') . '\/0-9a-z\p{L}\p{N}]|(%[0-9a-f]{2}))';
+		self::_populateIp();
+		$validChars = '([' . preg_quote('!"$&\'()*+,-.@_:;=~[]') . '\/0-9a-z\p{L}\p{N}]|(%[0-9a-f]{2}))';
 		$regex = '/^(?:(?:https?|ftps?|file|news|gopher):\/\/)' . (!empty($strict) ? '' : '?') .
-			'(?:' . self::$__pattern['IPv4'] . '|\[' . self::$__pattern['IPv6'] . '\]|' . self::$__pattern['hostname'] . ')(?::[1-9][0-9]{0,4})?' .
+			'(?:' . self::$_pattern['IPv4'] . '|\[' . self::$_pattern['IPv6'] . '\]|' . self::$_pattern['hostname'] . ')(?::[1-9][0-9]{0,4})?' .
 			'(?:\/?|\/' . $validChars . '*)?' .
 			'(?:\?' . $validChars . '*)?' .
 			'(?:#' . $validChars . '*)?$/iu';
@@ -680,7 +715,7 @@ class Validation {
  *
  * @param string $check Value to check
  * @param array $list List to check against
- * @return boolean Succcess
+ * @return boolean Success
  */
 	public static function inList($check, $list) {
 		return in_array($check, $list);
@@ -704,7 +739,6 @@ class Validation {
  *
  * @param string $check Value to check
  * @return boolean Success
- * @access public
  */
 	public static function uuid($check) {
 		$regex = '/^[a-f0-9]{8}-[a-f0-9]{4}-[a-f0-9]{4}-[a-f0-9]{4}-[a-f0-9]{12}$/i';
@@ -760,7 +794,7 @@ class Validation {
  * @return void
  */
 	protected static function _defaults($params) {
-		self::__reset();
+		self::_reset();
 		$defaults = array(
 			'check' => null,
 			'regex' => null,
@@ -778,8 +812,10 @@ class Validation {
 /**
  * Luhn algorithm
  *
- * @see http://en.wikipedia.org/wiki/Luhn_algorithm
+ * @param string|array $check
+ * @param boolean $deep
  * @return boolean Success
+ * @see http://en.wikipedia.org/wiki/Luhn_algorithm
  */
 	public static function luhn($check, $deep = false) {
 		if (is_array($check)) {
@@ -811,8 +847,8 @@ class Validation {
  *
  * @return void
  */
-	private static function __populateIp() {
-		if (!isset(self::$__pattern['IPv6'])) {
+	protected static function _populateIp() {
+		if (!isset(self::$_pattern['IPv6'])) {
 			$pattern  = '((([0-9A-Fa-f]{1,4}:){7}(([0-9A-Fa-f]{1,4})|:))|(([0-9A-Fa-f]{1,4}:){6}';
 			$pattern .= '(:|((25[0-5]|2[0-4]\d|[01]?\d{1,2})(\.(25[0-5]|2[0-4]\d|[01]?\d{1,2})){3})';
 			$pattern .= '|(:[0-9A-Fa-f]{1,4})))|(([0-9A-Fa-f]{1,4}:){5}((:((25[0-5]|2[0-4]\d|[01]?\d{1,2})';
@@ -828,11 +864,11 @@ class Validation {
 			$pattern .= '\d|[01]?\d{1,2})(\.(25[0-5]|2[0-4]\d|[01]?\d{1,2})){3})?)|((:[0-9A-Fa-f]{1,4})';
 			$pattern .= '{1,2})))|(((25[0-5]|2[0-4]\d|[01]?\d{1,2})(\.(25[0-5]|2[0-4]\d|[01]?\d{1,2})){3})))(%.+)?';
 
-			self::$__pattern['IPv6'] = $pattern;
+			self::$_pattern['IPv6'] = $pattern;
 		}
-		if (!isset(self::$__pattern['IPv4'])) {
+		if (!isset(self::$_pattern['IPv4'])) {
 			$pattern = '(?:(?:25[0-5]|2[0-4][0-9]|(?:(?:1[0-9])?|[1-9]?)[0-9])\.){3}(?:25[0-5]|2[0-4][0-9]|(?:(?:1[0-9])?|[1-9]?)[0-9])';
-			self::$__pattern['IPv4'] = $pattern;
+			self::$_pattern['IPv4'] = $pattern;
 		}
 	}
 
@@ -841,7 +877,7 @@ class Validation {
  *
  * @return void
  */
-	private static function __reset() {
+	protected static function _reset() {
 		self::$errors = array();
 	}
 }

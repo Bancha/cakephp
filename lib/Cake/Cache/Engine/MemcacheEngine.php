@@ -6,14 +6,14 @@
  * PHP 5
  *
  * CakePHP(tm) : Rapid Development Framework (http://cakephp.org)
- * Copyright 2005-2010, Cake Software Foundation, Inc. (http://cakefoundation.org)
+ * Copyright 2005-2011, Cake Software Foundation, Inc. (http://cakefoundation.org)
  *
  * Licensed under The MIT License
  * Redistributions of files must retain the above copyright notice.
  *
- * @copyright     Copyright 2005-2010, Cake Software Foundation, Inc. (http://cakefoundation.org)
+ * @copyright     Copyright 2005-2011, Cake Software Foundation, Inc. (http://cakefoundation.org)
  * @link          http://cakephp.org CakePHP(tm) Project
- * @package       cake.libs.cache
+ * @package       Cake.Cache.Engine
  * @since         CakePHP(tm) v 1.2.0.4933
  * @license       MIT License (http://www.opensource.org/licenses/mit-license.php)
  */
@@ -23,7 +23,7 @@
  * control you have over expire times far in the future.  See MemcacheEngine::write() for
  * more information.
  *
- * @package       cake.libs.cache
+ * @package       Cake.Cache.Engine
  */
 class MemcacheEngine extends CacheEngine {
 
@@ -31,7 +31,6 @@ class MemcacheEngine extends CacheEngine {
  * Memcache wrapper.
  *
  * @var Memcache
- * @access private
  */
 	protected $_Memcache = null;
 
@@ -43,7 +42,6 @@ class MemcacheEngine extends CacheEngine {
  *  - compress = boolean, default => false
  *
  * @var array
- * @access public
  */
 	public $settings = array();
 
@@ -64,8 +62,8 @@ class MemcacheEngine extends CacheEngine {
 			'engine'=> 'Memcache',
 			'prefix' => Inflector::slug(APP_DIR) . '_',
 			'servers' => array('127.0.0.1'),
-			'persistent' => true,
-			'compress'=> false
+			'compress'=> false,
+			'persistent' => true
 			), $settings)
 		);
 
@@ -91,12 +89,15 @@ class MemcacheEngine extends CacheEngine {
 
 /**
  * Parses the server address into the host/port.  Handles both IPv6 and IPv4
- * addresses
+ * addresses and Unix sockets
  *
  * @param string $server The server address string.
  * @return array Array containing host, port
  */
-	function _parseServerString($server) {
+	protected function _parseServerString($server) {
+		if ($server[0] == 'u') {
+			return array($server, 0);
+		}
 		if (substr($server, 0, 1) == '[') {
 			$position = strpos($server, ']:');
 			if ($position !== false) {
@@ -189,10 +190,32 @@ class MemcacheEngine extends CacheEngine {
 /**
  * Delete all keys from the cache
  *
+ * @param boolean $check
  * @return boolean True if the cache was successfully cleared, false otherwise
  */
 	public function clear($check) {
-		return $this->_Memcache->flush();
+		if ($check) {
+			return true;
+		}
+		foreach ($this->_Memcache->getExtendedStats('slabs') as $slabs) {
+			foreach (array_keys($slabs) as $slabId) {
+				if (!is_numeric($slabId)) {
+					continue;
+				}
+
+				foreach ($this->_Memcache->getExtendedStats('cachedump', $slabId) as $stats) {
+					if (!is_array($stats)) {
+						continue;
+					}
+					foreach (array_keys($stats) as $key) {
+						if (strpos($key, $this->settings['prefix']) === 0) {
+							$this->_Memcache->delete($key);
+						}
+					}
+				}
+			}
+		}
+		return true;
 	}
 
 /**

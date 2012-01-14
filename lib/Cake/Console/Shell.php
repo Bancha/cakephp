@@ -5,14 +5,13 @@
  * PHP 5
  *
  * CakePHP(tm) : Rapid Development Framework (http://cakephp.org)
- * Copyright 2005-2010, Cake Software Foundation, Inc. (http://cakefoundation.org)
+ * Copyright 2005-2011, Cake Software Foundation, Inc. (http://cakefoundation.org)
  *
  * Licensed under The MIT License
  * Redistributions of files must retain the above copyright notice.
  *
- * @copyright     Copyright 2005-2010, Cake Software Foundation, Inc. (http://cakefoundation.org)
+ * @copyright     Copyright 2005-2011, Cake Software Foundation, Inc. (http://cakefoundation.org)
  * @link          http://cakephp.org CakePHP(tm) Project
- * @package       cake.console.shells
  * @since         CakePHP(tm) v 1.2.0.5012
  * @license       MIT License (http://www.opensource.org/licenses/mit-license.php)
  */
@@ -27,7 +26,7 @@ App::uses('File', 'Utility');
 /**
  * Base class for command-line utilities for automating programmer chores.
  *
- * @package       cake.console.shells
+ * @package       Cake.Console
  */
 class Shell extends Object {
 
@@ -49,7 +48,6 @@ class Shell extends Object {
  * If true, the script will ask for permission to perform actions.
  *
  * @var boolean
- * @access public
  */
 	public $interactive = true;
 
@@ -57,7 +55,6 @@ class Shell extends Object {
  * Contains command switches parsed from the command line.
  *
  * @var array
- * @access public
  */
 	public $params = array();
 
@@ -72,7 +69,6 @@ class Shell extends Object {
  * Contains arguments parsed from the command line.
  *
  * @var array
- * @access public
  */
 	public $args = array();
 
@@ -80,7 +76,6 @@ class Shell extends Object {
  * The name of the shell in camelized.
  *
  * @var string
- * @access public
  */
 	public $name = null;
 
@@ -88,7 +83,7 @@ class Shell extends Object {
  * Contains tasks to load and instantiate
  *
  * @var array
- * @access public
+ * @link http://book.cakephp.org/2.0/en/console-and-shells.html#Shell::$tasks
  */
 	public $tasks = array();
 
@@ -96,7 +91,6 @@ class Shell extends Object {
  * Contains the loaded tasks
  *
  * @var array
- * @access public
  */
 	public $taskNames = array();
 
@@ -104,7 +98,7 @@ class Shell extends Object {
  * Contains models to load and instantiate
  *
  * @var array
- * @access public
+ * @link http://book.cakephp.org/2.0/en/console-and-shells.html#Shell::$uses
  */
 	public $uses = array();
 
@@ -146,10 +140,14 @@ class Shell extends Object {
 /**
  *  Constructs this Shell instance.
  *
+ * @param ConsoleOutput $stdout A ConsoleOutput object for stdout.
+ * @param ConsoleOutput $stderr A ConsoleOutput object for stderr.
+ * @param ConsoleInput $stdin A ConsoleInput object for stdin.
+ * @link http://book.cakephp.org/2.0/en/console-and-shells.html#Shell
  */
-	function __construct($stdout = null, $stderr = null, $stdin = null) {
+	public function __construct($stdout = null, $stderr = null, $stdin = null) {
 		if ($this->name == null) {
-			$this->name = Inflector::underscore(str_replace(array('Shell', 'Task'), '', get_class($this)));
+			$this->name = Inflector::camelize(str_replace(array('Shell', 'Task'), '', get_class($this)));
 		}
 		$this->Tasks = new TaskCollection($this);
 
@@ -180,16 +178,22 @@ class Shell extends Object {
  * acts as constructor for subclasses
  * allows configuration of tasks prior to shell execution
  *
+ * @return void
+ * @link http://book.cakephp.org/2.0/en/console-and-shells.html#Shell::initialize
  */
 	public function initialize() {
 		$this->_loadModels();
 	}
 
 /**
- * Starts up the Shell
- * allows for checking and configuring prior to command or main execution
- * can be overridden in subclasses
+ * Starts up the Shell and displays the welcome message.
+ * Allows for checking and configuring prior to command or main execution
  *
+ * Override this method if you want to remove the welcome information,
+ * or otherwise modify the pre-command flow.
+ *
+ * @return void
+ * @link http://book.cakephp.org/2.0/en/console-and-shells.html#Shell::startup
  */
 	public function startup() {
 		$this->_welcome();
@@ -198,23 +202,24 @@ class Shell extends Object {
 /**
  * Displays a header for the shell
  *
+ * @return void
  */
 	protected function _welcome() {
 		$this->out();
 		$this->out(__d('cake_console', '<info>Welcome to CakePHP %s Console</info>', 'v' . Configure::version()));
 		$this->hr();
 		$this->out(__d('cake_console', 'App : %s', APP_DIR));
-		$this->out(__d('cake_console', 'Path: %s', APP_PATH));
+		$this->out(__d('cake_console', 'Path: %s', APP));
 		$this->hr();
 	}
 
 /**
- * if public $uses = true
+ * If $uses = true
  * Loads AppModel file and constructs AppModel class
  * makes $this->AppModel available to subclasses
- * if public $uses is an array of models will load those models
+ * If public $uses is an array of models will load those models
  *
- * @return bool
+ * @return boolean
  */
 	protected function _loadModels() {
 		if ($this->uses === null || $this->uses === false) {
@@ -243,7 +248,7 @@ class Shell extends Object {
 /**
  * Loads tasks defined in public $tasks
  *
- * @return bool
+ * @return boolean
  */
 	public function loadTasks() {
 		if ($this->tasks === true || empty($this->tasks) || empty($this->Tasks)) {
@@ -261,6 +266,7 @@ class Shell extends Object {
  *
  * @param string $task The task name to check.
  * @return boolean Success
+ * @link http://book.cakephp.org/2.0/en/console-and-shells.html#Shell::hasTask
  */
 	public function hasTask($task) {
 		return isset($this->_taskMap[Inflector::camelize($task)]);
@@ -271,17 +277,15 @@ class Shell extends Object {
  *
  * @param string $name The method name to check.
  * @return boolean
+ * @link http://book.cakephp.org/2.0/en/console-and-shells.html#Shell::hasMethod
  */
 	public function hasMethod($name) {
-		if (empty($this->_reflection)) {
-			$this->_reflection = new ReflectionClass($this);
-		}
 		try {
-			$method = $this->_reflection->getMethod($name);
+			$method = new ReflectionMethod($this, $name);
 			if (!$method->isPublic() || substr($name, 0, 1) === '_') {
 				return false;
 			}
-			if ($method->getDeclaringClass() != $this->_reflection) {
+			if ($method->getDeclaringClass()->name == 'Shell') {
 				return false;
 			}
 			return true;
@@ -300,13 +304,16 @@ class Shell extends Object {
  *
  *	`return $this->dispatchShell('schema create DbAcl');`
  *
+ * Avoid using this form if you have string arguments, with spaces in them.
+ * The dispatched will be invoked incorrectly. Only use this form for simple
+ * command dispatching.
+ *
  * With an array command:
  *
  * `return $this->dispatchShell('schema', 'create', 'i18n', '--dry');`
  *
- * @param mixed $command Either an array of args similar to $argv. Or a string command, that can be
- *   exploded on space to simulate argv.
- * @return mixed. The return of the other shell.
+ * @return mixed The return of the other shell.
+ * @link http://book.cakephp.org/2.0/en/console-and-shells.html#Shell::dispatchShell
  */
 	public function dispatchShell() {
 		$args = func_get_args();
@@ -319,10 +326,23 @@ class Shell extends Object {
 	}
 
 /**
- * Runs the Shell with the provided argv
+ * Runs the Shell with the provided argv.
  *
+ * Delegates calls to Tasks and resolves methods inside the class. Commands are looked
+ * up with the following order:
+ *
+ * - Method on the shell.
+ * - Matching task name.
+ * - `main()` method.
+ *
+ * If a shell implements a `main()` method, all missing method calls will be sent to
+ * `main()` with the original method name in the argv.
+ *
+ * @param string $command The command name to run on this shell. If this argument is empty,
+ *   and the shell has a `main()` method, that will be called instead.
  * @param array $argv Array of arguments to run the shell with. This array should be missing the shell name.
  * @return void
+ * @link http://book.cakephp.org/2.0/en/console-and-shells.html#Shell::runCommand
  */
 	public function runCommand($command, $argv) {
 		$isTask = $this->hasTask($command);
@@ -337,9 +357,10 @@ class Shell extends Object {
 			$this->OptionParser = $this->getOptionParser();
 			list($this->params, $this->args) = $this->OptionParser->parse($argv, $command);
 		} catch (ConsoleException $e) {
-			return $this->out($this->OptionParser->help($command));
+			$this->out($this->OptionParser->help($command));
+			return false;
 		}
-		
+
 		$this->command = $command;
 		if (!empty($this->params['help'])) {
 			return $this->_displayHelp($command);
@@ -359,19 +380,21 @@ class Shell extends Object {
 		if ($isMain) {
 			return $this->main();
 		}
-		return $this->out($this->OptionParser->help($command));
+		$this->out($this->OptionParser->help($command));
+		return false;
 	}
 
 /**
  * Display the help in the correct format
  *
+ * @param string $command
  * @return void
  */
 	protected function _displayHelp($command) {
 		$format = 'text';
 		if (!empty($this->args[0]) && $this->args[0] == 'xml')  {
 			$format = 'xml';
-			$this->output->outputAs(ConsoleOutput::RAW);
+			$this->stdout->outputAs(ConsoleOutput::RAW);
 		} else {
 			$this->_welcome();
 		}
@@ -383,6 +406,7 @@ class Shell extends Object {
  * By overriding this method you can configure the ConsoleOptionParser before returning it.
  *
  * @return ConsoleOptionParser
+ * @link http://book.cakephp.org/2.0/en/console-and-shells.html#Shell::getOptionParser
  */
 	public function getOptionParser() {
 		$parser = new ConsoleOptionParser($this->name);
@@ -392,7 +416,8 @@ class Shell extends Object {
 /**
  * Overload get for lazy building of tasks
  *
- * @return void
+ * @param string $name
+ * @return Shell Object of Task
  */
 	public function __get($name) {
 		if (empty($this->{$name}) && in_array($name, $this->taskNames)) {
@@ -412,7 +437,8 @@ class Shell extends Object {
  * @param string $prompt Prompt text.
  * @param mixed $options Array or string of options.
  * @param string $default Default input value.
- * @return Either the default value, or the user-provided input.
+ * @return mixed Either the default value, or the user-provided input.
+ * @link http://book.cakephp.org/2.0/en/console-and-shells.html#Shell::in
  */
 	public function in($prompt, $options = null, $default = null) {
 		if (!$this->interactive) {
@@ -430,13 +456,11 @@ class Shell extends Object {
 			}
 		}
 		if (is_array($options)) {
-			while ($in == '' || ($in && (!in_array(strtolower($in), $options) && !in_array(strtoupper($in), $options)) && !in_array($in, $options))) {
+			while ($in === '' || ($in !== '' && (!in_array(strtolower($in), $options) && !in_array(strtoupper($in), $options)) && !in_array($in, $options))) {
 				$in = $this->_getInput($prompt, $options, $default);
 			}
 		}
-		if ($in) {
-			return $in;
-		}
+		return $in;
 	}
 
 /**
@@ -466,7 +490,7 @@ class Shell extends Object {
 		}
 		$result = trim($result);
 
-		if ($default != null && empty($result)) {
+		if ($default !== null && ($result === '' || $result === null)) {
 			return $default;
 		}
 		return $result;
@@ -486,6 +510,7 @@ class Shell extends Object {
  * @param mixed $options Array of options to use, or an integer to wrap the text to.
  * @return string Wrapped / indented text
  * @see String::wrap()
+ * @link http://book.cakephp.org/2.0/en/console-and-shells.html#Shell::wrapText
  */
 	public function wrapText($text, $options = array()) {
 		return String::wrap($text, $options);
@@ -505,7 +530,8 @@ class Shell extends Object {
  * @param mixed $message A string or a an array of strings to output
  * @param integer $newlines Number of newlines to append
  * @param integer $level The message's output level, see above.
- * @return integer Returns the number of bytes returned from writing to stdout.
+ * @return integer|boolean Returns the number of bytes returned from writing to stdout.
+ * @link http://book.cakephp.org/2.0/en/console-and-shells.html#Shell::out
  */
 	public function out($message = null, $newlines = 1, $level = Shell::NORMAL) {
 		$currentLevel = Shell::NORMAL;
@@ -527,6 +553,8 @@ class Shell extends Object {
  *
  * @param mixed $message A string or a an array of strings to output
  * @param integer $newlines Number of newlines to append
+ * @return void
+ * @link http://book.cakephp.org/2.0/en/console-and-shells.html#Shell::err
  */
 	public function err($message = null, $newlines = 1) {
 		$this->stderr->write($message, $newlines);
@@ -536,10 +564,10 @@ class Shell extends Object {
  * Returns a single or multiple linefeeds sequences.
  *
  * @param integer $multiplier Number of times the linefeed sequence should be repeated
- * @access public
  * @return string
+ * @link http://book.cakephp.org/2.0/en/console-and-shells.html#Shell::nl
  */
-	function nl($multiplier = 1) {
+	public function nl($multiplier = 1) {
 		return str_repeat(ConsoleOutput::LF, $multiplier);
 	}
 
@@ -548,6 +576,8 @@ class Shell extends Object {
  *
  * @param integer $newlines Number of newlines to pre- and append
  * @param integer $width Width of the line, defaults to 63
+ * @return void
+ * @link http://book.cakephp.org/2.0/en/console-and-shells.html#Shell::hr
  */
 	public function hr($newlines = 0, $width = 63) {
 		$this->out(null, $newlines);
@@ -561,6 +591,8 @@ class Shell extends Object {
  *
  * @param string $title Title of the error
  * @param string $message An optional error message
+ * @return void
+ * @link http://book.cakephp.org/2.0/en/console-and-shells.html#Shell::error
  */
 	public function error($title, $message = null) {
 		$this->err(__d('cake_console', '<error>Error:</error> %s', $title));
@@ -575,6 +607,7 @@ class Shell extends Object {
  * Clear the console
  *
  * @return void
+ * @link http://book.cakephp.org/2.0/en/console-and-shells.html#Shell::clear
  */
 	public function clear() {
 		if (empty($this->params['noclear'])) {
@@ -592,6 +625,7 @@ class Shell extends Object {
  * @param string $path Where to put the file.
  * @param string $contents Content to put in the file.
  * @return boolean Success
+ * @link http://book.cakephp.org/2.0/en/console-and-shells.html#Shell::createFile
  */
 	public function createFile($path, $contents) {
 		$path = str_replace(DS . DS, DS, $path);
@@ -613,7 +647,8 @@ class Shell extends Object {
 			$this->out(__d('cake_console', 'Creating file %s', $path));
 		}
 
-		if ($File = new File($path, true)) {
+		$File = new File($path, true);
+		if ($File->exists()) {
 			$data = $File->prepare($contents);
 			$File->write($data);
 			$this->out(__d('cake_console', '<success>Wrote</success> `%s`', $path));
@@ -651,7 +686,8 @@ class Shell extends Object {
  * Makes absolute file path easier to read
  *
  * @param string $file Absolute file path
- * @return sting short path
+ * @return string short path
+ * @link http://book.cakephp.org/2.0/en/console-and-shells.html#Shell::shortPath
  */
 	public function shortPath($file) {
 		$shortPath = str_replace(ROOT, null, $file);
@@ -755,7 +791,7 @@ class Shell extends Object {
  * @param string $pluginName Name of the plugin you want ie. DebugKit
  * @return string $path path to the correct plugin.
  */
-	function _pluginPath($pluginName) {
+	protected function _pluginPath($pluginName) {
 		if (CakePlugin::loaded($pluginName)) {
 			return CakePlugin::path($pluginName);
 		}

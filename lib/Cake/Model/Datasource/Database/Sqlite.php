@@ -5,26 +5,27 @@
  * PHP 5
  *
  * CakePHP(tm) : Rapid Development Framework (http://cakephp.org)
- * Copyright 2005-2010, Cake Software Foundation, Inc. (http://cakefoundation.org)
+ * Copyright 2005-2011, Cake Software Foundation, Inc. (http://cakefoundation.org)
  *
  * Licensed under The MIT License
  * Redistributions of files must retain the above copyright notice.
  *
- * @copyright     Copyright 2005-2010, Cake Software Foundation, Inc. (http://cakefoundation.org)
+ * @copyright     Copyright 2005-2011, Cake Software Foundation, Inc. (http://cakefoundation.org)
  * @link          http://cakephp.org CakePHP(tm) Project
- * @package       cake.libs.model.datasources.dbo
+ * @package       Cake.Model.Datasource.Database
  * @since         CakePHP(tm) v 0.9.0
  * @license       MIT License (http://www.opensource.org/licenses/mit-license.php)
  */
 
 App::uses('DboSource', 'Model/Datasource');
+App::uses('String', 'Utility');
 
 /**
  * DBO implementation for the SQLite3 DBMS.
  *
  * A DboSource adapter for SQLite 3 using PDO
  *
- * @package       cake.libs.model.datasources.dbo
+ * @package       Cake.Model.Datasource.Database
  */
 class Sqlite extends DboSource {
 
@@ -32,33 +33,29 @@ class Sqlite extends DboSource {
  * Datasource Description
  *
  * @var string
- * @access public
  */
-	var $description = "SQLite DBO Driver";
+	public $description = "SQLite DBO Driver";
 
 /**
  * Quote Start
  *
  * @var string
- * @access public
  */
-	var $startQuote = '"';
+	public $startQuote = '"';
 
 /**
  * Quote End
  *
  * @var string
- * @access public
  */
-	var $endQuote = '"';
+	public $endQuote = '"';
 
 /**
  * Base configuration settings for SQLite3 driver
  *
  * @var array
- * @access public
  */
-	var $_baseConfig = array(
+	protected $_baseConfig = array(
 		'persistent' => false,
 		'database' => null
 	);
@@ -67,9 +64,8 @@ class Sqlite extends DboSource {
  * SQLite3 column definition
  *
  * @var array
- * @access public
  */
-	var $columns = array(
+	public $columns = array(
 		'primary_key' => array('name' => 'integer primary key autoincrement'),
 		'string' => array('name' => 'varchar', 'limit' => '255'),
 		'text' => array('name' => 'text'),
@@ -87,9 +83,8 @@ class Sqlite extends DboSource {
  * List of engine specific additional field parameters used on table creating
  *
  * @var array
- * @access public
  */
-	var $fieldParameters = array(
+	public $fieldParameters = array(
 		'collate' => array(
 			'value' => 'COLLATE',
 			'quote' => false,
@@ -105,16 +100,17 @@ class Sqlite extends DboSource {
 /**
  * Connects to the database using config['database'] as a filename.
  *
- * @param array $config Configuration array for connecting
- * @return mixed
- * @access public
+ * @return boolean
+ * @throws MissingConnectionException
  */
-	function connect() {
+	public function connect() {
 		$config = $this->config;
-		$flags = array(PDO::ATTR_PERSISTENT => $config['persistent']);
+		$flags = array(
+			PDO::ATTR_PERSISTENT => $config['persistent'],
+			PDO::ATTR_ERRMODE => PDO::ERRMODE_EXCEPTION
+		);
 		try {
 			$this->_connection = new PDO('sqlite:' . $config['database'], null, null, $flags);
-			$this->_connection->setAttribute(PDO::ATTR_ERRMODE, PDO::ERRMODE_EXCEPTION);
 			$this->connected = true;
 		} catch(PDOException $e) {
 			throw new MissingConnectionException(array('class' => $e->getMessage()));
@@ -127,17 +123,17 @@ class Sqlite extends DboSource {
  *
  * @return boolean
  */
-	function enabled() {
+	public function enabled() {
 		return in_array('sqlite', PDO::getAvailableDrivers());
 	}
 
 /**
  * Returns an array of tables in the database. If there are no tables, an error is raised and the application exits.
  *
+ * @param mixed $data
  * @return array Array of tablenames in the database
- * @access public
  */
-	function listSources($data = null) {
+	public function listSources($data = null) {
 		$cache = parent::listSources();
 		if ($cache != null) {
 			return $cache;
@@ -161,17 +157,17 @@ class Sqlite extends DboSource {
 /**
  * Returns an array of the fields in given table name.
  *
- * @param string $tableName Name of database table to inspect
+ * @param Model|string $model Either the model or table name you want described.
  * @return array Fields in table. Keys are name and type
- * @access public
  */
-	function describe($model) {
+	public function describe($model) {
 		$cache = parent::describe($model);
 		if ($cache != null) {
 			return $cache;
 		}
+		$table = $this->fullTableName($model);
 		$fields = array();
-		$result = $this->_execute('PRAGMA table_info(' . $model->tablePrefix . $model->table . ')');
+		$result = $this->_execute('PRAGMA table_info(' . $table . ')');
 
 		foreach ($result as $column) {
 			$column = (array) $column;
@@ -193,7 +189,7 @@ class Sqlite extends DboSource {
 		}
 
 		$result->closeCursor();
-		$this->__cacheDescription($model->tablePrefix . $model->table, $fields);
+		$this->_cacheDescription($table, $fields);
 		return $fields;
 	}
 
@@ -205,9 +201,8 @@ class Sqlite extends DboSource {
  * @param array $values
  * @param mixed $conditions
  * @return array
- * @access public
  */
-	function update($model, $fields = array(), $values = null, $conditions = null) {
+	public function update(Model $model, $fields = array(), $values = null, $conditions = null) {
 		if (empty($values) && !empty($fields)) {
 			foreach ($fields as $field => $value) {
 				if (strpos($field, $model->alias . '.') !== false) {
@@ -227,9 +222,8 @@ class Sqlite extends DboSource {
  *
  * @param mixed $table A string or model class representing the table to be truncated
  * @return boolean	SQL TRUNCATE TABLE statement, false if not applicable.
- * @access public
  */
-	function truncate($table) {
+	public function truncate($table) {
 		$this->_execute('DELETE FROM sqlite_sequence where name=' . $this->fullTableName($table));
 		return $this->execute('DELETE FROM ' . $this->fullTableName($table));
 	}
@@ -239,9 +233,8 @@ class Sqlite extends DboSource {
  *
  * @param string $real Real database-layer column type (i.e. "varchar(255)")
  * @return string Abstract column type (i.e. "string")
- * @access public
  */
-	function column($real) {
+	public function column($real) {
 		if (is_array($real)) {
 			$col = $real['name'];
 			if (isset($real['limit'])) {
@@ -257,7 +250,7 @@ class Sqlite extends DboSource {
 		if (in_array($col, array('text', 'integer', 'float', 'boolean', 'timestamp', 'date', 'datetime', 'time'))) {
 			return $col;
 		}
-		if (strpos($col, 'varchar') !== false) {
+		if (strpos($col, 'char') !== false) {
 			return 'string';
 		}
 		if (in_array($col, array('blob', 'clob'))) {
@@ -273,9 +266,9 @@ class Sqlite extends DboSource {
  * Generate ResultSet
  *
  * @param mixed $results
- * @access public
+ * @return void
  */
-	function resultSet($results) {
+	public function resultSet($results) {
 		$this->results = $results;
 		$this->map = array();
 		$num_fields = $results->columnCount();
@@ -289,7 +282,7 @@ class Sqlite extends DboSource {
 			$last = strripos($querystring, 'FROM');
 			if ($last !== false) {
 				$selectpart = substr($querystring, 7, $last - 8);
-				$selects = explode(',', $selectpart);
+				$selects = String::tokenize($selectpart, ',', '(', ')');
 			}
 		} elseif (strpos($querystring, 'PRAGMA table_info') === 0) {
 			$selects = array('cid', 'name', 'type', 'notnull', 'dflt_value', 'pk');
@@ -299,6 +292,10 @@ class Sqlite extends DboSource {
 			$selects = array('seqno', 'cid', 'name');
 		}
 		while ($j < $num_fields) {
+			if (!isset($selects[$j])) {
+				$j++;
+				continue;
+			}
 			if (preg_match('/\bAS\s+(.*)/i', $selects[$j], $matches)) {
 				 $columnName = trim($matches[1],'"');
 			} else {
@@ -332,8 +329,8 @@ class Sqlite extends DboSource {
  *
  * @return mixed array with results fetched and mapped to column names or false if there is no results left to fetch
  */
-	function fetchResult() {
-		if ($row = $this->_result->fetch()) {
+	public function fetchResult() {
+		if ($row = $this->_result->fetch(PDO::FETCH_NUM)) {
 			$resultRow = array();
 			foreach ($this->map as $col => $meta) {
 				list($table, $column, $type) = $meta;
@@ -356,9 +353,8 @@ class Sqlite extends DboSource {
  * @param integer $limit Limit of results returned
  * @param integer $offset Offset from which to start results
  * @return string SQL limit/offset statement
- * @access public
  */
-	function limit($limit, $offset = null) {
+	public function limit($limit, $offset = null) {
 		if ($limit) {
 			$rt = '';
 			if (!strpos(strtolower($limit), 'limit') || strpos(strtolower($limit), 'limit') === 0) {
@@ -379,9 +375,8 @@ class Sqlite extends DboSource {
  * @param array $column An array structured like the following: array('name'=>'value', 'type'=>'value'[, options]),
  *    where options can be 'default', 'length', or 'key'.
  * @return string
- * @access public
  */
-	function buildColumn($column) {
+	public function buildColumn($column) {
 		$name = $type = null;
 		$column = array_merge(array('null' => true), $column);
 		extract($column);
@@ -408,9 +403,9 @@ class Sqlite extends DboSource {
  * Sets the database encoding
  *
  * @param string $enc Database encoding
- * @access public
+ * @return boolean
  */
-	function setEncoding($enc) {
+	public function setEncoding($enc) {
 		if (!in_array($enc, array("UTF-8", "UTF-16", "UTF-16le", "UTF-16be"))) {
 			return false;
 		}
@@ -421,9 +416,8 @@ class Sqlite extends DboSource {
  * Gets the database encoding
  *
  * @return string The database encoding
- * @access public
  */
-	function getEncoding() {
+	public function getEncoding() {
 		return $this->fetchRow('PRAGMA encoding');
 	}
 
@@ -433,9 +427,8 @@ class Sqlite extends DboSource {
  * @param array $indexes
  * @param string $table
  * @return string
- * @access public
  */
-	function buildIndex($indexes, $table = null) {
+	public function buildIndex($indexes, $table = null) {
 		$join = array();
 
 		foreach ($indexes as $name => $value) {
@@ -466,9 +459,8 @@ class Sqlite extends DboSource {
  *
  * @param string $model Name of model to inspect
  * @return array Fields in table. Keys are column and unique
- * @access public
  */
-	function index($model) {
+	public function index($model) {
 		$index = array();
 		$table = $this->fullTableName($model);
 		if ($table) {
@@ -507,9 +499,8 @@ class Sqlite extends DboSource {
  * @param string $type
  * @param array $data
  * @return string
- * @access public
  */
-	function renderStatement($type, $data) {
+	public function renderStatement($type, $data) {
 		switch (strtolower($type)) {
 			case 'schema':
 				extract($data);
@@ -531,16 +522,15 @@ class Sqlite extends DboSource {
  * PDO deals in objects, not resources, so overload accordingly.
  *
  * @return boolean
- * @access public
  */
-	function hasResult() {
+	public function hasResult() {
 		return is_object($this->_result);
 	}
 
 /**
  * Generate a "drop table" statement for the given Schema object
  *
- * @param object $schema An instance of a subclass of CakeSchema
+ * @param CakeSchema $schema An instance of a subclass of CakeSchema
  * @param string $table Optional.  If specified only the table name given will be generated.
  *   Otherwise, all tables defined in the schema are generated.
  * @return string

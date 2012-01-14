@@ -5,14 +5,14 @@
  * PHP 5
  *
  * CakePHP(tm) : Rapid Development Framework (http://cakephp.org)
- * Copyright 2005-2010, Cake Software Foundation, Inc. (http://cakefoundation.org)
+ * Copyright 2005-2011, Cake Software Foundation, Inc. (http://cakefoundation.org)
  *
  * Licensed under The MIT License
  * Redistributions of files must retain the above copyright notice.
  *
- * @copyright     Copyright 2005-2010, Cake Software Foundation, Inc. (http://cakefoundation.org)
+ * @copyright     Copyright 2005-2011, Cake Software Foundation, Inc. (http://cakefoundation.org)
  * @link          http://cakephp.org CakePHP(tm) Project
- * @package       cake.libs
+ * @package       Cake.Test.Case.Model.Datasource.Database
  * @since         CakePHP(tm) v 1.2.0
  * @license       MIT License (http://www.opensource.org/licenses/mit-license.php)
  */
@@ -20,10 +20,12 @@ App::uses('Model', 'Model');
 App::uses('AppModel', 'Model');
 App::uses('Sqlite', 'Model/Datasource/Database');
 
+require_once dirname(dirname(dirname(__FILE__))) . DS . 'models.php';
+
 /**
  * DboSqliteTestDb class
  *
- * @package       cake.tests.cases.libs.model.datasources
+ * @package       Cake.Test.Case.Model.Datasource.Database
  */
 class DboSqliteTestDb extends Sqlite {
 
@@ -31,7 +33,6 @@ class DboSqliteTestDb extends Sqlite {
  * simulated property
  *
  * @var array
- * @access public
  */
 	public $simulated = array();
 
@@ -39,10 +40,9 @@ class DboSqliteTestDb extends Sqlite {
  * execute method
  *
  * @param mixed $sql
- * @access protected
  * @return void
  */
-	function _execute($sql, $params = array()) {
+	function _execute($sql, $params = array(), $prepareOptions = array()) {
 		$this->simulated[] = $sql;
 		return null;
 	}
@@ -50,10 +50,9 @@ class DboSqliteTestDb extends Sqlite {
 /**
  * getLastQuery method
  *
- * @access public
  * @return void
  */
-	function getLastQuery() {
+	public function getLastQuery() {
 		return $this->simulated[count($this->simulated) - 1];
 	}
 }
@@ -61,15 +60,14 @@ class DboSqliteTestDb extends Sqlite {
 /**
  * DboSqliteTest class
  *
- * @package       cake.tests.cases.libs.model.datasources.dbo
+ * @package       Cake.Test.Case.Model.Datasource.Database
  */
-class DboSqliteTest extends CakeTestCase {
+class SqliteTest extends CakeTestCase {
 
 /**
  * Do not automatically load fixtures for each test, they will be loaded manually using CakeTestCase::loadFixtures
  *
  * @var boolean
- * @access public
  */
 	public $autoFixtures = false;
 
@@ -77,15 +75,13 @@ class DboSqliteTest extends CakeTestCase {
  * Fixtures
  *
  * @var object
- * @access public
  */
-	public $fixtures = array('core.user');
+	public $fixtures = array('core.user', 'core.uuid');
 
 /**
  * Actual DB connection used in testing
  *
  * @var DboSource
- * @access public
  */
 	public $Dbo = null;
 
@@ -94,6 +90,7 @@ class DboSqliteTest extends CakeTestCase {
  *
  */
 	public function setUp() {
+		parent::setUp();
 		Configure::write('Cache.disable', true);
 		$this->Dbo = ConnectionManager::getDataSource('test');
 		if (!$this->Dbo instanceof Sqlite) {
@@ -106,6 +103,7 @@ class DboSqliteTest extends CakeTestCase {
  *
  */
 	public function tearDown() {
+		parent::tearDown();
 		Configure::write('Cache.disable', false);
 	}
 
@@ -127,10 +125,9 @@ class DboSqliteTest extends CakeTestCase {
 /**
  * test Index introspection.
  *
- * @access public
  * @return void
  */
-	function testIndex() {
+	public function testIndex() {
 		$name = $this->Dbo->fullTableName('with_a_key');
 		$this->Dbo->query('CREATE TABLE ' . $name . ' ("id" int(11) PRIMARY KEY, "bool" int(1), "small_char" varchar(50), "description" varchar(40) );');
 		$this->Dbo->query('CREATE INDEX pointless_bool ON ' . $name . '("bool")');
@@ -142,7 +139,7 @@ class DboSqliteTest extends CakeTestCase {
 
 		);
 		$result = $this->Dbo->index($name);
-		$this->assertEqual($expected, $result);
+		$this->assertEquals($expected, $result);
 		$this->Dbo->query('DROP TABLE ' . $name);
 
 		$this->Dbo->query('CREATE TABLE ' . $name . ' ("id" int(11) PRIMARY KEY, "bool" int(1), "small_char" varchar(50), "description" varchar(40) );');
@@ -152,7 +149,7 @@ class DboSqliteTest extends CakeTestCase {
 			'multi_col' => array('column' => array('small_char', 'bool'), 'unique' => 1),
 		);
 		$result = $this->Dbo->index($name);
-		$this->assertEqual($expected, $result);
+		$this->assertEquals($expected, $result);
 		$this->Dbo->query('DROP TABLE ' . $name);
 	}
 
@@ -173,13 +170,13 @@ class DboSqliteTest extends CakeTestCase {
 		$db->execute("CREATE TABLE test_list (id VARCHAR(255));");
 
 		$db->cacheSources = true;
-		$this->assertEqual($db->listSources(), array('test_list'));
+		$this->assertEquals($db->listSources(), array('test_list'));
 		$db->cacheSources = false;
 
 		$fileName = '_' . preg_replace('/[^A-Za-z0-9_\-+]/', '_', TMP . $dbName) . '_list';
 
 		$result = Cache::read($fileName, '_cake_model_');
-		$this->assertEqual($result, array('test_list'));
+		$this->assertEquals($result, array('test_list'));
 
 		Cache::delete($fileName, '_cake_model_');
 		Configure::write('Cache.disable', true);
@@ -190,7 +187,7 @@ class DboSqliteTest extends CakeTestCase {
  *
  * @return void
  */
-	function testBuildColumn() {
+	public function testBuildColumn() {
 		$data = array(
 			'name' => 'int_field',
 			'type' => 'integer',
@@ -198,7 +195,7 @@ class DboSqliteTest extends CakeTestCase {
 		);
 		$result = $this->Dbo->buildColumn($data);
 		$expected = '"int_field" integer NOT NULL';
-		$this->assertEqual($expected, $result);
+		$this->assertEquals($expected, $result);
 
 		$data = array(
 			'name' => 'name',
@@ -208,7 +205,7 @@ class DboSqliteTest extends CakeTestCase {
 		);
 		$result = $this->Dbo->buildColumn($data);
 		$expected = '"name" varchar(20) NOT NULL';
-		$this->assertEqual($expected, $result);
+		$this->assertEquals($expected, $result);
 
 		$data = array(
 			'name' => 'testName',
@@ -220,7 +217,7 @@ class DboSqliteTest extends CakeTestCase {
 		);
 		$result = $this->Dbo->buildColumn($data);
 		$expected = '"testName" varchar(20) DEFAULT NULL COLLATE NOCASE';
-		$this->assertEqual($expected, $result);
+		$this->assertEquals($expected, $result);
 
 		$data = array(
 			'name' => 'testName',
@@ -231,7 +228,7 @@ class DboSqliteTest extends CakeTestCase {
 		);
 		$result = $this->Dbo->buildColumn($data);
 		$expected = '"testName" varchar(20) DEFAULT \'test-value\' NOT NULL';
-		$this->assertEqual($expected, $result);
+		$this->assertEquals($expected, $result);
 
 		$data = array(
 			'name' => 'testName',
@@ -242,7 +239,7 @@ class DboSqliteTest extends CakeTestCase {
 		);
 		$result = $this->Dbo->buildColumn($data);
 		$expected = '"testName" integer(10) DEFAULT 10 NOT NULL';
-		$this->assertEqual($expected, $result);
+		$this->assertEquals($expected, $result);
 
 		$data = array(
 			'name' => 'testName',
@@ -254,7 +251,7 @@ class DboSqliteTest extends CakeTestCase {
 		);
 		$result = $this->Dbo->buildColumn($data);
 		$expected = '"testName" integer(10) DEFAULT 10 NOT NULL';
-		$this->assertEqual($expected, $result);
+		$this->assertEquals($expected, $result);
 	}
 
 /**
@@ -262,7 +259,7 @@ class DboSqliteTest extends CakeTestCase {
  *
  * @return void
  */
-	function testDescribe() {
+	public function testDescribe() {
 		$this->loadFixtures('User');
 		$Model = new Model(array('name' => 'User', 'ds' => 'test', 'table' => 'users'));
 		$result = $this->Dbo->describe($Model);
@@ -299,7 +296,10 @@ class DboSqliteTest extends CakeTestCase {
 				'length' => null,
 			)
 		);
-		$this->assertEqual($expected, $result);
+		$this->assertEquals($expected, $result);
+
+		$result = $this->Dbo->describe($Model->useTable);
+		$this->assertEquals($expected, $result);
 	}
 
 /**
@@ -307,7 +307,7 @@ class DboSqliteTest extends CakeTestCase {
  *
  * @return void
  */
-	function testDescribeWithUuidPrimaryKey() {
+	public function testDescribeWithUuidPrimaryKey() {
 		$tableName = 'uuid_tests';
 		$this->Dbo->query("CREATE TABLE {$tableName} (id VARCHAR(36) PRIMARY KEY, name VARCHAR, created DATETIME, modified DATETIME)");
 		$Model = new Model(array('name' => 'UuidTest', 'ds' => 'test', 'table' => 'uuid_tests'));
@@ -319,7 +319,60 @@ class DboSqliteTest extends CakeTestCase {
 			'default' => null,
 			'key' => 'primary',
 		);
-		$this->assertEqual($result['id'], $expected);
+		$this->assertEquals($result['id'], $expected);
+		$this->Dbo->query('DROP TABLE ' . $tableName);
+
+		$tableName = 'uuid_tests';
+		$this->Dbo->query("CREATE TABLE {$tableName} (id CHAR(36) PRIMARY KEY, name VARCHAR, created DATETIME, modified DATETIME)");
+		$Model = new Model(array('name' => 'UuidTest', 'ds' => 'test', 'table' => 'uuid_tests'));
+		$result = $this->Dbo->describe($Model);
+		$expected = array(
+			'type' => 'string',
+			'length' => 36,
+			'null' => false,
+			'default' => null,
+			'key' => 'primary',
+		);
+		$this->assertEquals($result['id'], $expected);
 		$this->Dbo->query('DROP TABLE ' . $tableName);
 	}
+
+/**
+ * Test virtualFields with functions.
+ *
+ * @return void
+ */
+	public function testVirtualFieldWithFunction() {
+		$this->loadFixtures('User');
+		$User = ClassRegistry::init('User');
+		$User->virtualFields = array('name' => 'SUBSTR(User.user, 5)');
+
+		$result = $User->find('first', array(
+			'conditions' => array('User.user' => 'garrett')
+		));
+		$this->assertEquals('ett', $result['User']['name']);
+	}
+
+/**
+ * Test that records can be inserted with uuid primary keys, and
+ * that the primary key is not blank
+ *
+ * @return void
+ */
+	public function testUuidPrimaryKeyInsertion() {
+		$this->loadFixtures('Uuid');
+		$Model = ClassRegistry::init('Uuid');
+
+		$data = array(
+			'title' => 'A uuid should work',
+			'count' => 10
+		);
+		$Model->create($data);
+		$this->assertTrue((bool)$Model->save());
+		$result = $Model->read();
+
+		$this->assertEquals($data['title'], $result['Uuid']['title']);
+		$this->assertTrue(Validation::uuid($result['Uuid']['id']), 'Not a uuid');
+	}
+
 }

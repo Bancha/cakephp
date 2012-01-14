@@ -5,12 +5,12 @@
  * PHP 5
  *
  * CakePHP(tm) : Rapid Development Framework (http://cakephp.org)
- * Copyright 2005-2010, Cake Software Foundation, Inc. (http://cakefoundation.org)
+ * Copyright 2005-2011, Cake Software Foundation, Inc. (http://cakefoundation.org)
  *
  * Licensed under The MIT License
  * Redistributions of files must retain the above copyright notice.
  *
- * @copyright     Copyright 2005-2010, Cake Software Foundation, Inc. (http://cakefoundation.org)
+ * @copyright     Copyright 2005-2011, Cake Software Foundation, Inc. (http://cakefoundation.org)
  * @link          http://cakephp.org CakePHP(tm) Project
  * @license       MIT License (http://www.opensource.org/licenses/mit-license.php)
  */
@@ -25,10 +25,24 @@ App::uses('String', 'Utility');
  *
  * Xml output is useful for integration with other tools like IDE's or other build tools.
  *
- * @package    cake.console.libs
- * @since      CakePHP(tm) v 2.0
+ * @package       Cake.Console
+ * @since  CakePHP(tm) v 2.0
  */
 class HelpFormatter {
+/**
+ * The maximum number of arguments shown when generating usage.
+ *
+ * @var integer
+ */
+	protected $_maxArgs = 6;
+
+/**
+ * The maximum number of options shown when generating usage.
+ *
+ * @var integer
+ */
+	protected $_maxOptions = 6;
+
 /**
  * Build the help formatter for a an OptionParser
  *
@@ -122,18 +136,29 @@ class HelpFormatter {
 		if (!empty($subcommands)) {
 			$usage[] = '[subcommand]';
 		}
+		$options = array();
 		foreach ($this->_parser->options() as $option) {
-			$usage[] = $option->usage();
+			$options[] = $option->usage();
 		}
+		if (count($options) > $this->_maxOptions){
+			$options = array('[options]');
+		}
+		$usage = array_merge($usage, $options);
+		$args = array();
 		foreach ($this->_parser->arguments() as $argument) {
-			$usage[] = $argument->usage();
+			$args[] = $argument->usage();
 		}
+		if (count($args) > $this->_maxArgs) {
+			$args = array('[arguments]');
+		}
+		$usage = array_merge($usage, $args);
 		return implode(' ', $usage);
 	}
 
 /**
  * Iterate over a collection and find the longest named thing.
  *
+ * @param array $collection
  * @return integer
  */
 	protected function _getMaxLength($collection) {
@@ -155,7 +180,7 @@ class HelpFormatter {
 		$xml = new SimpleXmlElement('<shell></shell>');
 		$xml->addChild('command', $parser->command());
 		$xml->addChild('description', $parser->description());
-		
+
 		$xml->addChild('epilog', $parser->epilog());
 		$subcommands = $xml->addChild('subcommands');
 		foreach ($parser->subcommands() as $command) {

@@ -7,14 +7,14 @@
  * PHP version 5
  *
  * CakePHP : Rapid Development Framework (http://cakephp.org)
- * Copyright 2006-2010, Cake Software Foundation, Inc.
+ * Copyright 2005-2011, Cake Software Foundation, Inc.
  *
  * Licensed under The MIT License
  * Redistributions of files must retain the above copyright notice.
  *
- * @copyright     Copyright 2006-2010, Cake Software Foundation, Inc.
+ * @copyright     Copyright 2005-2011, Cake Software Foundation, Inc.
  * @link          http://cakephp.org CakePHP Project
- * @package       cake.libs.
+ * @package       Cake.Test.Case.TestSuite
  * @since         CakePHP v 1.2.0.4487
  * @license       MIT License (http://www.opensource.org/licenses/mit-license.php)
  */
@@ -31,7 +31,7 @@ if (!class_exists('AppController', false)) {
 /**
  * CakeTestCaseTest
  *
- * @package       cake.tests.cases.libs
+ * @package       Cake.Test.Case.TestSuite
  */
 class CakeTestCaseTest extends CakeTestCase {
 
@@ -43,22 +43,20 @@ class CakeTestCaseTest extends CakeTestCase {
 /**
  * setUp
  *
- * @access public
  * @return void
  */
-	function setUp() {
-		$this->_debug = Configure::read('debug');
+	public function setUp() {
+		parent::setUp();
 		$this->Reporter = $this->getMock('CakeHtmlReporter');
 	}
 
 /**
  * tearDown
  *
- * @access public
  * @return void
  */
-	function tearDown() {
-		Configure::write('debug', $this->_debug);
+	public function tearDown() {
+		parent::tearDown();
 		unset($this->Result);
 		unset($this->Reporter);
 	}
@@ -66,10 +64,9 @@ class CakeTestCaseTest extends CakeTestCase {
 /**
  * testAssertGoodTags
  *
- * @access public
  * @return void
  */
-	function testAssertTagsQuotes() {
+	public function testAssertTagsQuotes() {
 		$test = new AssertTagsTestCase('testAssertTagsQuotes');
 		$result = $test->run();
 		$this->assertEquals(0, $result->errorCount());
@@ -99,15 +96,34 @@ class CakeTestCaseTest extends CakeTestCase {
 			'/a'
 		);
 		$this->assertTrue($test->assertTags($input, $pattern), 'Single quoted attributes %s');
+
+		$input = "<span><strong>Text</strong></span>";
+		$pattern = array(
+			'<span',
+			'<strong',
+			'Text',
+			'/strong',
+			'/span'
+		);
+		$this->assertTrue($test->assertTags($input, $pattern), 'Tags with no attributes');
+
+		$input = "<span class='active'><strong>Text</strong></span>";
+		$pattern = array(
+			'span' => array('class'),
+			'<strong',
+			'Text',
+			'/strong',
+			'/span'
+		);
+		$this->assertTrue($test->assertTags($input, $pattern), 'Test attribute presence');
 	}
 
 /**
  * testNumericValuesInExpectationForAssertTags
  *
- * @access public
  * @return void
  */
-	function testNumericValuesInExpectationForAssertTags() {
+	public function testNumericValuesInExpectationForAssertTags() {
 		$test = new AssertTagsTestCase('testNumericValuesInExpectationForAssertTags');
 		$result = $test->run();
 		$this->assertEquals(0, $result->errorCount());
@@ -118,10 +134,9 @@ class CakeTestCaseTest extends CakeTestCase {
 /**
  * testBadAssertTags
  *
- * @access public
  * @return void
  */
-	function testBadAssertTags() {
+	public function testBadAssertTags() {
 		$test = new AssertTagsTestCase('testBadAssertTags');
 		$result = $test->run();
 		$this->assertEquals(0, $result->errorCount());
@@ -138,10 +153,9 @@ class CakeTestCaseTest extends CakeTestCase {
 /**
  * testLoadFixtures
  *
- * @access public
  * @return void
  */
-	function testLoadFixtures() {
+	public function testLoadFixtures() {
 		$test = new FixturizedTestCase('testFixturePresent');
 		$manager = $this->getMock('CakeFixtureManager');
 		$manager->fixturize($test);
@@ -157,10 +171,9 @@ class CakeTestCaseTest extends CakeTestCase {
 /**
  * testLoadFixturesOnDemand
  *
- * @access public
  * @return void
  */
-	function testLoadFixturesOnDemand() {
+	public function testLoadFixturesOnDemand() {
 		$test = new FixturizedTestCase('testFixtureLoadOnDemand');
 		$test->autoFixtures = false;
 		$manager = $this->getMock('CakeFixtureManager');
@@ -174,10 +187,9 @@ class CakeTestCaseTest extends CakeTestCase {
 /**
  * testLoadFixturesOnDemand
  *
- * @access public
  * @return void
  */
-	function testUnoadFixturesAfterFailure() {
+	public function testUnoadFixturesAfterFailure() {
 		$test = new FixturizedTestCase('testFixtureLoadOnDemand');
 		$test->autoFixtures = false;
 		$manager = $this->getMock('CakeFixtureManager');
@@ -191,10 +203,9 @@ class CakeTestCaseTest extends CakeTestCase {
 /**
  * testThrowException
  *
- * @access public
  * @return void
  */
-	function testThrowException() {
+	public function testThrowException() {
 		$test = new FixturizedTestCase('testThrowException');
 		$test->autoFixtures = false;
 		$manager = $this->getMock('CakeFixtureManager');
@@ -210,7 +221,7 @@ class CakeTestCaseTest extends CakeTestCase {
  *
  * @return void
  */
-	function testSkipIf() {
+	public function testSkipIf() {
 		$test = new FixturizedTestCase('testSkipIfTrue');
 		$result = $test->run();
 		$this->assertEquals(1, $result->skippedCount());
@@ -218,5 +229,15 @@ class CakeTestCaseTest extends CakeTestCase {
 		$test = new FixturizedTestCase('testSkipIfFalse');
 		$result = $test->run();
 		$this->assertEquals(0, $result->skippedCount());
+	}
+
+/**
+ * Test that CakeTestCase::setUp() backs up values.
+ *
+ * @return void
+ */
+	public function testSetupBackUpValues() {
+		$this->assertArrayHasKey('debug', $this->_configure);
+		$this->assertArrayHasKey('Plugin', $this->_pathRestore);
 	}
 }

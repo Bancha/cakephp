@@ -7,37 +7,38 @@
  * PHP 5
  *
  * CakePHP(tm) : Rapid Development Framework (http://cakephp.org)
- * Copyright 2005-2010, Cake Software Foundation, Inc. (http://cakefoundation.org)
+ * Copyright 2005-2011, Cake Software Foundation, Inc. (http://cakefoundation.org)
  *
  * Licensed under The MIT License
  * Redistributions of files must retain the above copyright notice.
  *
- * @copyright     Copyright 2005-2010, Cake Software Foundation, Inc. (http://cakefoundation.org)
+ * @copyright     Copyright 2005-2011, Cake Software Foundation, Inc. (http://cakefoundation.org)
  * @link          http://cakephp.org CakePHP(tm) Project
- * @package       cake.console.shells
  * @since         CakePHP(tm) v 1.2.0.5012
  * @license       MIT License (http://www.opensource.org/licenses/mit-license.php)
  */
+
+App::uses('AppShell', 'Console/Command');
 App::uses('File', 'Utility');
 
 /**
  * API shell to show method signatures of CakePHP core classes.
  *
- * @package       cake.console.libs
+ * @package       Cake.Console.Command
  */
-class ApiShell extends Shell {
+class ApiShell extends AppShell {
 
 /**
  * Map between short name for paths and real paths.
  *
  * @var array
- * @access public
  */
 	public $paths = array();
 
 /**
  * Override initialize of the Shell
  *
+ * @return void
  */
 	public function initialize() {
 		$this->paths = array_merge($this->paths, array(
@@ -55,6 +56,7 @@ class ApiShell extends Shell {
 /**
  * Override main() to handle action
  *
+ * @return void
  */
 	public function main() {
 		if (empty($this->args)) {
@@ -88,7 +90,7 @@ class ApiShell extends Shell {
 			$this->error(__d('cake_console', '%s not found', $class));
 		}
 
-		$parsed = $this->__parseClass($path . $class .'.php', $class);
+		$parsed = $this->_parseClass($path . $class .'.php', $class);
 
 		if (!empty($parsed)) {
 			if (isset($this->params['method'])) {
@@ -152,6 +154,7 @@ class ApiShell extends Shell {
 /**
  * Show help for this shell.
  *
+ * @return void
  */
 	public function help() {
 		$head  = "Usage: cake api [<type>] <className> [-m <method>]\n";
@@ -189,12 +192,11 @@ class ApiShell extends Shell {
  * Parse a given class (located on given file) and get public methods and their
  * signatures.
  *
- * @param object $File File object
+ * @param string $path File path
  * @param string $class Class name
  * @return array Methods and signatures indexed by method name
- * @access private
  */
-	function __parseClass($path, $class) {
+	protected function _parseClass($path, $class) {
 		$parsed = array();
 
 		if (!class_exists($class)) {

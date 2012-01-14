@@ -7,14 +7,14 @@
  * PHP 5
  *
  * CakePHP(tm) : Rapid Development Framework (http://cakephp.org)
- * Copyright 2005-2010, Cake Software Foundation, Inc. (http://cakefoundation.org)
+ * Copyright 2005-2011, Cake Software Foundation, Inc. (http://cakefoundation.org)
  *
  * Licensed under The MIT License
  * Redistributions of files must retain the above copyright notice.
  *
- * @copyright     Copyright 2005-2010, Cake Software Foundation, Inc. (http://cakefoundation.org)
+ * @copyright     Copyright 2005-2011, Cake Software Foundation, Inc. (http://cakefoundation.org)
  * @link          http://cakephp.org CakePHP(tm) Project
- * @package       cake.libs.controller.components
+ * @package       Cake.Controller.Component
  * @since         CakePHP(tm) v 0.10.0.1076
  * @license       MIT License (http://www.opensource.org/licenses/mit-license.php)
  */
@@ -28,16 +28,15 @@ App::uses('Component', 'Controller');
  * You can define by changing `Configure::write('Acl.classname', 'DbAcl');` in your core.php. Concrete ACL
  * implementations should extend `AclBase` and implement the methods it defines.
  *
- * @package       cake.libs.controller.components
- * @link http://book.cakephp.org/view/1242/Access-Control-Lists
+ * @package       Cake.Controller.Component
+ * @link http://book.cakephp.org/2.0/en/core-libraries/components/access-control-lists.html
  */
 class AclComponent extends Component {
 
 /**
  * Instance of an ACL class
  *
- * @var object
- * @access protected
+ * @var AclInterface
  */
 	protected $_Instance = null;
 
@@ -58,6 +57,8 @@ class AclComponent extends Component {
 /**
  * Constructor. Will return an instance of the correct ACL class as defined in `Configure::read('Acl.classname')`
  *
+ * @param ComponentCollection $collection
+ * @param array $settings
  * @throws CakeException when Acl.classname could not be loaded.
  */
 	public function __construct(ComponentCollection $collection, $settings = array()) {
@@ -186,7 +187,7 @@ class AclComponent extends Component {
  * Access Control List interface.
  * Implementing classes are used by AclComponent to perform ACL checks in Cake.
  *
- * @package       cake.libs.controller.components
+ * @package       Cake.Controller.Component
  */
 interface AclInterface {
 
@@ -254,7 +255,7 @@ interface AclInterface {
  *			edit
  * }}}
  *
- * @package       cake.libs.model
+ * @package       Cake.Controller.Component
  */
 class DbAcl extends Object implements AclInterface {
 
@@ -262,7 +263,7 @@ class DbAcl extends Object implements AclInterface {
  * Constructor
  *
  */
-	function __construct() {
+	public function __construct() {
 		parent::__construct();
 		App::uses('AclNode', 'Model');
 		$this->Aro = ClassRegistry::init(array('class' => 'Aro', 'alias' => 'Aro'));
@@ -287,7 +288,7 @@ class DbAcl extends Object implements AclInterface {
  * @param string $aco ACO The controlled object identifier.
  * @param string $action Action (defaults to *)
  * @return boolean Success (true if ARO has access to action in ACO, false otherwise)
- * @link http://book.cakephp.org/view/1249/Checking-Permissions-The-ACL-Component
+ * @link http://book.cakephp.org/2.0/en/core-libraries/components/access-control-lists.html#checking-permissions-the-acl-component
  */
 	public function check($aro, $aco, $action = "*") {
 		if ($aro == null || $aco == null) {
@@ -375,7 +376,7 @@ class DbAcl extends Object implements AclInterface {
  * @param string $actions Action (defaults to *)
  * @param integer $value Value to indicate access type (1 to give access, -1 to deny, 0 to inherit)
  * @return boolean Success
- * @link http://book.cakephp.org/view/1248/Assigning-Permissions
+ * @link http://book.cakephp.org/2.0/en/core-libraries/components/access-control-lists.html#assigning-permissions
  */
 	public function allow($aro, $aco, $actions = "*", $value = 1) {
 		$perms = $this->getAclLink($aro, $aco);
@@ -424,9 +425,9 @@ class DbAcl extends Object implements AclInterface {
  *
  * @param string $aro ARO The requesting object identifier.
  * @param string $aco ACO The controlled object identifier.
- * @param string $actions Action (defaults to *)
+ * @param string $action Action (defaults to *)
  * @return boolean Success
- * @link http://book.cakephp.org/view/1248/Assigning-Permissions
+ * @link http://book.cakephp.org/2.0/en/core-libraries/components/access-control-lists.html#assigning-permissions
  */
 	public function deny($aro, $aco, $action = "*") {
 		return $this->allow($aro, $aco, $action, -1);
@@ -437,7 +438,7 @@ class DbAcl extends Object implements AclInterface {
  *
  * @param string $aro ARO The requesting object identifier.
  * @param string $aco ACO The controlled object identifier.
- * @param string $actions Action (defaults to *)
+ * @param string $action Action (defaults to *)
  * @return boolean Success
  */
 	public function inherit($aro, $aco, $action = "*") {
@@ -449,7 +450,7 @@ class DbAcl extends Object implements AclInterface {
  *
  * @param string $aro ARO The requesting object identifier.
  * @param string $aco ACO The controlled object identifier.
- * @param string $actions Action (defaults to *)
+ * @param string $action Action (defaults to *)
  * @return boolean Success
  * @see allow()
  */
@@ -462,7 +463,7 @@ class DbAcl extends Object implements AclInterface {
  *
  * @param string $aro ARO The requesting object identifier.
  * @param string $aco ACO The controlled object identifier.
- * @param string $actions Action (defaults to *)
+ * @param string $action Action (defaults to *)
  * @return boolean Success
  * @see deny()
  */
@@ -518,7 +519,7 @@ class DbAcl extends Object implements AclInterface {
  * IniAcl implements an access control system using an INI file.  An example
  * of the ini file used can be found in /config/acl.ini.php.
  *
- * @package       cake.libs.model.iniacl
+ * @package       Cake.Controller.Component
  */
 class IniAcl extends Object implements AclInterface {
 
@@ -526,7 +527,6 @@ class IniAcl extends Object implements AclInterface {
  * Array with configuration, parsed from ini file
  *
  * @var array
- * @access public
  */
 	public $config = null;
 

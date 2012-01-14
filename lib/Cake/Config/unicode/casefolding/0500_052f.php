@@ -11,14 +11,14 @@
  * PHP 5
  *
  * CakePHP(tm) : Rapid Development Framework (http://cakephp.org)
- * Copyright 2005-2010, Cake Software Foundation, Inc. (http://cakefoundation.org)
+ * Copyright 2005-2011, Cake Software Foundation, Inc. (http://cakefoundation.org)
  *
  * Licensed under The MIT License
  * Redistributions of files must retain the above copyright notice.
  *
- * @copyright     Copyright 2005-2010, Cake Software Foundation, Inc. (http://cakefoundation.org)
+ * @copyright     Copyright 2005-2011, Cake Software Foundation, Inc. (http://cakefoundation.org)
  * @link          http://cakephp.org CakePHP(tm) Project
- * @package       cake.config.unicode.casefolding
+ * @package       Cake.Config.unicode.casefolding
  * @since         CakePHP(tm) v 1.2.0.5691
  * @license       MIT License (http://www.opensource.org/licenses/mit-license.php)
  */
@@ -46,3 +46,5 @@ $config['0500_052f'][] = array('upper' => 1288, 'status' => 'C', 'lower' => arra
 $config['0500_052f'][] = array('upper' => 1290, 'status' => 'C', 'lower' => array(1291)); /* CYRILLIC CAPITAL LETTER KOMI NJE */
 $config['0500_052f'][] = array('upper' => 1292, 'status' => 'C', 'lower' => array(1293)); /* CYRILLIC CAPITAL LETTER KOMI SJE */
 $config['0500_052f'][] = array('upper' => 1294, 'status' => 'C', 'lower' => array(1295)); /* CYRILLIC CAPITAL LETTER KOMI TJE */
+$config['0500_052f'][] = array('upper' => 1296, 'status' => 'C', 'lower' => array(1297)); /* CYRILLIC CAPITAL LETTER ZE */
+$config['0500_052f'][] = array('upper' => 1298, 'status' => 'C', 'lower' => array(1299)); /* CYRILLIC CAPITAL LETTER El with hook */

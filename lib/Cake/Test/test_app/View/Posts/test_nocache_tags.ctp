@@ -4,12 +4,12 @@
  * PHP 5
  *
  * CakePHP(tm) : Rapid Development Framework (http://cakephp.org)
- * Copyright 2005-2010, Cake Software Foundation, Inc. (http://cakefoundation.org)
+ * Copyright 2005-2011, Cake Software Foundation, Inc. (http://cakefoundation.org)
  *
  * Licensed under The MIT License
  * Redistributions of files must retain the above copyright notice.
  *
- * @copyright     Copyright 2005-2010, Cake Software Foundation, Inc. (http://cakefoundation.org)
+ * @copyright     Copyright 2005-2011, Cake Software Foundation, Inc. (http://cakefoundation.org)
  * @link          http://cakephp.org CakePHP(tm) Project
  * @package       cake.libs.view.templates.pages
  * @since         CakePHP(tm) v 0.10.0.1076
@@ -97,8 +97,8 @@ if (!empty($filePresent)):
 <a href="https://trac.cakephp.org/wiki/notes/1.2.x.x"><?php echo __d('cake', 'Read the release notes and get the latest version'); ?> </a>
 <h2><?php echo __d('cake', 'Editing this Page'); ?></h2>
 <p>
-<?php echo __d('cake', 'To change the content of this page, create: /app/views/pages/home.ctp.'); ?><br />
-<?php echo __d('cake', 'To change its layout, create: /app/views/layouts/default.ctp.'); ?><br />
+<?php echo __d('cake', 'To change the content of this page, create: /app/View/Pages/home.ctp.'); ?><br />
+<?php echo __d('cake', 'To change its layout, create: /app/View/Layouts/default.ctp.'); ?><br />
 <a href="http://manual.cakephp.org/"><?php echo __d('cake', 'See the views section of the manual for more info.'); ?> </a><br />
 <?php echo __d('cake', 'You can also add some CSS styles for your pages at: app/webroot/css/.'); ?>
 </p>

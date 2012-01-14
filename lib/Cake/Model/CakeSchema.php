@@ -5,14 +5,14 @@
  * PHP 5
  *
  * CakePHP(tm) : Rapid Development Framework (http://cakephp.org)
- * Copyright 2005-2010, Cake Software Foundation, Inc. (http://cakefoundation.org)
+ * Copyright 2005-2011, Cake Software Foundation, Inc. (http://cakefoundation.org)
  *
  * Licensed under The MIT License
  * Redistributions of files must retain the above copyright notice.
  *
- * @copyright     Copyright 2005-2010, Cake Software Foundation, Inc. (http://cakefoundation.org)
+ * @copyright     Copyright 2005-2011, Cake Software Foundation, Inc. (http://cakefoundation.org)
  * @link          http://cakephp.org CakePHP(tm) Project
- * @package       cake.libs.model
+ * @package       Cake.Model
  * @since         CakePHP(tm) v 1.2.0.5550
  * @license       MIT License (http://www.opensource.org/licenses/mit-license.php)
  */
@@ -23,7 +23,7 @@ App::uses('ConnectionManager', 'Model');
 /**
  * Base Class for Schema management
  *
- * @package       cake.libs.model
+ * @package       Cake.Model
  */
 class CakeSchema extends Object {
 
@@ -31,7 +31,6 @@ class CakeSchema extends Object {
  * Name of the schema
  *
  * @var string
- * @access public
  */
 	public $name = null;
 
@@ -39,7 +38,6 @@ class CakeSchema extends Object {
  * Path to write location
  *
  * @var string
- * @access public
  */
 	public $path = null;
 
@@ -47,7 +45,6 @@ class CakeSchema extends Object {
  * File to write
  *
  * @var string
- * @access public
  */
 	public $file = 'schema.php';
 
@@ -55,7 +52,6 @@ class CakeSchema extends Object {
  * Connection used for read
  *
  * @var string
- * @access public
  */
 	public $connection = 'default';
 
@@ -70,7 +66,6 @@ class CakeSchema extends Object {
  * Set of tables
  *
  * @var array
- * @access public
  */
 	public $tables = array();
 
@@ -79,7 +74,7 @@ class CakeSchema extends Object {
  *
  * @param array $options optional load object properties
  */
-	function __construct($options = array()) {
+	public function __construct($options = array()) {
 		parent::__construct();
 
 		if (empty($options['name'])) {
@@ -135,7 +130,7 @@ class CakeSchema extends Object {
 /**
  * Before callback to be implemented in subclasses
  *
- * @param array $events schema object properties
+ * @param array $event schema object properties
  * @return boolean Should process continue
  */
 	public function before($event = array()) {
@@ -145,7 +140,8 @@ class CakeSchema extends Object {
 /**
  * After callback to be implemented in subclasses
  *
- * @param array $events schema object properties
+ * @param array $event schema object properties
+ * @return void
  */
 	public function after($event = array()) {
 	}
@@ -206,7 +202,7 @@ class CakeSchema extends Object {
 		$db = ConnectionManager::getDataSource($connection);
 
 		if (isset($this->plugin)) {
-			App::uses(Inflector::camelize($this->plugin) . 'AppModel', $this->plugin . '.Model');
+			App::uses($this->plugin . 'AppModel', $this->plugin . '.Model');
 		}
 
 		$tables = array();
@@ -229,6 +225,10 @@ class CakeSchema extends Object {
 			foreach ($models as $model) {
 				$importModel = $model;
 				$plugin = null;
+				if ($model == 'AppModel') {
+					continue;
+				}
+
 				if (isset($this->plugin)) {
 					if ($model == $this->plugin . 'AppModel') {
 						continue;
@@ -254,12 +254,12 @@ class CakeSchema extends Object {
 					if ($prefix && strpos($table, $prefix) !== 0) {
 						continue;
 					}
-					$table = str_replace($prefix, '', $table);
+					$table = $this->_noPrefixTable($prefix, $table);
 
 					if (in_array($fulltable, $currentTables)) {
 						$key = array_search($fulltable, $currentTables);
 						if (empty($tables[$table])) {
-							$tables[$table] = $this->__columns($Object);
+							$tables[$table] = $this->_columns($Object);
 							$tables[$table]['indexes'] = $db->index($Object);
 							$tables[$table]['tableParameters'] = $db->readTableParameters($fulltable);
 							unset($currentTables[$key]);
@@ -276,9 +276,9 @@ class CakeSchema extends Object {
 									}
 									if (in_array($withTable, $currentTables)) {
 										$key = array_search($withTable, $currentTables);
-										$noPrefixWith = str_replace($prefix, '', $withTable);
+										$noPrefixWith = $this->_noPrefixTable($prefix, $withTable);
 
-										$tables[$noPrefixWith] = $this->__columns($Object->$class);
+										$tables[$noPrefixWith] = $this->_columns($Object->$class);
 										$tables[$noPrefixWith]['indexes'] = $db->index($Object->$class);
 										$tables[$noPrefixWith]['tableParameters'] = $db->readTableParameters($withTable);
 										unset($currentTables[$key]);
@@ -297,7 +297,7 @@ class CakeSchema extends Object {
 					if (strpos($table, $prefix) !== 0) {
 						continue;
 					}
-					$table = str_replace($prefix, '', $table);
+					$table = $this->_noPrefixTable($prefix, $table);
 				}
 				$Object = new AppModel(array(
 					'name' => Inflector::classify($table), 'table' => $table, 'ds' => $connection
@@ -306,18 +306,21 @@ class CakeSchema extends Object {
 				$systemTables = array(
 					'aros', 'acos', 'aros_acos', Configure::read('Session.table'), 'i18n'
 				);
+
+				$fulltable = $db->fullTableName($Object, false);
+
 				if (in_array($table, $systemTables)) {
-					$tables[$Object->table] = $this->__columns($Object);
+					$tables[$Object->table] = $this->_columns($Object);
 					$tables[$Object->table]['indexes'] = $db->index($Object);
-					$tables[$Object->table]['tableParameters'] = $db->readTableParameters($table);
+					$tables[$Object->table]['tableParameters'] = $db->readTableParameters($fulltable);
 				} elseif ($models === false) {
-					$tables[$table] = $this->__columns($Object);
+					$tables[$table] = $this->_columns($Object);
 					$tables[$table]['indexes'] = $db->index($Object);
-					$tables[$table]['tableParameters'] = $db->readTableParameters($table);
+					$tables[$table]['tableParameters'] = $db->readTableParameters($fulltable);
 				} else {
-					$tables['missing'][$table] = $this->__columns($Object);
+					$tables['missing'][$table] = $this->_columns($Object);
 					$tables['missing'][$table]['indexes'] = $db->index($Object);
-					$tables['missing'][$table]['tableParameters'] = $db->readTableParameters($table);
+					$tables['missing'][$table]['tableParameters'] = $db->readTableParameters($fulltable);
 				}
 			}
 		}
@@ -348,21 +351,21 @@ class CakeSchema extends Object {
 			get_object_vars($this), $options
 		));
 
-		$out = "class {$name}Schema extends CakeSchema {\n";
+		$out = "class {$name}Schema extends CakeSchema {\n\n";
 
 		if ($path !== $this->path) {
-			$out .= "\tvar \$path = '{$path}';\n\n";
+			$out .= "\tpublic \$path = '{$path}';\n\n";
 		}
 
 		if ($file !== $this->file) {
-			$out .= "\tvar \$file = '{$file}';\n\n";
+			$out .= "\tpublic \$file = '{$file}';\n\n";
 		}
 
 		if ($connection !== 'default') {
-			$out .= "\tvar \$connection = '{$connection}';\n\n";
+			$out .= "\tpublic \$connection = '{$connection}';\n\n";
 		}
 
-		$out .= "\tfunction before(\$event = array()) {\n\t\treturn true;\n\t}\n\n\tfunction after(\$event = array()) {\n\t}\n\n";
+		$out .= "\tpublic function before(\$event = array()) {\n\t\treturn true;\n\t}\n\n\tpublic function after(\$event = array()) {\n\t}\n\n";
 
 		if (empty($tables)) {
 			$this->read();
@@ -376,7 +379,7 @@ class CakeSchema extends Object {
 		$out .= "}\n";
 
 		$file = new SplFileObject($path . DS . $file, 'w+');
-		$content = "<?php \n/* {$name} schema generated on: " . date('Y-m-d H:i:s') . " : ". time() . "*/\n{$out}?>";
+		$content = "<?php \n/* generated on: " . date('Y-m-d H:i:s') . " : ". time() . " */\n{$out}";
 		if ($file->fwrite($content)) {
 			return $content;
 		}
@@ -391,8 +394,8 @@ class CakeSchema extends Object {
  * @param array $fields Array of field information to generate the table with.
  * @return string Variable declaration for a schema class
  */
-	function generateTable($table, $fields) {
-		$out = "\tvar \${$table} = array(\n";
+	public function generateTable($table, $fields) {
+		$out = "\tpublic \${$table} = array(\n";
 		if (is_array($fields)) {
 			$cols = array();
 			foreach ($fields as $field => $value) {
@@ -403,16 +406,15 @@ class CakeSchema extends Object {
 					}
 					$col = "\t\t'{$field}' => array('type' => '" . $value['type'] . "', ";
 					unset($value['type']);
-					$col .= join(', ',  $this->__values($value));
+					$col .= join(', ',  $this->_values($value));
 				} elseif ($field == 'indexes') {
 					$col = "\t\t'indexes' => array(";
 					$props = array();
 					foreach ((array)$value as $key => $index) {
-						$props[] = "'{$key}' => array(" . join(', ',  $this->__values($index)) . ")";
+						$props[] = "'{$key}' => array(" . join(', ',  $this->_values($index)) . ")";
 					}
 					$col .= join(', ', $props);
 				} elseif ($field == 'tableParameters') {
-					//@todo add charset, collate and engine here
 					$col = "\t\t'tableParameters' => array(";
 					$props = array();
 					foreach ((array)$value as $key => $param) {
@@ -474,14 +476,14 @@ class CakeSchema extends Object {
 			}
 
 			foreach ($fields as $field => $value) {
-				if (isset($old[$table][$field])) {
+				if (!empty($old[$table][$field])) {
 					$diff = $this->_arrayDiffAssoc($value, $old[$table][$field]);
 					if (!empty($diff) && $field !== 'indexes' && $field !== 'tableParameters') {
 						$tables[$table]['change'][$field] = array_merge($old[$table][$field], $diff);
 					}
 				}
 
-				if (isset($add[$table][$field])) {
+				if (isset($tables[$table]['add'][$field]) && $field !== 'indexes' && $field !== 'tableParameters') {
 					$wrapper = array_keys($fields);
 					if ($column = array_search($field, $wrapper)) {
 						if (isset($wrapper[$column - 1])) {
@@ -527,9 +529,8 @@ class CakeSchema extends Object {
  * @param array $array2 Corresponding array checked for equality
  * @return array Difference as array with array(keys => values) from input array
  *     where match was not found.
- * @access protected
  */
-	function _arrayDiffAssoc($array1, $array2) {
+	protected function _arrayDiffAssoc($array1, $array2) {
 		$difference = array();
 		foreach ($array1 as $key => $value) {
 			if (!array_key_exists($key, $array2)) {
@@ -545,9 +546,10 @@ class CakeSchema extends Object {
 				$difference[$key] = $value;
 				continue;
 			}
-			$compare = strval($value);
-			$correspondingValue = strval($correspondingValue);
-			if ($compare === $correspondingValue) {
+			if (is_array($value) && is_array($correspondingValue)) {
+				continue;
+			}
+			if ($value === $correspondingValue) {
 				continue;
 			}
 			$difference[$key] = $value;
@@ -561,7 +563,7 @@ class CakeSchema extends Object {
  * @param array $values options keys(type, null, default, key, length, extra)
  * @return array Formatted values
  */
-	public function __values($values) {
+	protected function _values($values) {
 		$vals = array();
 		if (is_array($values)) {
 			foreach ($values as $key => $val) {
@@ -582,7 +584,7 @@ class CakeSchema extends Object {
  * @param array $Obj model object
  * @return array Formatted columns
  */
-	public function __columns(&$Obj) {
+	protected function _columns(&$Obj) {
 		$db = $Obj->getDataSource();
 		$fields = $Obj->schema(true);
 
@@ -592,7 +594,7 @@ class CakeSchema extends Object {
 				$value['key'] = 'primary';
 			}
 			if (!isset($db->columns[$value['type']])) {
-				trigger_error(__d('cake_dev', 'Schema generation error: invalid column type %s does not exist in DBO', $value['type']), E_USER_NOTICE);
+				trigger_error(__d('cake_dev', 'Schema generation error: invalid column type %s for %s.%s does not exist in DBO', $value['type'], $Obj->name, $name), E_USER_NOTICE);
 				continue;
 			} else {
 				$defaultCol = $db->columns[$value['type']];
@@ -626,7 +628,7 @@ class CakeSchema extends Object {
  * @param array $old Old indexes
  * @return mixed False on failure, or an array of parameters to add & drop.
  */
-	function _compareTableParameters($new, $old) {
+	protected function _compareTableParameters($new, $old) {
 		if (!is_array($new) || !is_array($old)) {
 			return false;
 		}
@@ -641,7 +643,7 @@ class CakeSchema extends Object {
  * @param array $old Old indexes
  * @return mixed false on failure or array of indexes to add and drop
  */
-	function _compareIndexes($new, $old) {
+	protected function _compareIndexes($new, $old) {
 		if (!is_array($new) || !is_array($old)) {
 			return false;
 		}
@@ -683,5 +685,16 @@ class CakeSchema extends Object {
 			}
 		}
 		return array_filter(compact('add', 'drop'));
+	}
+
+/**
+ * Trim the table prefix from the full table name, and return the prefix-less table
+ *
+ * @param string $prefix Table prefix
+ * @param string $table Full table name
+ * @return string Prefix-less table name
+ */
+	protected function _noPrefixTable($prefix, $table) {
+		return preg_replace('/^' . preg_quote($prefix) . '/', '', $table);
 	}
 }

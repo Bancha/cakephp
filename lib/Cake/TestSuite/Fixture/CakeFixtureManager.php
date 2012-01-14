@@ -5,19 +5,17 @@
  * PHP 5
  *
  * CakePHP(tm) : Rapid Development Framework (http://cakephp.org)
- * Copyright 2005-2010, Cake Software Foundation, Inc. (http://cakefoundation.org)
+ * Copyright 2005-2011, Cake Software Foundation, Inc. (http://cakefoundation.org)
  *
  * Licensed under The MIT License
  * Redistributions of files must retain the above copyright notice.
  *
- * @copyright     Copyright 2005-2010, Cake Software Foundation, Inc. (http://cakefoundation.org)
+ * @copyright     Copyright 2005-2011, Cake Software Foundation, Inc. (http://cakefoundation.org)
  * @link          http://cakephp.org CakePHP(tm) Project
- * @package       cake.tests.libs
+ * @package       Cake.TestSuite.Fixture
  * @since         CakePHP(tm) v 2.0
  * @license       MIT License (http://www.opensource.org/licenses/mit-license.php)
  */
-PHP_CodeCoverage_Filter::getInstance()->addFileToBlacklist(__FILE__, 'DEFAULT');
-
 App::uses('ConnectionManager', 'Model');
 App::uses('ClassRegistry', 'Utility');
 
@@ -84,6 +82,7 @@ class CakeFixtureManager {
 			return;
 		}
 		$db = ConnectionManager::getDataSource('test');
+		$db->cacheSources = false;
 		$this->_db = $db;
 		ClassRegistry::config(array('ds' => 'test'));
 		$this->_initialized = true;
@@ -141,7 +140,7 @@ class CakeFixtureManager {
 	}
 
 /**
- * Runs the drop and create commands on the fixtures if necessary
+ * Runs the drop and create commands on the fixtures if necessary.
  *
  * @param CakeTestFixture $fixture the fixture object to create
  * @param DataSource $db the datasource instance to use
@@ -156,10 +155,7 @@ class CakeFixtureManager {
 			return;
 		}
 
-		$cacheSources = $db->cacheSources;
-		$db->cacheSources = false;
 		$sources = $db->listSources();
-		$db->cacheSources = $cacheSources;
 		$table = $db->config['prefix'] . $fixture->table;
 
 		if ($drop && in_array($table, $sources)) {
@@ -206,7 +202,7 @@ class CakeFixtureManager {
  */
 	public function unload(CakeTestCase $test) {
 		$fixtures = !empty($test->fixtures) ? $test->fixtures : array();
-		foreach ($fixtures as $f) {
+		foreach (array_reverse($fixtures) as $f) {
 			if (isset($this->_loaded[$f])) {
 				$fixture = $this->_loaded[$f];
 				if (!empty($fixture->created)) {

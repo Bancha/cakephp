@@ -5,14 +5,14 @@
  * PHP 5
  *
  * CakePHP(tm) : Rapid Development Framework (http://cakephp.org)
- * Copyright 2005-2010, Cake Software Foundation, Inc. (http://cakefoundation.org)
+ * Copyright 2005-2011, Cake Software Foundation, Inc. (http://cakefoundation.org)
  *
  * Licensed under The MIT License
  * Redistributions of files must retain the above copyright notice.
  *
- * @copyright     Copyright 2005-2010, Cake Software Foundation, Inc. (http://cakefoundation.org)
+ * @copyright     Copyright 2005-2011, Cake Software Foundation, Inc. (http://cakefoundation.org)
  * @link          http://cakephp.org CakePHP(tm) Project
- * @package       cake.libs
+ * @package       Cake.Network.Http
  * @since         CakePHP(tm) v 1.2.0
  * @license       MIT License (http://www.opensource.org/licenses/mit-license.php)
  */
@@ -25,7 +25,7 @@ App::uses('Router', 'Routing');
  * Core base class for HTTP network communication. HttpSocket can be used as an
  * Object Oriented replacement for cURL in many places.
  *
- * @package       cake.libs
+ * @package       Cake.Network.Http
  */
 class HttpSocket extends CakeSocket {
 
@@ -203,7 +203,7 @@ class HttpSocket extends CakeSocket {
  *
  * @param mixed $resource Resource or false to disable the resource use
  * @return void
- * @throw SocketException
+ * @throws SocketException
  */
 	public function setContentResource($resource) {
 		if ($resource === false) {
@@ -222,6 +222,7 @@ class HttpSocket extends CakeSocket {
  *
  * @param mixed $request Either an URI string, or an array defining host/uri
  * @return mixed false on error, HttpResponse on success
+ * @throws SocketException
  */
 	public function request($request = array()) {
 		$this->reset(false);

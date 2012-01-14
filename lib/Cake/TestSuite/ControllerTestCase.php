@@ -5,19 +5,17 @@
  * PHP 5
  *
  * CakePHP(tm) Tests <http://book.cakephp.org/view/1196/Testing>
- * Copyright 2005-2010, Cake Software Foundation, Inc. (http://cakefoundation.org)
+ * Copyright 2005-2011, Cake Software Foundation, Inc. (http://cakefoundation.org)
  *
  * Licensed under The MIT License
  * Redistributions of files must retain the above copyright notice
  *
- * @copyright     Copyright 2005-2010, Cake Software Foundation, Inc. (http://cakefoundation.org)
+ * @copyright     Copyright 2005-2011, Cake Software Foundation, Inc. (http://cakefoundation.org)
  * @link          http://book.cakephp.org/view/1196/Testing CakePHP(tm) Tests
- * @package       cake.tests.libs
+ * @package       Cake.TestSuite
  * @since         CakePHP(tm) v 2.0
  * @license       MIT License (http://www.opensource.org/licenses/mit-license.php)
  */
-
-PHP_CodeCoverage_Filter::getInstance()->addFileToBlacklist(__FILE__, 'DEFAULT');
 
 App::uses('Dispatcher', 'Routing');
 App::uses('CakeTestCase', 'TestSuite');
@@ -29,7 +27,7 @@ App::uses('Helper', 'View');
 /**
  * ControllerTestDispatcher class
  *
- * @package       cake.tests.lib
+ * @package       Cake.TestSuite
  */
 class ControllerTestDispatcher extends Dispatcher {
 
@@ -52,19 +50,28 @@ class ControllerTestDispatcher extends Dispatcher {
  *
  * @return Controller
  */
-	function _getController($request) {
+	function _getController($request, $response) {
 		if ($this->testController === null) {
-			$this->testController = parent::_getController($request);
+			$this->testController = parent::_getController($request, $response);
 		}
 		$this->testController->helpers = array_merge(array('InterceptContent'), $this->testController->helpers);
 		$this->testController->setRequest($request);
 		$this->testController->response = $this->response;
+		foreach ($this->testController->Components->attached() as $component) {
+			$object = $this->testController->Components->{$component};
+			if (isset($object->response)) {
+				$object->response = $response;
+			}
+		}
+		if (isset($object->request)) {
+			$object->request = $request;
+		}
 		return $this->testController;
 	}
 
 /**
  * Loads routes and resets if the test case dictates it should
- * 
+ *
  * @return void
  */
 	protected function _loadRoutes() {
@@ -78,7 +85,7 @@ class ControllerTestDispatcher extends Dispatcher {
 /**
  * InterceptContentHelper class
  *
- * @package       cake.tests.lib
+ * @package       Cake.TestSuite
  */
 class InterceptContentHelper extends Helper {
 
@@ -87,7 +94,7 @@ class InterceptContentHelper extends Helper {
  *
  * @param string $viewFile The view file
  */
-	function afterRender($viewFile) {
+	public function afterRender($viewFile) {
 		$this->_View->_viewNoLayout = $this->_View->output;
 		$this->_View->Helpers->unload('InterceptContent');
 	}
@@ -96,9 +103,9 @@ class InterceptContentHelper extends Helper {
 /**
  * ControllerTestCase class
  *
- * @package       cake.tests.lib
+ * @package       Cake.TestSuite
  */
-class ControllerTestCase extends CakeTestCase {
+abstract class ControllerTestCase extends CakeTestCase {
 
 /**
  * The controller to test in testAction
@@ -112,7 +119,7 @@ class ControllerTestCase extends CakeTestCase {
  *
  * @var boolean
  */
-	public $autoMock = false;
+	public $autoMock = true;
 
 /**
  * Use custom routes during tests
@@ -157,6 +164,15 @@ class ControllerTestCase extends CakeTestCase {
 	public $headers = null;
 
 /**
+ * Flag for checking if the controller instance is dirty.
+ * Once a test has been run on a controller it should be rebuilt
+ * to clean up properties.
+ *
+ * @var boolean
+ */
+	private $__dirtyController = false;
+
+/**
  * Used to enable calling ControllerTestCase::testAction() without the testing
  * framework thinking that it's a test case
  *
@@ -171,17 +187,26 @@ class ControllerTestCase extends CakeTestCase {
 	}
 
 /**
- * Tests a controller action.
+ * Lets you do functional tests of a controller action.
  *
  * ### Options:
  *
- * - `data` POST or GET data to pass
- * - `method` POST or GET
+ * - `data` Will be used as the request data.  If the `method` is GET,
+ *   data will be used a GET params.  If the `method` is POST, it will be used
+ *   as POST data. By setting `$options['data']` to a string, you can simulate XML or JSON
+ *   payloads to your controllers allowing you to test REST webservices.
+ * - `method` POST or GET. Defaults to POST.
+ * - `return` Specify the return type you want.  Choose from:
+ *     - `vars` Get the set view variables.
+ *     - `view` Get the rendered view, without a layout.
+ *     - `contents` Get the rendered view including the layout.
+ *     - `result` Get the return value of the controller action.  Useful
+ *       for testing requestAction methods.
  *
  * @param string $url The url to test
  * @param array $options See options
  */
-	private function _testAction($url = '', $options = array()) {
+	protected function _testAction($url = '', $options = array()) {
 		$this->vars = $this->result = $this->view = $this->contents = $this->headers = null;
 
 		$options = array_merge(array(
@@ -190,17 +215,27 @@ class ControllerTestCase extends CakeTestCase {
 			'return' => 'result'
 		), $options);
 
-		if (strtoupper($options['method']) == 'GET') {
-			$_GET = $options['data'];
-			$_POST = array();
-		} else {
-			$_POST = array('data' => $options['data']);
-			$_GET = array();
+		$_SERVER['REQUEST_METHOD'] = strtoupper($options['method']);
+		if (is_array($options['data'])) {
+			if (strtoupper($options['method']) == 'GET') {
+				$_GET = $options['data'];
+				$_POST = array();
+			} else {
+				$_POST = $options['data'];
+				$_GET = array();
+			}
 		}
-		$request = new CakeRequest($url);
+		$request = $this->getMock('CakeRequest', array('_readInput'), array($url));
+
+		if (is_string($options['data'])) {
+			$request->expects($this->any())
+				->method('_readInput')
+				->will($this->returnValue($options['data']));
+		}
+
 		$Dispatch = new ControllerTestDispatcher();
 		foreach (Router::$routes as $route) {
-			if (is_a($route, 'RedirectRoute')) {
+			if ($route instanceof RedirectRoute) {
 				$route->response = $this->getMock('CakeResponse', array('send'));
 			}
 		}
@@ -210,11 +245,13 @@ class ControllerTestCase extends CakeTestCase {
 			$this->headers = Router::currentRoute()->response->header();
 			return;
 		}
-		if ($this->controller !== null && Inflector::camelize($request->params['controller']) !== $this->controller->name) {
+		if ($this->__dirtyController) {
 			$this->controller = null;
 		}
+
+		$plugin = empty($request->params['plugin']) ? '' : Inflector::camelize($request->params['plugin']) . '.';
 		if ($this->controller === null && $this->autoMock) {
-			$this->generate(Inflector::camelize($request->params['controller']));
+			$this->generate(Inflector::camelize($plugin . $request->params['controller']));
 		}
 		$params = array();
 		if ($options['return'] == 'result') {
@@ -224,13 +261,16 @@ class ControllerTestCase extends CakeTestCase {
 		}
 		$Dispatch->testController = $this->controller;
 		$Dispatch->response = $this->getMock('CakeResponse', array('send'));
-		$this->result = $Dispatch->dispatch($request, $params);
+		$this->result = $Dispatch->dispatch($request, $Dispatch->response, $params);
 		$this->controller = $Dispatch->testController;
 		if ($options['return'] != 'result') {
-			$this->vars = $this->controller->View->viewVars;
-			$this->view = $this->controller->View->_viewNoLayout;
+			if (isset($this->controller->View)) {
+				$this->vars = $this->controller->View->viewVars;
+				$this->view = $this->controller->View->_viewNoLayout;
+			}
 			$this->contents = $this->controller->response->body();
 		}
+		$this->__dirtyController = true;
 		$this->headers = $Dispatch->response->header();
 		return $this->{$options['return']};
 	}
@@ -239,7 +279,7 @@ class ControllerTestCase extends CakeTestCase {
  * Generates a mocked controller and mocks any classes passed to `$mocks`. By
  * default, `_stop()` is stubbed as is sending the response headers, so to not
  * interfere with testing.
- * 
+ *
  * ### Mocks:
  *
  * - `methods` Methods to mock on the controller. `_stop()` is mocked by default
@@ -262,20 +302,25 @@ class ControllerTestCase extends CakeTestCase {
 		}
 		App::uses($controller . 'Controller', $plugin . 'Controller');
 		if (!class_exists($controller.'Controller')) {
-			throw new MissingControllerException(array('controller' => $controller.'Controller'));
+			throw new MissingControllerException(array(
+				'class' => $controller . 'Controller',
+				'plugin' => substr($plugin, 0, -1)
+			));
 		}
 		ClassRegistry::flush();
-		
+
 		$mocks = array_merge_recursive(array(
 			'methods' => array('_stop'),
-			'models' => array(), 
+			'models' => array(),
 			'components' => array()
 		), (array)$mocks);
 
 		list($plugin, $name) = pluginSplit($controller);
 		$_controller = $this->getMock($name.'Controller', $mocks['methods'], array(), '', false);
 		$_controller->name = $name;
-		$_controller->__construct();
+		$request = $this->getMock('CakeRequest');
+		$response = $this->getMock('CakeResponse', array('_sendHeader'));
+		$_controller->__construct($request, $response);
 
 		$config = ClassRegistry::config('Model');
 		foreach ($mocks['models'] as $model => $methods) {
@@ -303,18 +348,19 @@ class ControllerTestCase extends CakeTestCase {
 				$methods = array();
 			}
 			list($plugin, $name) = pluginSplit($component, true);
-			App::uses($name . 'Component', $plugin . 'Controller/Component');
-			if (!class_exists($name . 'Component')) {
-				throw new MissingComponentFileException(array(
-					'file' => $name . 'Component.php',
-					'class' => $name.'Component'
+			$componentClass = $name . 'Component';
+			App::uses($componentClass, $plugin . 'Controller/Component');
+			if (!class_exists($componentClass)) {
+				throw new MissingComponentException(array(
+					'class' => $componentClass
 				));
-			}			
-			$_component = $this->getMock($name.'Component', $methods, array(), '', false);
+			}
+			$_component = $this->getMock($componentClass, $methods, array(), '', false);
 			$_controller->Components->set($name, $_component);
 		}
 
 		$_controller->constructClasses();
+		$this->__dirtyController = false;
 
 		$this->controller = $_controller;
 		return $this->controller;

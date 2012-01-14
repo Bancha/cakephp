@@ -5,14 +5,14 @@
  * PHP 5
  *
  * CakePHP(tm) Tests <http://book.cakephp.org/view/1196/Testing>
- * Copyright 2005-2010, Cake Software Foundation, Inc. (http://cakefoundation.org)
+ * Copyright 2005-2011, Cake Software Foundation, Inc. (http://cakefoundation.org)
  *
  * Licensed under The MIT License
  * Redistributions of files must retain the above copyright notice
  *
- * @copyright     Copyright 2005-2010, Cake Software Foundation, Inc. (http://cakefoundation.org)
+ * @copyright     Copyright 2005-2011, Cake Software Foundation, Inc. (http://cakefoundation.org)
  * @link          http://book.cakephp.org/view/1196/Testing CakePHP(tm) Tests
- * @package       cake.tests.cases.libs.view.helpers
+ * @package       Cake.Test.Case.View.Helper
  * @since         CakePHP(tm) v 1.2.0.4206
  * @license       MIT License (http://www.opensource.org/licenses/mit-license.php)
  */
@@ -25,7 +25,7 @@ App::uses('CacheHelper', 'View/Helper');
 /**
  * CacheTestController class
  *
- * @package       cake.tests.cases.libs.view.helpers
+ * @package       Cake.Test.Case.View.Helper
  */
 class CacheTestController extends Controller {
 
@@ -33,17 +33,15 @@ class CacheTestController extends Controller {
  * helpers property
  *
  * @var array
- * @access public
  */
 	public $helpers = array('Html', 'Cache');
 
 /**
  * cache_parsing method
  *
- * @access public
  * @return void
  */
-	function cache_parsing() {
+	public function cache_parsing() {
 		$this->viewPath = 'Posts';
 		$this->layout = 'cache_layout';
 		$this->set('variable', 'variableValue');
@@ -56,7 +54,7 @@ class CacheTestController extends Controller {
 /**
  * CacheHelperTest class
  *
- * @package       cake.tests.cases.libs.view.helpers
+ * @package       Cake.Test.Case.View.Helper
  */
 class CacheHelperTest extends CakeTestCase {
 
@@ -65,16 +63,17 @@ class CacheHelperTest extends CakeTestCase {
  *
  * @return void
  */
-	function skip() {
-		$this->skipUnless(is_writable(TMP . 'cache' . DS . 'views' . DS), 'TMP/views is not writable %s');
+	public function skip() {
+		if (!is_writable(TMP . 'cache' . DS . 'views' . DS)) {
+			$this->markTestSkipped('TMP/views is not writable %s');
+		}
 	}
 /**
  * setUp method
  *
- * @access public
  * @return void
  */
-	function setUp() {
+	public function setUp() {
 		parent::setUp();
 		$_GET = array();
 		$request = new CakeRequest();
@@ -91,10 +90,9 @@ class CacheHelperTest extends CakeTestCase {
 /**
  * tearDown method
  *
- * @access public
  * @return void
  */
-	function tearDown() {
+	public function tearDown() {
 		clearCache();
 		unset($this->Cache);
 		parent::tearDown();
@@ -103,10 +101,9 @@ class CacheHelperTest extends CakeTestCase {
 /**
  * test cache parsing with no cake:nocache tags in view file.
  *
- * @access public
  * @return void
  */
-	function testLayoutCacheParsingNoTagsInView() {
+	public function testLayoutCacheParsingNoTagsInView() {
 		$this->Controller->cache_parsing();
 		$this->Controller->request->addParams(array(
 			'controller' => 'cache_test',
@@ -121,16 +118,16 @@ class CacheHelperTest extends CakeTestCase {
 
 		$View = new View($this->Controller);
 		$result = $View->render('index');
-		$this->assertNoPattern('/cake:nocache/', $result);
-		$this->assertNoPattern('/php echo/', $result);
+		$this->assertNotRegExp('/cake:nocache/', $result);
+		$this->assertNotRegExp('/php echo/', $result);
 
 		$filename = CACHE . 'views' . DS . 'cachetest_cache_parsing.php';
 		$this->assertTrue(file_exists($filename));
 
 		$contents = file_get_contents($filename);
-		$this->assertPattern('/php echo \$variable/', $contents);
-		$this->assertPattern('/php echo microtime()/', $contents);
-		$this->assertPattern('/clark kent/', $result);
+		$this->assertRegExp('/php echo \$variable/', $contents);
+		$this->assertRegExp('/php echo microtime()/', $contents);
+		$this->assertRegExp('/clark kent/', $result);
 
 		@unlink($filename);
 	}
@@ -138,10 +135,9 @@ class CacheHelperTest extends CakeTestCase {
 /**
  * test cache parsing with non-latin characters in current route
  *
- * @access public
  * @return void
  */
-	function testCacheNonLatinCharactersInRoute() {
+	public function testCacheNonLatinCharactersInRoute() {
 		$this->Controller->cache_parsing();
 		$this->Controller->request->addParams(array(
 			'controller' => 'cache_test',
@@ -165,10 +161,9 @@ class CacheHelperTest extends CakeTestCase {
 /**
  * Test cache parsing with cake:nocache tags in view file.
  *
- * @access public
  * @return void
  */
-	function testLayoutCacheParsingWithTagsInView() {
+	public function testLayoutCacheParsingWithTagsInView() {
 		$this->Controller->cache_parsing();
 		$this->Controller->request->addParams(array(
 			'controller' => 'cache_test',
@@ -183,17 +178,17 @@ class CacheHelperTest extends CakeTestCase {
 
 		$View = new View($this->Controller);
 		$result = $View->render('test_nocache_tags');
-		$this->assertNoPattern('/cake:nocache/', $result);
-		$this->assertNoPattern('/php echo/', $result);
+		$this->assertNotRegExp('/cake:nocache/', $result);
+		$this->assertNotRegExp('/php echo/', $result);
 
 		$filename = CACHE . 'views' . DS . 'cachetest_cache_parsing.php';
 		$this->assertTrue(file_exists($filename));
 
 		$contents = file_get_contents($filename);
-		$this->assertPattern('/if \(is_writable\(TMP\)\)\:/', $contents);
-		$this->assertPattern('/php echo \$variable/', $contents);
-		$this->assertPattern('/php echo microtime()/', $contents);
-		$this->assertNoPattern('/cake:nocache/', $contents);
+		$this->assertRegExp('/if \(is_writable\(TMP\)\)\:/', $contents);
+		$this->assertRegExp('/php echo \$variable/', $contents);
+		$this->assertRegExp('/php echo microtime()/', $contents);
+		$this->assertNotRegExp('/cake:nocache/', $contents);
 
 		@unlink($filename);
 	}
@@ -203,7 +198,7 @@ class CacheHelperTest extends CakeTestCase {
  *
  * @return void
  */
-	function testMultipleNoCacheTagsInViewfile() {
+	public function testMultipleNoCacheTagsInViewfile() {
 		$this->Controller->cache_parsing();
 		$this->Controller->request->addParams(array(
 			'controller' => 'cache_test',
@@ -219,14 +214,14 @@ class CacheHelperTest extends CakeTestCase {
 		$View = new View($this->Controller);
 		$result = $View->render('multiple_nocache');
 
-		$this->assertNoPattern('/cake:nocache/', $result);
-		$this->assertNoPattern('/php echo/', $result);
+		$this->assertNotRegExp('/cake:nocache/', $result);
+		$this->assertNotRegExp('/php echo/', $result);
 
 		$filename = CACHE . 'views' . DS . 'cachetest_cache_parsing.php';
 		$this->assertTrue(file_exists($filename));
 
 		$contents = file_get_contents($filename);
-		$this->assertNoPattern('/cake:nocache/', $contents);
+		$this->assertNotRegExp('/cake:nocache/', $contents);
 		@unlink($filename);
 	}
 
@@ -253,51 +248,50 @@ class CacheHelperTest extends CakeTestCase {
 		$View = new View($this->Controller);
 		$result = $View->render('sequencial_nocache');
 
-		$this->assertNoPattern('/cake:nocache/', $result);
-		$this->assertNoPattern('/php echo/', $result);
-		$this->assertPattern('/A\. Layout Before Content/', $result);
-		$this->assertPattern('/B\. In Plain Element/', $result);
-		$this->assertPattern('/C\. Layout After Test Element/', $result);
-		$this->assertPattern('/D\. In View File/', $result);
-		$this->assertPattern('/E\. Layout After Content/', $result);
-		//$this->assertPattern('/F\. In Element With No Cache Tags/', $result);
-		$this->assertPattern('/G\. Layout After Content And After Element With No Cache Tags/', $result);
-		$this->assertNoPattern('/1\. layout before content/', $result);
-		$this->assertNoPattern('/2\. in plain element/', $result);
-		$this->assertNoPattern('/3\. layout after test element/', $result);
-		$this->assertNoPattern('/4\. in view file/', $result);
-		$this->assertNoPattern('/5\. layout after content/', $result);
-		//$this->assertNoPattern('/6\. in element with no cache tags/', $result);
-		$this->assertNoPattern('/7\. layout after content and after element with no cache tags/', $result);
+		$this->assertNotRegExp('/cake:nocache/', $result);
+		$this->assertNotRegExp('/php echo/', $result);
+		$this->assertRegExp('/A\. Layout Before Content/', $result);
+		$this->assertRegExp('/B\. In Plain Element/', $result);
+		$this->assertRegExp('/C\. Layout After Test Element/', $result);
+		$this->assertRegExp('/D\. In View File/', $result);
+		$this->assertRegExp('/E\. Layout After Content/', $result);
+		//$this->assertRegExp('/F\. In Element With No Cache Tags/', $result);
+		$this->assertRegExp('/G\. Layout After Content And After Element With No Cache Tags/', $result);
+		$this->assertNotRegExp('/1\. layout before content/', $result);
+		$this->assertNotRegExp('/2\. in plain element/', $result);
+		$this->assertNotRegExp('/3\. layout after test element/', $result);
+		$this->assertNotRegExp('/4\. in view file/', $result);
+		$this->assertNotRegExp('/5\. layout after content/', $result);
+		//$this->assertNotRegExp('/6\. in element with no cache tags/', $result);
+		$this->assertNotRegExp('/7\. layout after content and after element with no cache tags/', $result);
 
 		$filename = CACHE . 'views' . DS . 'cachetest_cache_complex.php';
 		$this->assertTrue(file_exists($filename));
 		$contents = file_get_contents($filename);
 		@unlink($filename);
 
-		$this->assertPattern('/A\. Layout Before Content/', $contents);
-		$this->assertNoPattern('/B\. In Plain Element/', $contents);
-		$this->assertPattern('/C\. Layout After Test Element/', $contents);
-		$this->assertPattern('/D\. In View File/', $contents);
-		$this->assertPattern('/E\. Layout After Content/', $contents);
-		//$this->assertPattern('/F\. In Element With No Cache Tags/', $contents);
-		$this->assertPattern('/G\. Layout After Content And After Element With No Cache Tags/', $contents);
-		$this->assertPattern('/1\. layout before content/', $contents);
-		$this->assertNoPattern('/2\. in plain element/', $contents);
-		$this->assertPattern('/3\. layout after test element/', $contents);
-		$this->assertPattern('/4\. in view file/', $contents);
-		$this->assertPattern('/5\. layout after content/', $contents);
-		//$this->assertPattern('/6\. in element with no cache tags/', $contents);
-		$this->assertPattern('/7\. layout after content and after element with no cache tags/', $contents);
+		$this->assertRegExp('/A\. Layout Before Content/', $contents);
+		$this->assertNotRegExp('/B\. In Plain Element/', $contents);
+		$this->assertRegExp('/C\. Layout After Test Element/', $contents);
+		$this->assertRegExp('/D\. In View File/', $contents);
+		$this->assertRegExp('/E\. Layout After Content/', $contents);
+		//$this->assertRegExp('/F\. In Element With No Cache Tags/', $contents);
+		$this->assertRegExp('/G\. Layout After Content And After Element With No Cache Tags/', $contents);
+		$this->assertRegExp('/1\. layout before content/', $contents);
+		$this->assertNotRegExp('/2\. in plain element/', $contents);
+		$this->assertRegExp('/3\. layout after test element/', $contents);
+		$this->assertRegExp('/4\. in view file/', $contents);
+		$this->assertRegExp('/5\. layout after content/', $contents);
+		//$this->assertRegExp('/6\. in element with no cache tags/', $contents);
+		$this->assertRegExp('/7\. layout after content and after element with no cache tags/', $contents);
 	}
 
 /**
  * test cache of view vars
  *
- * @access public
  * @return void
  */
-	function testCacheViewVars() {
+	public function testCacheViewVars() {
 		$this->Controller->cache_parsing();
 		$this->Controller->params = array(
 			'controller' => 'cache_test',
@@ -312,16 +306,52 @@ class CacheHelperTest extends CakeTestCase {
 
 		$View = new View($this->Controller);
 		$result = $View->render('index');
-		$this->assertNoPattern('/cake:nocache/', $result);
-		$this->assertNoPattern('/php echo/', $result);
+		$this->assertNotRegExp('/cake:nocache/', $result);
+		$this->assertNotRegExp('/php echo/', $result);
 
 		$filename = CACHE . 'views' . DS . 'cachetest_cache_parsing.php';
 		$this->assertTrue(file_exists($filename));
 
 		$contents = file_get_contents($filename);
-		$this->assertPattern('/\$this\-\>viewVars/', $contents);
-		$this->assertPattern('/extract\(\$this\-\>viewVars, EXTR_SKIP\);/', $contents);
-		$this->assertPattern('/php echo \$variable/', $contents);
+		$this->assertRegExp('/\$this\-\>viewVars/', $contents);
+		$this->assertRegExp('/extract\(\$this\-\>viewVars, EXTR_SKIP\);/', $contents);
+		$this->assertRegExp('/php echo \$variable/', $contents);
+
+		@unlink($filename);
+	}
+
+/**
+ * Test that callback code is generated correctly.
+ *
+ * @return void
+ */
+	public function testCacheCallbacks() {
+		$this->Controller->cache_parsing();
+		$this->Controller->params = array(
+			'controller' => 'cache_test',
+			'action' => 'cache_parsing',
+			'url' => array(),
+			'pass' => array(),
+			'named' => array()
+		);
+		$this->Controller->cacheAction = array(
+			'cache_parsing' => array(
+				'duration' => 21600,
+				'callbacks' => true
+			)
+		);
+		$this->Controller->here = '/cacheTest/cache_parsing';
+		$this->Controller->action = 'cache_parsing';
+
+		$View = new View($this->Controller);
+		$result = $View->render('index');
+
+		$filename = CACHE . 'views' . DS . 'cachetest_cache_parsing.php';
+		$this->assertTrue(file_exists($filename));
+
+		$contents = file_get_contents($filename);
+
+		$this->assertRegExp('/\$controller->startupProcess\(\);/', $contents);
 
 		@unlink($filename);
 	}
@@ -331,7 +361,7 @@ class CacheHelperTest extends CakeTestCase {
  *
  * @return void
  */
-	function testCacheActionArray() {
+	public function testCacheActionArray() {
 		$this->Controller->cache_parsing();
 		$this->Controller->request->addParams(array(
 			'controller' => 'cache_test',
@@ -349,8 +379,8 @@ class CacheHelperTest extends CakeTestCase {
 		$View = new View($this->Controller);
 		$result = $View->render('index');
 
-		$this->assertNoPattern('/cake:nocache/', $result);
-		$this->assertNoPattern('/php echo/', $result);
+		$this->assertNotRegExp('/cake:nocache/', $result);
+		$this->assertNotRegExp('/php echo/', $result);
 
 		$filename = CACHE . 'views' . DS . 'cache_test_cache_parsing.php';
 		$this->assertTrue(file_exists($filename));
@@ -367,8 +397,8 @@ class CacheHelperTest extends CakeTestCase {
 		$View = new View($this->Controller);
 		$result = $View->render('index');
 
-		$this->assertNoPattern('/cake:nocache/', $result);
-		$this->assertNoPattern('/php echo/', $result);
+		$this->assertNotRegExp('/cake:nocache/', $result);
+		$this->assertNotRegExp('/php echo/', $result);
 
 		$filename = CACHE . 'views' . DS . 'cachetest_cache_parsing.php';
 		$this->assertTrue(file_exists($filename));
@@ -392,8 +422,8 @@ class CacheHelperTest extends CakeTestCase {
 		$View = new View($this->Controller);
 		$result = $View->render('index');
 
-		$this->assertNoPattern('/cake:nocache/', $result);
-		$this->assertNoPattern('/php echo/', $result);
+		$this->assertNotRegExp('/cake:nocache/', $result);
+		$this->assertNotRegExp('/php echo/', $result);
 
 		$filename = CACHE . 'views' . DS . 'cachetest_cache_parsing.php';
 		$this->assertFalse(file_exists($filename));
@@ -404,7 +434,7 @@ class CacheHelperTest extends CakeTestCase {
  *
  * @return void
  */
-	function testCacheWithNamedAndPassedArgs() {
+	public function testCacheWithNamedAndPassedArgs() {
 		Router::reload();
 
 		$this->Controller->cache_parsing();
@@ -426,8 +456,8 @@ class CacheHelperTest extends CakeTestCase {
 		$View = new View($this->Controller);
 		$result = $View->render('index');
 
-		$this->assertNoPattern('/cake:nocache/', $result);
-		$this->assertNoPattern('/php echo/', $result);
+		$this->assertNotRegExp('/cake:nocache/', $result);
+		$this->assertNotRegExp('/php echo/', $result);
 
 		$filename = CACHE . 'views' . DS . 'cache_test_cache_parsing_1_2_name_mark_ice_cream.php';
 		$this->assertTrue(file_exists($filename));
@@ -439,7 +469,7 @@ class CacheHelperTest extends CakeTestCase {
  *
  * @return void
  */
-	function testCacheWithCustomRoutes() {
+	public function testCacheWithCustomRoutes() {
 		Router::reload();
 		Router::connect('/:lang/:controller/:action/*', array(), array('lang' => '[a-z]{3}'));
 
@@ -461,8 +491,8 @@ class CacheHelperTest extends CakeTestCase {
 		$View = new View($this->Controller);
 		$result = $View->render('index');
 
-		$this->assertNoPattern('/cake:nocache/', $result);
-		$this->assertNoPattern('/php echo/', $result);
+		$this->assertNotRegExp('/cake:nocache/', $result);
+		$this->assertNotRegExp('/php echo/', $result);
 
 		$filename = CACHE . 'views' . DS . 'en_cache_test_cache_parsing.php';
 		$this->assertTrue(file_exists($filename));
@@ -478,7 +508,7 @@ class CacheHelperTest extends CakeTestCase {
  *
  * @return void
  **/
-	function testCacheBaseNameControllerName() {
+	public function testCacheBaseNameControllerName() {
 		$this->Controller->cache_parsing();
 		$this->Controller->cacheAction = array(
 			'cache_name' => 21600
@@ -497,8 +527,8 @@ class CacheHelperTest extends CakeTestCase {
 		$View = new View($this->Controller);
 		$result = $View->render('index');
 
-		$this->assertNoPattern('/cake:nocache/', $result);
-		$this->assertNoPattern('/php echo/', $result);
+		$this->assertNotRegExp('/cake:nocache/', $result);
+		$this->assertNotRegExp('/php echo/', $result);
 
 		$filename = CACHE . 'views' . DS . 'cache_cachetest_cache_name.php';
 		$this->assertTrue(file_exists($filename));
@@ -510,7 +540,7 @@ class CacheHelperTest extends CakeTestCase {
  *
  * @return void
  */
-	function testAfterRenderConditions() {
+	public function testAfterRenderConditions() {
 		Configure::write('Cache.check', true);
 		$View = new View($this->Controller);
 		$View->cacheAction = '+1 day';
@@ -534,7 +564,7 @@ class CacheHelperTest extends CakeTestCase {
  *
  * @return void
  */
-	function testAfterLayoutConditions() {
+	public function testAfterLayoutConditions() {
 		Configure::write('Cache.check', true);
 		$View = new View($this->Controller);
 		$View->cacheAction = '+1 day';
@@ -559,11 +589,17 @@ class CacheHelperTest extends CakeTestCase {
  * This test must be uncommented/fixed in next release (1.2+)
  *
  * @return void
- * @access public
- *
-	function testCacheEmptySections () {
+ */
+	public function testCacheEmptySections() {
 		$this->Controller->cache_parsing();
-		$this->Controller->cacheAction = array('cacheTest' => 21600);
+		$this->Controller->params = array(
+			'controller' => 'cacheTest',
+			'action' => 'cache_empty_sections',
+			'url' => array(),
+			'pass' => array(),
+			'named' => array()
+		);
+		$this->Controller->cacheAction = array('cache_empty_sections' => 21600);
 		$this->Controller->here = '/cacheTest/cache_empty_sections';
 		$this->Controller->action = 'cache_empty_sections';
 		$this->Controller->layout = 'cache_empty_sections';
@@ -571,9 +607,9 @@ class CacheHelperTest extends CakeTestCase {
 
 		$View = new View($this->Controller);
 		$result = $View->render('cache_empty_sections');
-		$this->assertNoPattern('/cake:nocache/', $result);
-		$this->assertNoPattern('/php echo/', $result);
-		$this->assertPattern(
+		$this->assertNotRegExp('/nocache/', $result);
+		$this->assertNotRegExp('/php echo/', $result);
+		$this->assertRegExp(
 			'@</title>\s*</head>\s*' .
 			'<body>\s*' .
 			'View Content\s*' .
@@ -583,19 +619,18 @@ class CacheHelperTest extends CakeTestCase {
 		$filename = CACHE . 'views' . DS . 'cachetest_cache_empty_sections.php';
 		$this->assertTrue(file_exists($filename));
 		$contents = file_get_contents($filename);
-		$this->assertNoPattern('/cake:nocache/', $contents);
-		$this->assertPattern(
+		$this->assertNotRegExp('/nocache/', $contents);
+		$this->assertRegExp(
 			'@<head>\s*<title>Posts</title>\s*' .
-			"<\?php \$x = 1; \?>\s*" .
+			'<\?php \$x \= 1; \?>\s*' .
 			'</head>\s*' .
 			'<body>\s*' .
-			"<\?php \$x\+\+; \?>\s*" .
-			"<\?php \$x\+\+; \?>\s*" .
+			'<\?php \$x\+\+; \?>\s*' .
+			'<\?php \$x\+\+; \?>\s*' .
 			'View Content\s*' .
-			"<\?php \$y = 1; \?>\s*" .
-			"<\?php echo 'cached count is:' . \$x; \?>\s*" .
+			'<\?php \$y = 1; \?>\s*' .
+			'<\?php echo \'cached count is: \' . \$x; \?>\s*' .
 			'@', $contents);
 		@unlink($filename);
 	}
-*/
 }

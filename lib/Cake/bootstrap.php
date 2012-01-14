@@ -7,34 +7,35 @@
  * PHP 5
  *
  * CakePHP(tm) : Rapid Development Framework (http://cakephp.org)
- * Copyright 2005-2010, Cake Software Foundation, Inc. (http://cakefoundation.org)
+ * Copyright 2005-2011, Cake Software Foundation, Inc. (http://cakefoundation.org)
  *
  * Licensed under The MIT License
  * Redistributions of files must retain the above copyright notice.
  *
- * @copyright     Copyright 2005-2010, Cake Software Foundation, Inc. (http://cakefoundation.org)
+ * @copyright     Copyright 2005-2011, Cake Software Foundation, Inc. (http://cakefoundation.org)
  * @link          http://cakephp.org CakePHP(tm) Project
- * @package       cake.config
+ * @package       Cake
  * @since         CakePHP(tm) v 0.2.9
  * @license       MIT License (http://www.opensource.org/licenses/mit-license.php)
  */
+define('TIME_START', microtime(true));
+
 if (!defined('E_DEPRECATED')) {
 	define('E_DEPRECATED', 8192);
 }
 error_reporting(E_ALL & ~E_DEPRECATED);
 
-/**
- * If the index.php file is used instead of an .htaccess file
- * or if the user can not set the web root to use the public
- * directory we will define ROOT there, otherwise we set it
- * here.
- */
-	if (!defined('ROOT')) {
-		define('ROOT', '../');
-	}
-	if (!defined('WEBROOT_DIR')) {
-		define('WEBROOT_DIR', 'webroot');
-	}
+if (!defined('CAKE_CORE_INCLUDE_PATH')) {
+	define('CAKE_CORE_INCLUDE_PATH', dirname(dirname(__FILE__)));
+}
+
+if (!defined('CORE_PATH')) {
+	define('CORE_PATH', CAKE_CORE_INCLUDE_PATH . DS);
+}
+
+if (!defined('WEBROOT_DIR')) {
+	define('WEBROOT_DIR', 'webroot');
+}
 
 /**
  * Path to the cake directory.
@@ -129,8 +130,10 @@ spl_autoload_register(array('App', 'load'));
 
 App::uses('ErrorHandler', 'Error');
 App::uses('Configure', 'Core');
+App::uses('CakePlugin', 'Core');
 App::uses('Cache', 'Cache');
 App::uses('Object', 'Core');
+App::$bootstrapping = true;
 
 Configure::bootstrap(isset($boot) ? $boot : true);
 

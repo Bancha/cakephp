@@ -5,19 +5,19 @@
  * PHP 5
  *
  * CakePHP(tm) : Rapid Development Framework (http://cakephp.org)
- * Copyright 2005-2010, Cake Software Foundation, Inc. (http://cakefoundation.org)
+ * Copyright 2005-2011, Cake Software Foundation, Inc. (http://cakefoundation.org)
  *
  * Licensed under The MIT License
  * Redistributions of files must retain the above copyright notice.
  *
- * @copyright     Copyright 2005-2010, Cake Software Foundation, Inc. (http://cakefoundation.org)
+ * @copyright     Copyright 2005-2011, Cake Software Foundation, Inc. (http://cakefoundation.org)
  * @link          http://cakephp.org CakePHP(tm) Project
- * @package       cake.tests.libs
+ * @package       Cake.TestSuite
  * @since         CakePHP(tm) v 2.0
  * @license       MIT License (http://www.opensource.org/licenses/mit-license.php)
  */
 
-require 'PHPUnit/TextUI/Command.php';
+require_once 'PHPUnit/TextUI/Command.php';
 
 App::uses('CakeTestRunner', 'TestSuite');
 App::uses('CakeTestLoader', 'TestSuite');
@@ -26,12 +26,10 @@ App::uses('CakeTestCase', 'TestSuite');
 App::uses('ControllerTestCase', 'TestSuite');
 App::uses('CakeTestModel', 'TestSuite/Fixture');
 
-PHP_CodeCoverage_Filter::getInstance()->addFileToBlacklist(__FILE__, 'DEFAULT');
-
 /**
  * Class to customize loading of test suites from CLI
  *
- * @package       cake.tests.lib
+ * @package       Cake.TestSuite
  */
 class CakeTestSuiteCommand extends PHPUnit_TextUI_Command {
 
@@ -70,8 +68,7 @@ class CakeTestSuiteCommand extends PHPUnit_TextUI_Command {
 		} else {
 			$suite = $runner->getTest(
 			  $this->arguments['test'],
-			  $this->arguments['testFile'],
-			  $this->arguments['syntaxCheck']
+			  $this->arguments['testFile']
 			);
 		}
 
@@ -161,7 +158,8 @@ class CakeTestSuiteCommand extends PHPUnit_TextUI_Command {
 		$object = null;
 
 		$type = strtolower($reporter);
-		$coreClass = 'Cake' . ucwords($reporter) . 'Reporter';
+		$reporter = ucwords($reporter);
+		$coreClass = 'Cake' . $reporter . 'Reporter';
 		App::uses($coreClass, 'TestSuite/Reporter');
 
 		$appClass = $reporter . 'Reporter';

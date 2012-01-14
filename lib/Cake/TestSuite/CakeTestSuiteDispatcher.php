@@ -5,14 +5,14 @@
  * PHP 5
  *
  * CakePHP(tm) Tests <http://book.cakephp.org/view/1196/Testing>
- * Copyright 2005-2010, Cake Software Foundation, Inc. (http://cakefoundation.org)
+ * Copyright 2005-2011, Cake Software Foundation, Inc. (http://cakefoundation.org)
  *
  * Licensed under The MIT License
  * Redistributions of files must retain the above copyright notice
  *
- * @copyright     Copyright 2005-2010, Cake Software Foundation, Inc. (http://cakefoundation.org)
+ * @copyright     Copyright 2005-2011, Cake Software Foundation, Inc. (http://cakefoundation.org)
  * @link          http://cakephp.org CakePHP(tm) Project
- * @package       cake.tests.lib
+ * @package       Cake.TestSuite
  * @since         CakePHP(tm) v 1.3
  * @license       MIT License (http://www.opensource.org/licenses/mit-license.php)
  */
@@ -25,7 +25,7 @@ App::uses('CakeTestSuiteCommand', 'TestSuite');
 /**
  * CakeTestSuiteDispatcher handles web requests to the test suite and runs the correct action.
  *
- * @package cake.tests.libs
+ * @package       Cake.TestSuite
  */
 class CakeTestSuiteDispatcher {
 /**
@@ -89,7 +89,7 @@ class CakeTestSuiteDispatcher {
  *
  * @return void
  */
-	function dispatch() {
+	public function dispatch() {
 		$this->_checkPHPUnit();
 		$this->_parseParams();
 
@@ -150,9 +150,6 @@ class CakeTestSuiteDispatcher {
 			if ($path && ini_set('include_path', $path . PATH_SEPARATOR . ini_get('include_path'))) {
 				$found = include 'PHPUnit' . DS . 'Autoload.php';
 			}
-		}
-		if ($found) {
-			PHP_CodeCoverage_Filter::getInstance()->addFileToBlacklist(__FILE__, 'DEFAULT');
 		}
 		return $found;
 	}
@@ -235,6 +232,7 @@ class CakeTestSuiteDispatcher {
 			'app' => $this->params['app'],
 			'plugin' => $this->params['plugin'],
 			'codeCoverage' => $this->params['codeCoverage'],
+			'showPasses' => !empty($this->params['show_passes']),
 			'baseUrl' => $this->_baseUrl,
 			'baseDir' => $this->_baseDir,
 		);

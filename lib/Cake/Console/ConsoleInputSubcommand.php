@@ -5,24 +5,23 @@
  * PHP 5
  *
  * CakePHP(tm) : Rapid Development Framework (http://cakephp.org)
- * Copyright 2005-2010, Cake Software Foundation, Inc. (http://cakefoundation.org)
+ * Copyright 2005-2011, Cake Software Foundation, Inc. (http://cakefoundation.org)
  *
  * Licensed under The MIT License
  * Redistributions of files must retain the above copyright notice.
  *
- * @copyright     Copyright 2005-2010, Cake Software Foundation, Inc. (http://cakefoundation.org)
+ * @copyright     Copyright 2005-2011, Cake Software Foundation, Inc. (http://cakefoundation.org)
  * @link          http://cakephp.org CakePHP(tm) Project
- * @package       cake.console.libs
  * @since         CakePHP(tm) v 2.0
  * @license       MIT License (http://www.opensource.org/licenses/mit-license.php)
  */
 
 /**
  * An object to represent a single subcommand used in the command line.
- * ConsoleOptionParser creates these when you use addSubcommand()
+ * Created when you call ConsoleOptionParser::addSubcommand()
  *
  * @see ConsoleOptionParser::addSubcommand()
- * @package cake.console.libs
+ * @package       Cake.Console
  */
 class ConsoleInputSubcommand {
 
@@ -38,7 +37,7 @@ class ConsoleInputSubcommand {
  *
  * @var string
  */
-	protected $_help; 
+	protected $_help;
 
 /**
  * The ConsoleOptionParser for this subcommand.
@@ -52,7 +51,7 @@ class ConsoleInputSubcommand {
  *
  * @param mixed $name The long name of the subcommand, or an array with all the properties.
  * @param string $help The help text for this option
- * @param mixed $parser A parser for this subcommand. Either a ConsoleOptionParser, or an array that can be 
+ * @param mixed $parser A parser for this subcommand. Either a ConsoleOptionParser, or an array that can be
  *   used with ConsoleOptionParser::buildFromArray()
  */
 	public function __construct($name, $help = '', $parser = null) {
@@ -83,8 +82,8 @@ class ConsoleInputSubcommand {
 /**
  * Generate the help for this this subcommand.
  *
- * @param int $width The width to make the name of the subcommand.
- * @return string 
+ * @param integer $width The width to make the name of the subcommand.
+ * @return string
  */
 	public function help($width = 0) {
 		$name = $this->_name;
@@ -109,7 +108,7 @@ class ConsoleInputSubcommand {
 /**
  * Append this subcommand to the Parent element
  *
- * @param SimpleXmlElement The parent element.
+ * @param SimpleXmlElement $parent The parent element.
  * @return SimpleXmlElement The parent with this subcommand appended.
  */
 	public function xml(SimpleXmlElement $parent) {

@@ -5,14 +5,14 @@
  * PHP 5
  *
  * CakePHP(tm) : Rapid Development Framework (http://cakephp.org)
- * Copyright 2005-2010, Cake Software Foundation, Inc. (http://cakefoundation.org)
+ * Copyright 2005-2011, Cake Software Foundation, Inc. (http://cakefoundation.org)
  *
  * Licensed under The MIT License
  * Redistributions of files must retain the above copyright notice.
  *
- * @copyright     Copyright 2005-2010, Cake Software Foundation, Inc. (http://cakefoundation.org)
+ * @copyright     Copyright 2005-2011, Cake Software Foundation, Inc. (http://cakefoundation.org)
  * @link          http://cakephp.org CakePHP(tm) Project
- * @package       cake.libs.controller.components
+ * @package       Cake.Controller.Component
  * @since         CakePHP(tm) v 0.10.0.1232
  * @license       MIT License (http://www.opensource.org/licenses/mit-license.php)
  */
@@ -25,14 +25,14 @@ App::uses('CakeSession', 'Model/Datasource');
  *
  * Session handling from the controller.
  *
- * @package       cake.libs.controller.components
- * @link http://book.cakephp.org/view/1310/Sessions
- *
+ * @package       Cake.Controller.Component
+ * @link http://book.cakephp.org/2.0/en/core-libraries/components/sessions.html
+ * @link http://book.cakephp.org/2.0/en/development/sessions.html
  */
 class SessionComponent extends Component {
 
 /**
- * Get / Set the userAgent 
+ * Get / Set the userAgent
  *
  * @param string $userAgent Set the userAgent
  * @return void
@@ -50,7 +50,7 @@ class SessionComponent extends Component {
  * 							This should be in a Controller.key format for better organizing
  * @param string $value The value you want to store in a session.
  * @return boolean Success
- * @link http://book.cakephp.org/view/1312/write
+ * @link http://book.cakephp.org/2.0/en/core-libraries/components/sessions.html#SessionComponent::write
  */
 	public function write($name, $value = null) {
 		return CakeSession::write($name, $value);
@@ -64,7 +64,7 @@ class SessionComponent extends Component {
  *
  * @param string $name the name of the session key you want to read
  * @return mixed value from the session vars
- * @link http://book.cakephp.org/view/1314/read
+ * @link http://book.cakephp.org/2.0/en/core-libraries/components/sessions.html#SessionComponent::read
  */
 	public function read($name = null) {
 		return CakeSession::read($name);
@@ -77,7 +77,7 @@ class SessionComponent extends Component {
  *
  * @param string $name the name of the session key you want to delete
  * @return boolean true is session variable is set and can be deleted, false is variable was not set.
- * @link http://book.cakephp.org/view/1316/delete
+ * @link http://book.cakephp.org/2.0/en/core-libraries/components/sessions.html#SessionComponent::delete
  */
 	public function delete($name) {
 		return CakeSession::delete($name);
@@ -90,7 +90,7 @@ class SessionComponent extends Component {
  *
  * @param string $name the name of the session key you want to check
  * @return boolean true is session variable is set, false if not
- * @link http://book.cakephp.org/view/1315/check
+ * @link http://book.cakephp.org/2.0/en/core-libraries/components/sessions.html#SessionComponent::check
  */
 	public function check($name) {
 		return CakeSession::check($name);
@@ -102,7 +102,6 @@ class SessionComponent extends Component {
  * In your controller: $this->Session->error();
  *
  * @return string Last session error
- * @link http://book.cakephp.org/view/1318/error
  */
 	public function error() {
 		return CakeSession::error();
@@ -121,7 +120,8 @@ class SessionComponent extends Component {
  * @param string $element Element to wrap flash message in.
  * @param array $params Parameters to be sent to layout as view variables
  * @param string $key Message key, default is 'flash'
- * @link http://book.cakephp.org/view/1313/setFlash
+ * @return void
+ * @link http://book.cakephp.org/2.0/en/core-libraries/components/sessions.html#creating-notification-messages
  */
 	public function setFlash($message, $element = 'default', $params = array(), $key = 'flash') {
 		CakeSession::write('Message.' . $key, compact('message', 'element', 'params'));
@@ -155,7 +155,7 @@ class SessionComponent extends Component {
  * In your controller: $this->Session->destroy();
  *
  * @return void
- * @link http://book.cakephp.org/view/1317/destroy
+ * @link http://book.cakephp.org/2.0/en/core-libraries/components/sessions.html#SessionComponent::destroy
  */
 	public function destroy() {
 		return CakeSession::destroy();
@@ -167,7 +167,7 @@ class SessionComponent extends Component {
  * If $id is passed in a beforeFilter, the Session will be started
  * with the specified id
  *
- * @param $id string
+ * @param string $id
  * @return string
  */
 	public function id($id = null) {

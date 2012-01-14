@@ -5,14 +5,14 @@
  * PHP 5
  *
  * CakePHP(tm) : Rapid Development Framework (http://cakephp.org)
- * Copyright 2005-2010, Cake Software Foundation, Inc. (http://cakefoundation.org)
+ * Copyright 2005-2011, Cake Software Foundation, Inc. (http://cakefoundation.org)
  *
  * Licensed under The MIT License
  * Redistributions of files must retain the above copyright notice.
  *
- * @copyright     Copyright 2005-2010, Cake Software Foundation, Inc. (http://cakefoundation.org)
+ * @copyright     Copyright 2005-2011, Cake Software Foundation, Inc. (http://cakefoundation.org)
  * @link          http://cakephp.org CakePHP(tm) Project
- * @package       cake.libs.view
+ * @package       Cake.View
  * @since         CakePHP(tm) v 0.10.0.1076
  * @license       MIT License (http://www.opensource.org/licenses/mit-license.php)
  */
@@ -21,6 +21,7 @@
  * Included libraries.
  */
 App::uses('HelperCollection', 'View');
+App::uses('AppHelper', 'View/Helper');
 App::uses('Router', 'Routing');
 
 /**
@@ -33,7 +34,17 @@ App::uses('Router', 'Routing');
  * in the layout, and it contains the rendered view.  This also means you can pass data from the view to the
  * layout using `$this->set()`
  *
- * @package    cake.libs.view
+ * @package       Cake.View
+ * @property      CacheHelper $Cache
+ * @property      FormHelper $Form
+ * @property      HtmlHelper $Html
+ * @property      JsHelper $Js
+ * @property      NumberHelper $Number
+ * @property      PaginatorHelper $Paginator
+ * @property      RssHelper $Rss
+ * @property      SessionHelper $Session
+ * @property      TextHelper $Text
+ * @property      TimeHelper $Time
  */
 class View extends Object {
 
@@ -125,7 +136,7 @@ class View extends Object {
 
 /**
  * Sub-directory for this view file.  This is often used for extension based routing.
- * for example with an `xml` extension, $subDir would be `xml/`
+ * Eg. With an `xml` extension, $subDir would be `xml/`
  *
  * @var string
  */
@@ -147,7 +158,7 @@ class View extends Object {
 	public $cacheAction = false;
 
 /**
- * holds current errors for the model validation
+ * Holds current errors for the model validation.
  *
  * @var array
  */
@@ -161,49 +172,7 @@ class View extends Object {
 	public $hasRendered = false;
 
 /**
- * True if in scope of model-specific region
- *
- * @var boolean
- */
-	public $modelScope = false;
-
-/**
- * Name of current model this view context is attached to
- *
- * @var string
- */
-	public $model = null;
-
-/**
- * Name of association model this view context is attached to
- *
- * @var string
- */
-	public $association = null;
-
-/**
- * Name of current model field this view context is attached to
- *
- * @var string
- */
-	public $field = null;
-
-/**
- * Suffix of current field this view context is attached to
- *
- * @var string
- */
-	public $fieldSuffix = null;
-
-/**
- * The current model ID this view context is attached to
- *
- * @var mixed
- */
-	public $modelId = null;
-
-/**
- * List of generated DOM UUIDs
+ * List of generated DOM UUIDs.
  *
  * @var array
  */
@@ -236,17 +205,17 @@ class View extends Object {
 	public $elementCache = 'default';
 
 /**
- * List of variables to collect from the associated controller
+ * List of variables to collect from the associated controller.
  *
  * @var array
  */
-	private $__passedVars = array(
+	protected $_passedVars = array(
 		'viewVars', 'autoLayout', 'ext', 'helpers', 'view', 'layout', 'name',
 		'layoutPath', 'viewPath', 'request', 'plugin', 'passedArgs', 'cacheAction'
 	);
 
 /**
- * Scripts (and/or other <head /> tags) for the layout
+ * Scripts (and/or other <head /> tags) for the layout.
  *
  * @var array
  */
@@ -257,10 +226,10 @@ class View extends Object {
  *
  * @var array
  */
-	private $__paths = array();
+	protected $_paths = array();
 
 /**
- * boolean to indicate that helpers have been loaded.
+ * Indicate that helpers have been loaded.
  *
  * @var boolean
  */
@@ -269,13 +238,13 @@ class View extends Object {
 /**
  * Constructor
  *
- * @param Controller $controller A controller object to pull View::__passedArgs from.
+ * @param Controller $controller A controller object to pull View::_passedVars from.
  */
-	function __construct($controller) {
+	public function __construct($controller) {
 		if (is_object($controller)) {
-			$count = count($this->__passedVars);
+			$count = count($this->_passedVars);
 			for ($j = 0; $j < $count; $j++) {
-				$var = $this->__passedVars[$j];
+				$var = $this->_passedVars[$j];
 				$this->{$var} = $controller->{$var};
 			}
 		}
@@ -289,7 +258,7 @@ class View extends Object {
  * This realizes the concept of Elements, (or "partial layouts") and the $params array is used to send
  * data to be used in the element. Elements can be cached improving performance by using the `cache` option.
  *
- * @param string $name Name of template file in the/app/views/elements/ folder
+ * @param string $name Name of template file in the/app/View/Elements/ folder
  * @param array $data Array of data to be made available to the rendered view (i.e. the Element)
  * @param array $options Array of options. Possible keys are:
  * - `cache` - Can either be `true`, to enable caching using the config in View::$elementCache. Or an array
@@ -306,7 +275,7 @@ class View extends Object {
 		$callbacks = false;
 
 		if (isset($options['plugin'])) {
-			$plugin = $options['plugin'];
+			$plugin = Inflector::camelize($options['plugin']);
 		}
 		if (isset($this->plugin) && !$plugin) {
 			$plugin = $this->plugin;
@@ -316,7 +285,11 @@ class View extends Object {
 		}
 
 		if (isset($options['cache'])) {
-			$keys = array_merge(array($plugin, $name), array_keys($options), array_keys($data));
+			$underscored = null;
+			if ($plugin) {
+				$underscored = Inflector::underscore($plugin);
+			}
+			$keys = array_merge(array($underscored, $name), array_keys($options), array_keys($data));
 			$caching = array(
 				'config' => $this->elementCache,
 				'key' => implode('_', $keys)
@@ -364,7 +337,7 @@ class View extends Object {
  * Renders view for given view file and layout.
  *
  * Render triggers helper callbacks, which are fired before and after the view are rendered,
- * as well as before and after the layout.  The helper callbacks are called
+ * as well as before and after the layout.  The helper callbacks are called:
  *
  * - `beforeRender`
  * - `afterRender`
@@ -415,6 +388,7 @@ class View extends Object {
  * - `scripts_for_layout` - contains scripts added to header
  *
  * @param string $content_for_layout Content to render in a view, wrapped by the surrounding layout.
+ * @param string $layout Layout name
  * @return mixed Rendered output, or false on error
  * @throws CakeException if there is an error in the view.
  */
@@ -539,32 +513,6 @@ class View extends Object {
 		}
 		$this->uuids[] = $hash;
 		return $hash;
-	}
-
-/**
- * Returns the entity reference of the current context as an array of identity parts
- *
- * @return array An array containing the identity elements of an entity
- */
-	public function entity() {
-		$assoc = ($this->association) ? $this->association : $this->model;
-		if (!empty($this->entityPath)) {
-			$path = explode('.', $this->entityPath);
-			$count = count($path);
-			if (
-				($count == 1 && !empty($this->association)) ||
-				($count == 1 && $this->model != $this->entityPath) ||
-				($count == 1 && empty($this->association) && !empty($this->field)) ||
-				($count  == 2 && !empty($this->fieldSuffix)) ||
-				is_numeric($path[0]) && !empty($assoc)
-			) {
-				array_unshift($path, $assoc);
-			}
-			return Set::filter($path);
-		}
-		return array_values(Set::filter(
-			array($assoc, $this->modelId, $this->field, $this->fieldSuffix)
-		));
 	}
 
 /**
@@ -758,9 +706,8 @@ class View extends Object {
  * Get the extensions that view files can use.
  *
  * @return array Array of extensions view files use.
- * @access protected
  */
-	function _getExtensions() {
+	protected function _getExtensions() {
 		$exts = array($this->ext);
 		if ($this->ext !== '.ctp') {
 			array_push($exts, '.ctp');
@@ -796,24 +743,23 @@ class View extends Object {
  * @return array paths
  */
 	protected function _paths($plugin = null, $cached = true) {
-		if ($plugin === null && $cached === true && !empty($this->__paths)) {
-			return $this->__paths;
+		if ($plugin === null && $cached === true && !empty($this->_paths)) {
+			return $this->_paths;
 		}
 		$paths = array();
 		$viewPaths = App::path('View');
 		$corePaths = array_flip(App::core('View'));
 		if (!empty($plugin)) {
-			$plugin = Inflector::camelize($plugin);
 			$count = count($viewPaths);
 			for ($i = 0; $i < $count; $i++) {
 				if (!isset($corePaths[$viewPaths[$i]])) {
-					$paths[] = $viewPaths[$i] . 'Plugins' . DS . $plugin . DS;
+					$paths[] = $viewPaths[$i] . 'Plugin' . DS . $plugin . DS;
 				}
 			}
 			$paths = array_merge($paths, App::path('View', $plugin));
 		}
 
-		$this->__paths = array_unique(array_merge($paths, $viewPaths, array_keys($corePaths)));
-		return $this->__paths;
+		$this->_paths = array_unique(array_merge($paths, $viewPaths, array_keys($corePaths)));
+		return $this->_paths;
 	}
 }

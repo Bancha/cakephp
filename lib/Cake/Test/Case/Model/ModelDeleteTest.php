@@ -5,14 +5,14 @@
  * PHP 5
  *
  * CakePHP(tm) Tests <http://book.cakephp.org/view/1196/Testing>
- * Copyright 2005-2010, Cake Software Foundation, Inc. (http://cakefoundation.org)
+ * Copyright 2005-2011, Cake Software Foundation, Inc. (http://cakefoundation.org)
  *
  * Licensed under The MIT License
  * Redistributions of files must retain the above copyright notice
  *
- * @copyright     Copyright 2005-2010, Cake Software Foundation, Inc. (http://cakefoundation.org)
+ * @copyright     Copyright 2005-2011, Cake Software Foundation, Inc. (http://cakefoundation.org)
  * @link          http://book.cakephp.org/view/1196/Testing CakePHP(tm) Tests
- * @package       cake.tests.cases.libs.model
+ * @package       Cake.Test.Case.Model
  * @since         CakePHP(tm) v 1.2.0.4206
  * @license       MIT License (http://www.opensource.org/licenses/mit-license.php)
  */
@@ -21,17 +21,16 @@ require_once dirname(__FILE__) . DS . 'ModelTestBase.php';
 /**
  * ModelDeleteTest
  *
- * @package       cake.tests.cases.libs.model.operations
+ * @package       Cake.Test.Case.Model
  */
 class ModelDeleteTest extends BaseModelTest {
 
 /**
  * testDeleteHabtmReferenceWithConditions method
  *
- * @access public
  * @return void
  */
-	function testDeleteHabtmReferenceWithConditions() {
+	public function testDeleteHabtmReferenceWithConditions() {
 		$this->loadFixtures('Portfolio', 'Item', 'ItemsPortfolio', 'Syfile', 'Image');
 
 		$Portfolio = new Portfolio();
@@ -71,7 +70,7 @@ class ModelDeleteTest extends BaseModelTest {
 					'item_id' => 5,
 					'portfolio_id' => 1
 		)));
-		$this->assertEqual($result['Item'], $expected);
+		$this->assertEquals($result['Item'], $expected);
 
 		$result = $Portfolio->ItemsPortfolio->find('all', array(
 			'conditions' => array('ItemsPortfolio.portfolio_id' => 1)
@@ -101,7 +100,7 @@ class ModelDeleteTest extends BaseModelTest {
 					'item_id' => 5,
 					'portfolio_id' => 1
 		)));
-		$this->assertEqual($expected, $result);
+		$this->assertEquals($expected, $result);
 
 		$Portfolio->delete(1);
 
@@ -119,10 +118,9 @@ class ModelDeleteTest extends BaseModelTest {
 /**
  * testDeleteArticleBLinks method
  *
- * @access public
  * @return void
  */
-	function testDeleteArticleBLinks() {
+	public function testDeleteArticleBLinks() {
 		$this->loadFixtures('Article', 'ArticlesTag', 'Tag', 'User');
 		$TestModel = new ArticleB();
 
@@ -133,7 +131,7 @@ class ModelDeleteTest extends BaseModelTest {
 			array('ArticlesTag' => array('article_id' => '2', 'tag_id' => '1')),
 			array('ArticlesTag' => array('article_id' => '2', 'tag_id' => '3'))
 			);
-		$this->assertEqual($expected, $result);
+		$this->assertEquals($expected, $result);
 
 		$TestModel->delete(1);
 		$result = $TestModel->ArticlesTag->find('all');
@@ -142,16 +140,15 @@ class ModelDeleteTest extends BaseModelTest {
 			array('ArticlesTag' => array('article_id' => '2', 'tag_id' => '1')),
 			array('ArticlesTag' => array('article_id' => '2', 'tag_id' => '3'))
 		);
-		$this->assertEqual($expected, $result);
+		$this->assertEquals($expected, $result);
 	}
 
 /**
  * testDeleteDependentWithConditions method
  *
- * @access public
  * @return void
  */
-	function testDeleteDependentWithConditions() {
+	public function testDeleteDependentWithConditions() {
 		$this->loadFixtures('Cd','Book','OverallFavorite');
 
 		$Cd = new Cd();
@@ -172,7 +169,7 @@ class ModelDeleteTest extends BaseModelTest {
 		)));
 
 		$this->assertTrue(is_array($result));
-		$this->assertEqual($expected, $result);
+		$this->assertEquals($expected, $result);
 
 		$Book->delete(1);
 
@@ -182,16 +179,15 @@ class ModelDeleteTest extends BaseModelTest {
 		$expected = array();
 
 		$this->assertTrue(is_array($result));
-		$this->assertEqual($expected, $result);
+		$this->assertEquals($expected, $result);
 	}
 
 /**
  * testDel method
  *
- * @access public
  * @return void
  */
-	function testDelete() {
+	public function testDelete() {
 		$this->loadFixtures('Article', 'Comment', 'Attachment');
 		$TestModel = new Article();
 
@@ -214,7 +210,7 @@ class ModelDeleteTest extends BaseModelTest {
 				'id' => 3,
 				'title' => 'Third Article'
 		)));
-		$this->assertEqual($expected, $result);
+		$this->assertEquals($expected, $result);
 
 		$result = $TestModel->delete(3);
 		$this->assertTrue($result);
@@ -232,7 +228,7 @@ class ModelDeleteTest extends BaseModelTest {
 				'title' => 'First Article'
 		)));
 
-		$this->assertEqual($expected, $result);
+		$this->assertEquals($expected, $result);
 
 		// make sure deleting a non-existent record doesn't break save()
 		// ticket #6293
@@ -261,7 +257,7 @@ class ModelDeleteTest extends BaseModelTest {
 				'id' => '8208C7FE-E89C-47C5-B378-DED6C271F9B8')),
 			array('Uuid' => array(
 				'id' => 'B607DAB9-88A2-46CF-B57C-842CA9E3B3B3')));
-		$this->assertEqual($expected, $result);
+		$this->assertEquals($expected, $result);
 	}
 
 
@@ -270,25 +266,24 @@ class ModelDeleteTest extends BaseModelTest {
  *
  * @return void
  */
-	function testDeleteUpdatingCounterCacheCorrectly() {
+	public function testDeleteUpdatingCounterCacheCorrectly() {
 		$this->loadFixtures('CounterCacheUser', 'CounterCachePost');
 		$User = new CounterCacheUser();
 
 		$User->Post->delete(3);
 		$result = $User->read(null, 301);
-		$this->assertEqual($result['User']['post_count'], 0);
+		$this->assertEquals($result['User']['post_count'], 0);
 
 		$result = $User->read(null, 66);
-		$this->assertEqual($result['User']['post_count'], 2);
+		$this->assertEquals($result['User']['post_count'], 2);
 	}
 
 /**
  * testDeleteAll method
  *
- * @access public
  * @return void
  */
-	function testDeleteAll() {
+	public function testDeleteAll() {
 		$this->loadFixtures('Article');
 		$TestModel = new Article();
 
@@ -361,7 +356,7 @@ class ModelDeleteTest extends BaseModelTest {
 				'published' => 'N'
 		)));
 
-		$this->assertEqual($expected, $result);
+		$this->assertEquals($expected, $result);
 
 		$result = $TestModel->deleteAll(array('Article.published' => 'N'));
 		$this->assertTrue($result);
@@ -395,7 +390,7 @@ class ModelDeleteTest extends BaseModelTest {
 				'title' => 'Fifth Article',
 				'published' => 'Y'
 		)));
-		$this->assertEqual($expected, $result);
+		$this->assertEquals($expected, $result);
 
 		$data = array('Article.user_id' => array(2, 3));
 		$result = $TestModel->deleteAll($data, true, true);
@@ -418,25 +413,31 @@ class ModelDeleteTest extends BaseModelTest {
 				'title' => 'Third Article',
 				'published' => 'Y'
 		)));
-		$this->assertEqual($expected, $result);
+		$this->assertEquals($expected, $result);
 
 		$result = $TestModel->deleteAll(array('Article.user_id' => 999));
 		$this->assertTrue($result, 'deleteAll returned false when all no records matched conditions. %s');
+	}
 
-		$this->expectError();
-		ob_start();
+/**
+ * testDeleteAllUnknownColumn method
+ *
+ * @expectedException PDOException
+ * @return void
+ */
+	public function testDeleteAllUnknownColumn() {
+		$this->loadFixtures('Article');
+		$TestModel = new Article();
 		$result = $TestModel->deleteAll(array('Article.non_existent_field' => 999));
-		ob_get_clean();
 		$this->assertFalse($result, 'deleteAll returned true when find query generated sql error. %s');
 	}
 
 /**
  * testRecursiveDel method
  *
- * @access public
  * @return void
  */
-	function testRecursiveDel() {
+	public function testRecursiveDel() {
 		$this->loadFixtures('Article', 'Comment', 'Attachment');
 		$TestModel = new Article();
 
@@ -457,41 +458,39 @@ class ModelDeleteTest extends BaseModelTest {
 		$this->assertFalse($result);
 
 		$result = $TestModel->find('count');
-		$this->assertEqual($result, 2);
+		$this->assertEquals($result, 2);
 
 		$result = $TestModel->Comment->find('count');
-		$this->assertEqual($result, 4);
+		$this->assertEquals($result, 4);
 
 		$result = $TestModel->Comment->Attachment->find('count');
-		$this->assertEqual($result, 0);
+		$this->assertEquals($result, 0);
 	}
 
 /**
  * testDependentExclusiveDelete method
  *
- * @access public
  * @return void
  */
-	function testDependentExclusiveDelete() {
+	public function testDependentExclusiveDelete() {
 		$this->loadFixtures('Article', 'Comment');
 		$TestModel = new Article10();
 
 		$result = $TestModel->find('all');
-		$this->assertEqual(count($result[0]['Comment']), 4);
-		$this->assertEqual(count($result[1]['Comment']), 2);
-		$this->assertEqual($TestModel->Comment->find('count'), 6);
+		$this->assertEquals(count($result[0]['Comment']), 4);
+		$this->assertEquals(count($result[1]['Comment']), 2);
+		$this->assertEquals($TestModel->Comment->find('count'), 6);
 
 		$TestModel->delete(1);
-		$this->assertEqual($TestModel->Comment->find('count'), 2);
+		$this->assertEquals($TestModel->Comment->find('count'), 2);
 	}
 
 /**
  * testDeleteLinks method
  *
- * @access public
  * @return void
  */
-	function testDeleteLinks() {
+	public function testDeleteLinks() {
 		$this->loadFixtures('Article', 'ArticlesTag', 'Tag');
 		$TestModel = new Article();
 
@@ -513,7 +512,7 @@ class ModelDeleteTest extends BaseModelTest {
 				'article_id' => '2',
 				'tag_id' => '3'
 		)));
-		$this->assertEqual($expected, $result);
+		$this->assertEquals($expected, $result);
 
 		$TestModel->delete(1);
 		$result = $TestModel->ArticlesTag->find('all');
@@ -527,7 +526,7 @@ class ModelDeleteTest extends BaseModelTest {
 				'article_id' => '2',
 				'tag_id' => '3'
 		)));
-		$this->assertEqual($expected, $result);
+		$this->assertEquals($expected, $result);
 
 		$result = $TestModel->deleteAll(array('Article.user_id' => 999));
 		$this->assertTrue($result, 'deleteAll returned false when all no records matched conditions. %s');
@@ -538,7 +537,7 @@ class ModelDeleteTest extends BaseModelTest {
  *
  * @return void
  */
-	function testDeleteLinksWithPLuginJoinModel() {
+	public function testDeleteLinksWithPLuginJoinModel() {
 		$this->loadFixtures('Article', 'ArticlesTag', 'Tag');
 		$Article = new Article();
 		$Article->unbindModel(array('hasAndBelongsToMany' => array('Tag')), false);
@@ -555,7 +554,7 @@ class ModelDeleteTest extends BaseModelTest {
  *
  * @return void
  */
-	function testDeleteLinksWithMultipleHabtmAssociations() {
+	public function testDeleteLinksWithMultipleHabtmAssociations() {
 		$this->loadFixtures('JoinA', 'JoinB', 'JoinC', 'JoinAB', 'JoinAC');
 		$JoinA = new JoinA();
 
@@ -577,21 +576,20 @@ class ModelDeleteTest extends BaseModelTest {
 		$joinedBs = $JoinA->JoinAsJoinB->find('count', array(
 			'conditions' => array('JoinAsJoinB.join_a_id' => 1)
 		));
-		$this->assertEqual($joinedBs, 0, 'JoinA/JoinB link records left over. %s');
+		$this->assertEquals($joinedBs, 0, 'JoinA/JoinB link records left over. %s');
 
 		$joinedBs = $JoinA->JoinAsJoinC->find('count', array(
 			'conditions' => array('JoinAsJoinC.join_a_id' => 1)
 		));
-		$this->assertEqual($joinedBs, 0, 'JoinA/JoinC link records left over. %s');
+		$this->assertEquals($joinedBs, 0, 'JoinA/JoinC link records left over. %s');
 	}
 
 /**
  * testHabtmDeleteLinksWhenNoPrimaryKeyInJoinTable method
  *
- * @access public
  * @return void
  */
-	function testHabtmDeleteLinksWhenNoPrimaryKeyInJoinTable() {
+	public function testHabtmDeleteLinksWhenNoPrimaryKeyInJoinTable() {
 
 		$this->loadFixtures('Apple', 'Device', 'ThePaperMonkies');
 		$ThePaper = new ThePaper();
@@ -612,7 +610,7 @@ class ModelDeleteTest extends BaseModelTest {
 				'name' => 'Device 3',
 				'typ' => '2'
 		));
-		$this->assertEqual($result['Monkey'], $expected);
+		$this->assertEquals($result['Monkey'], $expected);
 
 		$ThePaper = new ThePaper();
 		$ThePaper->id = 2;
@@ -632,7 +630,7 @@ class ModelDeleteTest extends BaseModelTest {
 				'name' => 'Device 3',
 				'typ' => '2'
 		));
-		$this->assertEqual($result['Monkey'], $expected);
+		$this->assertEquals($result['Monkey'], $expected);
 
 		$ThePaper->delete(1);
 		$result = $ThePaper->findById(2);
@@ -649,7 +647,7 @@ class ModelDeleteTest extends BaseModelTest {
 				'name' => 'Device 3',
 				'typ' => '2'
 		));
-		$this->assertEqual($result['Monkey'], $expected);
+		$this->assertEquals($result['Monkey'], $expected);
 	}
 
 /**
@@ -657,7 +655,7 @@ class ModelDeleteTest extends BaseModelTest {
  *
  * @return void
  */
-	function testBeforeDeleteDeleteAbortion() {
+	public function testBeforeDeleteDeleteAbortion() {
 		$this->loadFixtures('Post');
 		$Model = new CallbackPostTestModel();
 		$Model->beforeDeleteReturn = false;
@@ -675,7 +673,7 @@ class ModelDeleteTest extends BaseModelTest {
  *
  * @return void
  */
-	function testDeleteHabtmPostgresFailure() {
+	public function testDeleteHabtmPostgresFailure() {
 		$this->loadFixtures('Article', 'Tag', 'ArticlesTag');
 
 		$Article = ClassRegistry::init('Article');
@@ -693,7 +691,7 @@ class ModelDeleteTest extends BaseModelTest {
 	    $before = $Article->find("all", array(
 			"conditions" => array("Article.id" => 1),
 		));
-		$this->assertEqual(count($before[0]['Tag']), 2, 'Tag count for Article.id = 1 is incorrect, should be 2 %s');
+		$this->assertEquals(count($before[0]['Tag']), 2, 'Tag count for Article.id = 1 is incorrect, should be 2 %s');
 
 		// From now on, Tag #1 is only associated with Post #1
 		$submitted_data = array(
@@ -722,7 +720,7 @@ class ModelDeleteTest extends BaseModelTest {
 		));
 
 		// Removing Article #2 from Tag #1 is all that should have happened.
-		$this->assertEqual(count($before[0]["Tag"]), count($after[0]["Tag"]));
+		$this->assertEquals(count($before[0]["Tag"]), count($after[0]["Tag"]));
 	}
 
 /**
@@ -730,7 +728,7 @@ class ModelDeleteTest extends BaseModelTest {
  *
  * @return void
  */
-	function testBeforeDeleteWipingTable() {
+	public function testBeforeDeleteWipingTable() {
 		$this->loadFixtures('Comment');
 
 		$Comment = new BeforeDeleteComment();
@@ -758,7 +756,7 @@ class ModelDeleteTest extends BaseModelTest {
  *
  * @return void
  */
-	function testBeforeDeleteWipingTableWithDuplicateDelete() {
+	public function testBeforeDeleteWipingTableWithDuplicateDelete() {
 		$this->loadFixtures('Comment');
 
 		$Comment = new BeforeDeleteComment();

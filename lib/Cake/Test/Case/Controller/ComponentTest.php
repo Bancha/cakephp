@@ -5,14 +5,14 @@
  * PHP 5
  *
  * CakePHP(tm) Tests <http://book.cakephp.org/view/1196/Testing>
- * Copyright 2005-2010, Cake Software Foundation, Inc. (http://cakefoundation.org)
+ * Copyright 2005-2011, Cake Software Foundation, Inc. (http://cakefoundation.org)
  *
  * Licensed under The MIT License
  * Redistributions of files must retain the above copyright notice
  *
- * @copyright     Copyright 2005-2010, Cake Software Foundation, Inc. (http://cakefoundation.org)
+ * @copyright     Copyright 2005-2011, Cake Software Foundation, Inc. (http://cakefoundation.org)
  * @link          http://book.cakephp.org/view/1196/Testing CakePHP(tm) Tests
- * @package       cake.tests.cases.libs.controller
+ * @package       Cake.Test.Case.Controller
  * @since         CakePHP(tm) v 1.2.0.5436
  * @license       MIT License (http://www.opensource.org/licenses/mit-license.php)
  */
@@ -23,7 +23,7 @@ App::uses('Component', 'Controller');
 /**
  * ParamTestComponent
  *
- * @package       cake.tests.cases.libs.controller
+ * @package       Cake.Test.Case.Controller
  */
 class ParamTestComponent extends Component {
 
@@ -31,7 +31,6 @@ class ParamTestComponent extends Component {
  * name property
  *
  * @var string 'ParamTest'
- * @access public
  */
 	public $name = 'ParamTest';
 
@@ -39,33 +38,14 @@ class ParamTestComponent extends Component {
  * components property
  *
  * @var array
- * @access public
  */
 	public $components = array('Banana' => array('config' => 'value'));
-
-/**
- * initialize method
- *
- * @param mixed $controller
- * @param mixed $settings
- * @access public
- * @return void
- */
-	function initialize(&$controller, $settings) {
-		foreach ($settings as $key => $value) {
-			if (is_numeric($key)) {
-				$this->{$value} = true;
-			} else {
-				$this->{$key} = $value;
-			}
-		}
-	}
 }
 
 /**
  * ComponentTestController class
  *
- * @package       cake.tests.cases.libs.controller
+ * @package       Cake.Test.Case.Controller
  */
 class ComponentTestController extends Controller {
 
@@ -73,7 +53,6 @@ class ComponentTestController extends Controller {
  * name property
  *
  * @var string 'ComponentTest'
- * @access public
  */
 	public $name = 'ComponentTest';
 
@@ -81,7 +60,6 @@ class ComponentTestController extends Controller {
  * uses property
  *
  * @var array
- * @access public
  */
 	public $uses = array();
 
@@ -90,7 +68,7 @@ class ComponentTestController extends Controller {
 /**
  * AppleComponent class
  *
- * @package       cake.tests.cases.libs.controller
+ * @package       Cake.Test.Case.Controller
  */
 class AppleComponent extends Component {
 
@@ -98,7 +76,6 @@ class AppleComponent extends Component {
  * components property
  *
  * @var array
- * @access public
  */
 	public $components = array('Orange');
 
@@ -106,7 +83,6 @@ class AppleComponent extends Component {
  * testName property
  *
  * @var mixed null
- * @access public
  */
 	public $testName = null;
 
@@ -114,10 +90,9 @@ class AppleComponent extends Component {
  * startup method
  *
  * @param mixed $controller
- * @access public
  * @return void
  */
-	function startup(&$controller) {
+	public function startup($controller) {
 		$this->testName = $controller->name;
 	}
 }
@@ -125,7 +100,7 @@ class AppleComponent extends Component {
 /**
  * OrangeComponent class
  *
- * @package       cake.tests.cases.libs.controller
+ * @package       Cake.Test.Case.Controller
  */
 class OrangeComponent extends Component {
 
@@ -133,7 +108,6 @@ class OrangeComponent extends Component {
  * components property
  *
  * @var array
- * @access public
  */
 	public $components = array('Banana');
 
@@ -141,10 +115,9 @@ class OrangeComponent extends Component {
  * initialize method
  *
  * @param mixed $controller
- * @access public
  * @return void
  */
-	function initialize(&$controller) {
+	public function initialize($controller) {
 		$this->Controller = $controller;
 		$this->Banana->testField = 'OrangeField';
 	}
@@ -155,7 +128,7 @@ class OrangeComponent extends Component {
  * @param Controller $controller
  * @return string
  */
-	public function startup(&$controller) {
+	public function startup($controller) {
 		$controller->foo = 'pass';
 	}
 }
@@ -163,7 +136,7 @@ class OrangeComponent extends Component {
 /**
  * BananaComponent class
  *
- * @package       cake.tests.cases.libs.controller
+ * @package       Cake.Test.Case.Controller
  */
 class BananaComponent extends Component {
 
@@ -171,7 +144,6 @@ class BananaComponent extends Component {
  * testField property
  *
  * @var string 'BananaField'
- * @access public
  */
 	public $testField = 'BananaField';
 
@@ -181,7 +153,7 @@ class BananaComponent extends Component {
  * @param Controller $controller
  * @return string
  */
-	public function startup(&$controller) {
+	public function startup($controller) {
 		$controller->bar = 'fail';
 	}
 }
@@ -189,7 +161,7 @@ class BananaComponent extends Component {
 /**
  * MutuallyReferencingOneComponent class
  *
- * @package       cake.tests.cases.libs.controller
+ * @package       Cake.Test.Case.Controller
  */
 class MutuallyReferencingOneComponent extends Component {
 
@@ -197,7 +169,6 @@ class MutuallyReferencingOneComponent extends Component {
  * components property
  *
  * @var array
- * @access public
  */
 	public $components = array('MutuallyReferencingTwo');
 }
@@ -205,7 +176,7 @@ class MutuallyReferencingOneComponent extends Component {
 /**
  * MutuallyReferencingTwoComponent class
  *
- * @package       cake.tests.cases.libs.controller
+ * @package       Cake.Test.Case.Controller
  */
 class MutuallyReferencingTwoComponent extends Component {
 
@@ -213,7 +184,6 @@ class MutuallyReferencingTwoComponent extends Component {
  * components property
  *
  * @var array
- * @access public
  */
 	public $components = array('MutuallyReferencingOne');
 }
@@ -221,7 +191,7 @@ class MutuallyReferencingTwoComponent extends Component {
 /**
  * SomethingWithEmailComponent class
  *
- * @package       cake.tests.cases.libs.controller
+ * @package       Cake.Test.Case.Controller
  */
 class SomethingWithEmailComponent extends Component {
 
@@ -229,7 +199,6 @@ class SomethingWithEmailComponent extends Component {
  * components property
  *
  * @var array
- * @access public
  */
 	public $components = array('Email');
 }
@@ -238,17 +207,16 @@ class SomethingWithEmailComponent extends Component {
 /**
  * ComponentTest class
  *
- * @package       cake.tests.cases.libs.controller
+ * @package       Cake.Test.Case.Controller
  */
 class ComponentTest extends CakeTestCase {
 
 /**
  * setUp method
  *
- * @access public
  * @return void
  */
-	function setUp() {
+	public function setUp() {
 		$this->_pluginPaths = App::path('plugins');
 		App::build(array(
 			'plugins' => array(CAKE . 'Test' . DS . 'test_app' . DS . 'Plugin' . DS)
@@ -258,10 +226,9 @@ class ComponentTest extends CakeTestCase {
 /**
  * tearDown method
  *
- * @access public
  * @return void
  */
-	function tearDown() {
+	public function tearDown() {
 		App::build();
 		ClassRegistry::flush();
 	}
@@ -271,7 +238,7 @@ class ComponentTest extends CakeTestCase {
  *
  * @return void
  */
-	function testInnerComponentConstruction() {
+	public function testInnerComponentConstruction() {
 		$Collection = new ComponentCollection();
 		$Component = new AppleComponent($Collection);
 
@@ -283,7 +250,7 @@ class ComponentTest extends CakeTestCase {
  *
  * @return void
  */
-	function testNestedComponentLoading() {
+	public function testNestedComponentLoading() {
 		$Collection = new ComponentCollection();
 		$Apple = new AppleComponent($Collection);
 
@@ -298,7 +265,7 @@ class ComponentTest extends CakeTestCase {
  *
  * @return void
  */
-	function testInnerComponentsAreNotEnabled() {
+	public function testInnerComponentsAreNotEnabled() {
 		$Collection = new ComponentCollection();
 		$Apple = $Collection->load('Apple');
 
@@ -312,7 +279,7 @@ class ComponentTest extends CakeTestCase {
  *
  * @return void
  */
-	function testMultipleComponentInitialize() {
+	public function testMultipleComponentInitialize() {
 		$Collection = new ComponentCollection();
 		$Banana = $Collection->load('Banana');
 		$Orange = $Collection->load('Orange');
@@ -328,7 +295,7 @@ class ComponentTest extends CakeTestCase {
  *
  * @return void
  */
-	function testSomethingReferencingEmailComponent() {
+	public function testSomethingReferencingEmailComponent() {
 		$Controller = new ComponentTestController();
 		$Controller->components = array('SomethingWithEmail');
 		$Controller->uses = false;

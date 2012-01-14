@@ -1,16 +1,16 @@
 <?php
 /**
- * CakeRequest 
+ * CakeRequest
  *
  * PHP 5
  *
  * CakePHP(tm) : Rapid Development Framework (http://cakephp.org)
- * Copyright 2005-2010, Cake Software Foundation, Inc. (http://cakefoundation.org)
+ * Copyright 2005-2011, Cake Software Foundation, Inc. (http://cakefoundation.org)
  *
  * Licensed under The MIT License
  * Redistributions of files must retain the above copyright notice.
  *
- * @copyright     Copyright 2005-2010, Cake Software Foundation, Inc. (http://cakefoundation.org)
+ * @copyright     Copyright 2005-2011, Cake Software Foundation, Inc. (http://cakefoundation.org)
  * @link          http://cakephp.org CakePHP(tm) Project
  * @since         CakePHP(tm) v 2.0
  * @license       MIT License (http://www.opensource.org/licenses/mit-license.php)
@@ -21,12 +21,12 @@ App::uses('Set', 'Utility');
 /**
  * A class that helps wrap Request information and particulars about a single request.
  * Provides methods commonly used to introspect on the request headers and request body.
- * 
+ *
  * Has both an Array and Object interface. You can access framework parameters using indexes:
  *
  * `$request['controller']` or `$request->controller`.
  *
- * @package cake.libs
+ * @package       Cake.Network
  */
 class CakeRequest implements ArrayAccess {
 /**
@@ -34,13 +34,17 @@ class CakeRequest implements ArrayAccess {
  *
  * @var array
  */
-	public $params = array();
+	public $params = array(
+		'plugin' => null,
+		'controller' => null,
+		'action' => null,
+	);
 
 /**
  * Array of POST data.  Will contain form data as well as uploaded files.
- * Will only contain data from inputs that start with 'data'.  So
- * `<input name="some_input" />` will not end up in data. However,
- * `<input name="data[something]" />`
+ * Inputs prefixed with 'data' will have the data prefix removed.  If there is
+ * overlap between an input prefixed with data and one without, the 'data' prefixed
+ * value will take precedence.
  *
  * @var array
  */
@@ -84,7 +88,7 @@ class CakeRequest implements ArrayAccess {
 /**
  * The built in detectors used with `is()` can be modified with `addDetector()`.
  *
- * There are several ways to specify a detector, see CakeRequest::addDetector() for the 
+ * There are several ways to specify a detector, see CakeRequest::addDetector() for the
  * various formats and ways to define detectors.
  *
  * @var array
@@ -101,7 +105,7 @@ class CakeRequest implements ArrayAccess {
 		'flash' => array('env' => 'HTTP_USER_AGENT', 'pattern' => '/^(Shockwave|Adobe) Flash/'),
 		'mobile' => array('env' => 'HTTP_USER_AGENT', 'options' => array(
 			'Android', 'AvantGo', 'BlackBerry', 'DoCoMo', 'Fennec', 'iPod', 'iPhone',
-			'J2ME', 'MIDP', 'NetFront', 'Nokia', 'Opera Mini', 'PalmOS', 'PalmSource',
+			'J2ME', 'MIDP', 'NetFront', 'Nokia', 'Opera Mini', 'Opera Mobi', 'PalmOS', 'PalmSource',
 			'portalmmm', 'Plucker', 'ReqwirelessWeb', 'SonyEricsson', 'Symbian', 'UP\\.Browser',
 			'webOS', 'Windows CE', 'Xiino'
 		))
@@ -113,14 +117,13 @@ class CakeRequest implements ArrayAccess {
  *
  * @var string
  */
-	private $__input = '';
+	protected $_input = '';
 
 /**
- * Constructor 
+ * Constructor
  *
  * @param string $url Trimmed url string to use.  Should not contain the application base path.
  * @param boolean $parseEnvironment Set to false to not auto parse the environment. ie. GET, POST and FILES.
- * @return void
  */
 	public function __construct($url = null, $parseEnvironment = true) {
 		$this->_base();
@@ -181,6 +184,7 @@ class CakeRequest implements ArrayAccess {
 			$query = $_GET;
 		}
 
+		unset($query['/' . str_replace('.', '_', $this->url)]);
 		if (strpos($this->url, '?') !== false) {
 			list(, $querystr) = explode('?', $this->url);
 			parse_str($querystr, $queryArgs);
@@ -236,7 +240,7 @@ class CakeRequest implements ArrayAccess {
 		$config = Configure::read('App');
 		extract($config);
 
-		if (empty($base)) {
+		if (!isset($base)) {
 			$base = $this->base;
 		}
 		if ($base !== false) {
@@ -384,7 +388,7 @@ class CakeRequest implements ArrayAccess {
  * @param string $name The method called
  * @param array $params Array of parameters for the method call
  * @return mixed
- * @throws BadMethodCallException when an invalid method is called.
+ * @throws CakeException when an invalid method is called.
  */
 	public function __call($name, $params) {
 		if (strpos($name, 'is') === 0) {
@@ -410,8 +414,19 @@ class CakeRequest implements ArrayAccess {
 	}
 
 /**
+ * Magic isset method allows isset/empty checks
+ * on routing parameters.
+ *
+ * @param string $name The property being accessed.
+ * @return bool Existence
+ */
+	public function __isset($name) {
+		return isset($this->params[$name]);
+	}
+
+/**
  * Check whether or not a Request is a certain type.  Uses the built in detection rules
- * as well as additional rules defined with CakeRequest::addDetector().  Any detector can be called 
+ * as well as additional rules defined with CakeRequest::addDetector().  Any detector can be called
  * as `is($type)` or `is$Type()`.
  *
  * @param string $type The type of request you want to check.
@@ -455,7 +470,7 @@ class CakeRequest implements ArrayAccess {
  * ### Pattern value comparison
  *
  * Pattern value comparison allows you to compare a value fetched from `env()` to a regular expression.
- * 
+ *
  * e.g `addDetector('iphone', array('env' => 'HTTP_USER_AGENT', 'pattern' => '/iPhone/i'));`
  *
  * ### Option based comparison
@@ -500,7 +515,7 @@ class CakeRequest implements ArrayAccess {
  * Provides an easy way to modify, here, webroot and base.
  *
  * @param array $paths Array of paths to merge in
- * @return the current object, you can chain this method.
+ * @return CakeRequest the current object, you can chain this method.
  */
 	public function addPaths($paths) {
 		foreach (array('webroot', 'here', 'base') as $element) {
@@ -544,10 +559,10 @@ class CakeRequest implements ArrayAccess {
 
 /**
  * Get the HTTP method used for this request.
- * There are a few ways to specify a method.  
+ * There are a few ways to specify a method.
  *
  * - If your client supports it you can use native HTTP methods.
- * - You can set the HTTP-X-Method-Override header. 
+ * - You can set the HTTP-X-Method-Override header.
  * - You can submit an input with the name `_method`
  *
  * Any of these 3 approaches can be used to set the HTTP method used
@@ -571,7 +586,7 @@ class CakeRequest implements ArrayAccess {
 /**
  * Get the domain name and include $tldLength segments of the tld.
  *
- * @param int $tldLength Number of segments your tld contains. For example: `example.com` contains 1 tld. 
+ * @param integer $tldLength Number of segments your tld contains. For example: `example.com` contains 1 tld.
  *   While `example.co.uk` contains 2.
  * @return string Domain name without subdomains.
  */
@@ -584,7 +599,7 @@ class CakeRequest implements ArrayAccess {
 /**
  * Get the subdomains for a host.
  *
- * @param int $tldLength Number of segments your tld contains. For example: `example.com` contains 1 tld. 
+ * @param integer $tldLength Number of segments your tld contains. For example: `example.com` contains 1 tld.
  *   While `example.co.uk` contains 2.
  * @return array of subdomains.
  */
@@ -594,7 +609,7 @@ class CakeRequest implements ArrayAccess {
 	}
 
 /**
- * Find out which content types the client accepts or check if they accept a 
+ * Find out which content types the client accepts or check if they accept a
  * particular type of content.
  *
  * #### Get all types:
@@ -605,26 +620,59 @@ class CakeRequest implements ArrayAccess {
  *
  * `$this->request->accepts('json');`
  *
+ * This method will order the returned content types by the preference values indicated
+ * by the client.
+ *
  * @param string $type The content type to check for.  Leave null to get all types a client accepts.
  * @return mixed Either an array of all the types the client accepts or a boolean if they accept the
  *   provided type.
  */
 	public function accepts($type = null) {
-		$acceptTypes = explode(',', $this->header('accept'));
-		foreach ($acceptTypes as $i => $accepted) {
-			if (strpos($accepted, ';') !== false) {
-				list($accepted, $prefValue) = explode(';', $accepted);
-				$acceptTypes[$i] = $accepted;
-			}
+		$raw = $this->parseAccept();
+		$accept = array();
+		foreach ($raw as $value => $types) {
+			$accept = array_merge($accept, $types);
 		}
 		if ($type === null) {
-			return $acceptTypes;
+			return $accept;
 		}
-		return in_array($type, $acceptTypes);
+		return in_array($type, $accept);
 	}
 
 /**
- * Get the lanaguages accepted by the client, or check if a specific language is accepted.
+ * Parse the HTTP_ACCEPT header and return a sorted array with content types
+ * as the keys, and pref values as the values.
+ *
+ * Generally you want to use CakeRequest::accept() to get a simple list
+ * of the accepted content types.
+ *
+ * @return array An array of prefValue => array(content/types)
+ */
+	public function parseAccept() {
+		$accept = array();
+		$header = explode(',', $this->header('accept'));
+		foreach (array_filter($header) as $value) {
+			$prefPos = strpos($value, ';');
+			if ($prefPos !== false) {
+				$prefValue = substr($value, strpos($value, '=') + 1);
+				$value = trim(substr($value, 0, $prefPos));
+			} else {
+				$prefValue = '1.0';
+				$value = trim($value);
+			}
+			if (!isset($accept[$prefValue])) {
+				$accept[$prefValue] = array();
+			}
+			if ($prefValue) {
+				$accept[$prefValue][] = $value;
+			}
+		}
+		krsort($accept);
+		return $accept;
+	}
+
+/**
+ * Get the languages accepted by the client, or check if a specific language is accepted.
  *
  * Get the list of accepted languages:
  *
@@ -668,8 +716,7 @@ class CakeRequest implements ArrayAccess {
  * You can write to any value, even paths/keys that do not exist, and the arrays
  * will be created for you.
  *
- * @param string $name Dot separated name of the value to read/write
- * @param mixed $value Value to write to the data array.
+ * @param string $name,... Dot separated name of the value to read/write
  * @return mixed Either the value being read, or this so you can chain consecutive writes.
  */
 	public function data($name) {
@@ -682,9 +729,9 @@ class CakeRequest implements ArrayAccess {
 	}
 
 /**
- * Read data from `php://stdin`. Useful when interacting with XML or JSON
+ * Read data from `php://input`. Useful when interacting with XML or JSON
  * request body content.
- * 
+ *
  * Getting input with a decoding function:
  *
  * `$this->request->input('json_decode');`
@@ -701,7 +748,7 @@ class CakeRequest implements ArrayAccess {
  * @return The decoded/processed request data.
  */
 	public function input($callback = null) {
-		$input = $this->_readStdin();
+		$input = $this->_readInput();
 		$args = func_get_args();
 		if (!empty($args)) {
 			$callback = array_shift($args);
@@ -712,18 +759,18 @@ class CakeRequest implements ArrayAccess {
 	}
 
 /**
- * Read data from php://stdin, mocked in tests.
+ * Read data from php://input, mocked in tests.
  *
- * @return string contents of stdin
+ * @return string contents of php://input
  */
-	protected function _readStdin() {
-		if (empty($this->__input)) {
+	protected function _readInput() {
+		if (empty($this->_input)) {
 			$fh = fopen('php://input', 'r');
 			$content = stream_get_contents($fh);
 			fclose($fh);
-			$this->__input = $content;
+			$this->_input = $content;
 		}
-		return $this->__input;
+		return $this->_input;
 	}
 
 /**
@@ -769,7 +816,7 @@ class CakeRequest implements ArrayAccess {
 /**
  * Array access unset() implementation
  *
- * @param $name Name to unset.
+ * @param string $name Name to unset.
  * @return void
  */
 	public function offsetUnset($name) {

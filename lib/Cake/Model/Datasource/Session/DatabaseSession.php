@@ -5,58 +5,66 @@
  * PHP 5
  *
  * CakePHP(tm) : Rapid Development Framework (http://cakephp.org)
- * Copyright 2005-2010, Cake Software Foundation, Inc. (http://cakefoundation.org)
+ * Copyright 2005-2011, Cake Software Foundation, Inc. (http://cakefoundation.org)
  *
  * Licensed under The MIT License
  * Redistributions of files must retain the above copyright notice.
  *
- * @copyright     Copyright 2005-2010, Cake Software Foundation, Inc. (http://cakefoundation.org)
+ * @copyright     Copyright 2005-2011, Cake Software Foundation, Inc. (http://cakefoundation.org)
  * @link          http://cakephp.org CakePHP(tm) Project
- * @package       cake.libs
+ * @package       Cake.Model.Datasource.Session
  * @since         CakePHP(tm) v 2.0
  * @license       MIT License (http://www.opensource.org/licenses/mit-license.php)
  */
 /**
  * DatabaseSession provides methods to be used with CakeSession.
  *
- * @package cake.libs.session
+ * @package       Cake.Model.Datasource.Session
  */
 class DatabaseSession implements CakeSessionHandlerInterface {
 
 /**
- * Constructor.  Looks at Session configuration information and 
+ * Reference to the model handling the session data
+ *
+ * @var Model
+ */
+	protected $_model;
+
+/**
+ * Number of seconds to mark the session as expired
+ *
+ * @var int
+ */
+	protected $_timeout;
+
+/**
+ * Constructor.  Looks at Session configuration information and
  * sets up the session model.
  *
- * @return void
  */
-	function __construct() {
+	public function __construct() {
 		$modelName = Configure::read('Session.handler.model');
-		$database = Configure::read('Session.handler.database');
-		$table = Configure::read('Session.handler.table');
 
-		if (empty($database)) {
-			$database = 'default';
+		if (empty($modelName)) {
+			$settings = array(
+				'class' =>'Session',
+				'alias' => 'Session',
+				'table' => 'cake_sessions',
+			);
+		} else {
+			$settings = array(
+				'class' =>$modelName,
+				'alias' => 'Session',
+			);
 		}
-		$settings = array(
-			'class' => 'Session',
-			'alias' => 'Session',
-			'table' => 'cake_sessions',
-			'ds' => $database
-		);
-		if (!empty($modelName)) {
-			$settings['class'] = $modelName;
-		}
-		if (!empty($table)) {
-			$settings['table'] = $table;
-		}
-		ClassRegistry::init($settings);
+		$this->_model = ClassRegistry::init($settings);
+		$this->_timeout = Configure::read('Session.timeout') * 60;
 	}
 
 /**
  * Method called on open of a database session.
  *
  * @return boolean Success
- * @access private
  */
 	public function open() {
 		return true;
@@ -66,12 +74,11 @@ class DatabaseSession implements CakeSessionHandlerInterface {
  * Method called on close of a database session.
  *
  * @return boolean Success
- * @access private
  */
 	public function close() {
 		$probability = mt_rand(1, 150);
 		if ($probability <= 3) {
-			DatabaseSession::gc();
+			$this->gc();
 		}
 		return true;
 	}
@@ -81,20 +88,17 @@ class DatabaseSession implements CakeSessionHandlerInterface {
  *
  * @param mixed $id The key of the value to read
  * @return mixed The value of the key or false if it does not exist
- * @access private
  */
 	public function read($id) {
-		$model = ClassRegistry::getObject('Session');
-
-		$row = $model->find('first', array(
-			'conditions' => array($model->primaryKey => $id)
+		$row = $this->_model->find('first', array(
+			'conditions' => array($this->_model->primaryKey => $id)
 		));
 
-		if (empty($row[$model->alias]['data'])) {
+		if (empty($row[$this->_model->alias]['data'])) {
 			return false;
 		}
 
-		return $row[$model->alias]['data'];
+		return $row[$this->_model->alias]['data'];
 	}
 
 /**
@@ -103,14 +107,15 @@ class DatabaseSession implements CakeSessionHandlerInterface {
  * @param integer $id ID that uniquely identifies session in database
  * @param mixed $data The value of the data to be saved.
  * @return boolean True for successful write, false otherwise.
- * @access private
  */
 	public function write($id, $data) {
 		if (!$id) {
 			return false;
 		}
-		$expires = time() + (Configure::read('Session.timeout') * 60);
-		return ClassRegistry::getObject('Session')->save(compact('id', 'data', 'expires'));
+		$expires = time() + $this->_timeout;
+		$record = compact('id', 'data', 'expires');
+		$record[$this->_model->primaryKey] = $id;
+		return $this->_model->save($record);
 	}
 
 /**
@@ -118,10 +123,9 @@ class DatabaseSession implements CakeSessionHandlerInterface {
  *
  * @param integer $id ID that uniquely identifies session in database
  * @return boolean True for successful delete, false otherwise.
- * @access private
  */
 	public function destroy($id) {
-		return ClassRegistry::getObject('Session')->delete($id);
+		return $this->_model->delete($id);
 	}
 
 /**
@@ -129,13 +133,20 @@ class DatabaseSession implements CakeSessionHandlerInterface {
  *
  * @param integer $expires Timestamp (defaults to current time)
  * @return boolean Success
- * @access private
  */
 	public function gc($expires = null) {
 		if (!$expires) {
 			$expires = time();
 		}
-		$model = ClassRegistry::getObject('Session');
-		return $model->deleteAll(array($model->alias . ".expires <" => $expires), false, false);
+		return $this->_model->deleteAll(array($this->_model->alias . ".expires <" => $expires), false, false);
+	}
+
+/**
+ * Closes the session before the objects handling it become unavailable
+ *
+ * @return void
+ */
+	public function __destruct() {
+		session_write_close();
 	}
 }

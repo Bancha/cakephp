@@ -5,14 +5,14 @@
  * PHP 5
  *
  * CakePHP(tm) : Rapid Development Framework (http://cakephp.org)
- * Copyright 2005-2010, Cake Software Foundation, Inc. (http://cakefoundation.org)
+ * Copyright 2005-2011, Cake Software Foundation, Inc. (http://cakefoundation.org)
  *
  * Licensed under The MIT License
  * Redistributions of files must retain the above copyright notice.
  *
- * @copyright     Copyright 2005-2010, Cake Software Foundation, Inc. (http://cakefoundation.org)
+ * @copyright     Copyright 2005-2011, Cake Software Foundation, Inc. (http://cakefoundation.org)
  * @link          http://cakephp.org CakePHP(tm) Project
- * @package       cake.libs
+ * @package       Cake.Model.Datasource.Session
  * @since         CakePHP(tm) v 2.0
  * @license       MIT License (http://www.opensource.org/licenses/mit-license.php)
  */
@@ -22,7 +22,7 @@ App::uses('Cache', 'Cache');
 /**
  * CacheSession provides method for saving sessions into a Cache engine. Used with CakeSession
  *
- * @package cake.libs.session
+ * @package       Cake.Model.Datasource.Session
  * @see CakeSession for configuration information.
  */
 class CacheSession implements CakeSessionHandlerInterface {
@@ -30,7 +30,6 @@ class CacheSession implements CakeSessionHandlerInterface {
  * Method called on open of a database session.
  *
  * @return boolean Success
- * @access private
  */
 	public function open() {
 		return true;
@@ -40,7 +39,6 @@ class CacheSession implements CakeSessionHandlerInterface {
  * Method called on close of a database session.
  *
  * @return boolean Success
- * @access private
  */
 	public function close() {
 		$probability = mt_rand(1, 150);
@@ -55,7 +53,6 @@ class CacheSession implements CakeSessionHandlerInterface {
  *
  * @param mixed $id The key of the value to read
  * @return mixed The value of the key or false if it does not exist
- * @access private
  */
 	public function read($id) {
 		return Cache::read($id, Configure::read('Session.handler.config'));
@@ -67,7 +64,6 @@ class CacheSession implements CakeSessionHandlerInterface {
  * @param integer $id ID that uniquely identifies session in database
  * @param mixed $data The value of the data to be saved.
  * @return boolean True for successful write, false otherwise.
- * @access private
  */
 	public function write($id, $data) {
 		return Cache::write($id, $data, Configure::read('Session.handler.config'));
@@ -78,7 +74,6 @@ class CacheSession implements CakeSessionHandlerInterface {
  *
  * @param integer $id ID that uniquely identifies session in database
  * @return boolean True for successful delete, false otherwise.
- * @access private
  */
 	public function destroy($id) {
 		return Cache::delete($id, Configure::read('Session.handler.config'));
@@ -89,9 +84,17 @@ class CacheSession implements CakeSessionHandlerInterface {
  *
  * @param integer $expires Timestamp (defaults to current time)
  * @return boolean Success
- * @access private
  */
 	public function gc($expires = null) {
 		return Cache::gc();
+	}
+
+/**
+ * Closes the session before the objects handling it become unavailable
+ *
+ * @return void
+ */
+	public function __destruct() {
+		session_write_close();
 	}
 }

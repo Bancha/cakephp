@@ -6,18 +6,18 @@
  * PHP 5
  *
  * CakePHP(tm) : Rapid Development Framework (http://cakephp.org)
- * Copyright 2005-2010, Cake Software Foundation, Inc. (http://cakefoundation.org)
+ * Copyright 2005-2011, Cake Software Foundation, Inc. (http://cakefoundation.org)
  *
  * Licensed under The MIT License
  * Redistributions of files must retain the above copyright notice.
  *
- * @copyright     Copyright 2005-2010, Cake Software Foundation, Inc. (http://cakefoundation.org)
+ * @copyright     Copyright 2005-2011, Cake Software Foundation, Inc. (http://cakefoundation.org)
  * @link          http://cakephp.org CakePHP(tm) Project
- * @package       cake.console.shells.tasks
  * @since         CakePHP(tm) v 1.2
  * @license       MIT License (http://www.opensource.org/licenses/mit-license.php)
  */
 
+App::uses('AppShell', 'Console/Command');
 App::uses('File', 'Utility');
 App::uses('Folder', 'Utility');
 App::uses('String', 'Utility');
@@ -26,9 +26,9 @@ App::uses('Security', 'Utility');
 /**
  * Task class for creating new project apps and plugins
  *
- * @package       cake.console.shells.tasks
+ * @package       Cake.Console.Command.Task
  */
-class ProjectTask extends Shell {
+class ProjectTask extends AppShell {
 
 /**
  * configs path (used in testing).
@@ -41,7 +41,7 @@ class ProjectTask extends Shell {
  * Checks that given project path does not already exist, and
  * finds the app directory in it. Then it calls bake() with that information.
  *
- * @param string $project Project path
+ * @return mixed
  */
 	public function execute() {
 		$project = null;
@@ -51,8 +51,9 @@ class ProjectTask extends Shell {
 
 		while (!$project) {
 			$prompt = __d('cake_console', "What is the path to the project you want to bake?");
-			$project = $this->in($prompt, null, APP_PATH . 'myapp');
+			$project = $this->in($prompt, null, APP . 'myapp');
 		}
+
 
 		if ($project && !Folder::isAbsolute($project) && isset($_SERVER['PWD'])) {
 			$project = $_SERVER['PWD'] . DS . $project;
@@ -91,19 +92,31 @@ class ProjectTask extends Shell {
 				$success = false;
 			}
 
-			if ($this->corePath($path) === true) {
-				$this->out(__d('cake_console', ' * CAKE_CORE_INCLUDE_PATH set to %s in webroot/index.php', CAKE_CORE_INCLUDE_PATH));
-				$this->out(__d('cake_console', ' * CAKE_CORE_INCLUDE_PATH set to %s in webroot/test.php', CAKE_CORE_INCLUDE_PATH));
-				$this->out(__d('cake_console', '   * <warning>Remember to check these value after moving to production server</warning>'));
-			} else {
-				$this->err(__d('cake_console', 'Unable to set CAKE_CORE_INCLUDE_PATH, you should change it in %s', $path . 'webroot' .DS .'index.php'));
-				$success = false;
-			}
 			if ($this->consolePath($path) === true) {
 				$this->out(__d('cake_console', ' * app/Console/cake.php path set.'));
 			} else {
 				$this->err(__d('cake_console', 'Unable to set console path for app/Console.'));
 				$success = false;
+			}
+
+			$hardCode = false;
+			if ($this->cakeOnIncludePath()) {
+				$this->out(__d('cake_console', '<info>CakePHP is on your `include_path`. CAKE_CORE_INCLUDE_PATH will be set, but commented out.</info>'));
+			} else {
+				$this->out(__d('cake_console', '<warning>CakePHP is not on your `include_path`, CAKE_CORE_INCLUDE_PATH will be hard coded.</warning>'));
+				$this->out(__d('cake_console', 'You can fix this by adding CakePHP to your `include_path`.'));
+				$hardCode = true;
+			}
+			$success = $this->corePath($path, $hardCode) === true;
+			if ($success) {
+				$this->out(__d('cake_console', ' * CAKE_CORE_INCLUDE_PATH set to %s in webroot/index.php', CAKE_CORE_INCLUDE_PATH));
+				$this->out(__d('cake_console', ' * CAKE_CORE_INCLUDE_PATH set to %s in webroot/test.php', CAKE_CORE_INCLUDE_PATH));
+			} else {
+				$this->err(__d('cake_console', 'Unable to set CAKE_CORE_INCLUDE_PATH, you should change it in %s', $path . 'webroot' .DS .'index.php'));
+				$success = false;
+			}
+			if ($success && $hardCode) {
+				$this->out(__d('cake_console', '   * <warning>Remember to check these values after moving to production server</warning>'));
 			}
 
 			$Folder = new Folder($path);
@@ -122,6 +135,21 @@ class ProjectTask extends Shell {
 	}
 
 /**
+ * Checks PHP's include_path for CakePHP.
+ *
+ * @return boolean Indicates whether or not CakePHP exists on include_path
+ */
+	public function cakeOnIncludePath() {
+		$paths = explode(PATH_SEPARATOR, ini_get('include_path'));
+		foreach ($paths as $path) {
+			if (file_exists($path . DS . 'Cake' . DS . 'bootstrap.php')) {
+				return true;
+			}
+		}
+		return false;
+	}
+
+/**
  * Looks for a skeleton template of a Cake application,
  * and if not found asks the user for a path. When there is a path
  * this method will make a deep copy of the skeleton to the project directory.
@@ -130,9 +158,9 @@ class ProjectTask extends Shell {
  * @param string $path Project path
  * @param string $skel Path to copy from
  * @param string $skip array of directories to skip when copying
- * @access private
+ * @return mixed
  */
-	function bake($path, $skel = null, $skip = array('empty')) {
+	public function bake($path, $skel = null, $skip = array('empty')) {
 		if (!$skel && !empty($this->params['skel'])) {
 			$skel = $this->params['skel'];
 		}
@@ -140,7 +168,7 @@ class ProjectTask extends Shell {
 			$skel = $this->in(
 				__d('cake_console', "What is the path to the directory layout you wish to copy?"),
 				null,
-				CAKE . 'Console' . DS . 'templates' . DS . 'skel'
+				CAKE . 'Console' . DS . 'Templates' . DS . 'skel'
 			);
 			if (!$skel) {
 				$this->err(__d('cake_console', 'The directory path you supplied was empty. Please try again.'));
@@ -149,7 +177,7 @@ class ProjectTask extends Shell {
 					$skel = $this->in(
 						__d('cake_console', 'Directory path does not exist please choose another:'),
 						null,
-						CAKE . 'Console' . DS . 'templates' . DS . 'skel'
+						CAKE . 'Console' . DS . 'Templates' . DS . 'skel'
 					);
 				}
 			}
@@ -203,7 +231,7 @@ class ProjectTask extends Shell {
 	public function createHome($dir) {
 		$app = basename($dir);
 		$path = $dir . 'View' . DS . 'Pages' . DS;
-		$source = CAKE . 'Console' . DS . 'templates' . DS .'default' . DS . 'views' . DS . 'home.ctp';
+		$source = CAKE . 'Console' . DS . 'Templates' . DS .'default' . DS . 'views' . DS . 'home.ctp';
 		include($source);
 		return $this->createFile($path.'home.ctp', $output);
 	}
@@ -219,8 +247,8 @@ class ProjectTask extends Shell {
 		$File = new File($path . 'Console' . DS . 'cake.php');
 		$contents = $File->read();
 		if (preg_match('/(__CAKE_PATH__)/', $contents, $match)) {
-			$path = CAKE . 'Console' . DS;
-			$replacement = "'" . str_replace(DS, "' . DIRECTORY_SEPARATOR . '", $path) . "'";
+			$root = strpos(CAKE_CORE_INCLUDE_PATH, '/') === 0 ? " \$ds . '" : "'";
+			$replacement = $root . str_replace(DS, "' . \$ds . '", trim(CAKE_CORE_INCLUDE_PATH, DS)) . "'";
 			$result = str_replace($match[0], $replacement, $contents);
 			if ($File->write($result)) {
 				return true;
@@ -277,30 +305,17 @@ class ProjectTask extends Shell {
  * Generates and writes CAKE_CORE_INCLUDE_PATH
  *
  * @param string $path Project path
+ * @param boolean $hardCode Wether or not define calls should be hardcoded.
  * @return boolean Success
  */
-	public function corePath($path) {
+	public function corePath($path, $hardCode = true) {
 		if (dirname($path) !== CAKE_CORE_INCLUDE_PATH) {
-			$File = new File($path . 'webroot' . DS . 'index.php');
-			$contents = $File->read();
-			if (preg_match('/([\s]*define\(\'CAKE_CORE_INCLUDE_PATH\',[\s\'A-z0-9\.]*\);)/', $contents, $match)) {
-				$root = strpos(CAKE_CORE_INCLUDE_PATH, '/') === 0 ? " DS . '" : "'";
-				$result = str_replace($match[0], "\n\t\tdefine('CAKE_CORE_INCLUDE_PATH', " . $root . str_replace(DS, "' . DS . '", trim(CAKE_CORE_INCLUDE_PATH, DS)) . "');", $contents);
-				if (!$File->write($result)) {
-					return false;
-				}
-			} else {
+			$filename = $path . 'webroot' . DS . 'index.php';
+			if (!$this->_replaceCorePath($filename, $hardCode)) {
 				return false;
 			}
-
-			$File = new File($path . 'webroot' . DS . 'test.php');
-			$contents = $File->read();
-			if (preg_match('/([\s]*define\(\'CAKE_CORE_INCLUDE_PATH\',[\s\'A-z0-9]*\);)/', $contents, $match)) {
-				$result = str_replace($match[0], "\n\t\tdefine('CAKE_CORE_INCLUDE_PATH', " . $root . str_replace(DS, "' . DS . '", trim(CAKE_CORE_INCLUDE_PATH, DS)) . "');", $contents);
-				if (!$File->write($result)) {
-					return false;
-				}
-			} else {
+			$filename = $path . 'webroot' . DS . 'test.php';
+			if (!$this->_replaceCorePath($filename, $hardCode)) {
 				return false;
 			}
 			return true;
@@ -308,7 +323,33 @@ class ProjectTask extends Shell {
 	}
 
 /**
- * Enables Configure::read('Routing.prefixes') in /app/config/core.php
+ * Replaces the __CAKE_PATH__ placeholder in the template files.
+ *
+ * @param string $filename The filename to operate on.
+ * @param boolean $hardCode Whether or not the define should be uncommented.
+ * @return boolean Success
+ */
+	protected function _replaceCorePath($filename, $hardCode) {
+		$contents = file_get_contents($filename);
+
+		$root = strpos(CAKE_CORE_INCLUDE_PATH, '/') === 0 ? " DS . '" : "'";
+		$corePath = $root . str_replace(DS, "' . DS . '", trim(CAKE_CORE_INCLUDE_PATH, DS)) . "'";
+
+		$result = str_replace('__CAKE_PATH__', $corePath, $contents, $count);
+		if ($hardCode) {
+			$result = str_replace('//define(\'CAKE_CORE', 'define(\'CAKE_CORE', $result);
+		}
+		if (!file_put_contents($filename, $result)) {
+			return false;
+		}
+		if ($count == 0) {
+			return false;
+		}
+		return true;
+	}
+
+/**
+ * Enables Configure::read('Routing.prefixes') in /app/Config/core.php
  *
  * @param string $name Name to use as admin routing
  * @return boolean Success
@@ -358,15 +399,15 @@ class ProjectTask extends Shell {
 		}
 		if ($this->interactive) {
 			$this->hr();
-			$this->out(__d('cake_console', 'You need to enable Configure::write(\'Routing.prefixes\',array(\'admin\')) in /app/config/core.php to use prefix routing.'));
+			$this->out(__d('cake_console', 'You need to enable Configure::write(\'Routing.prefixes\',array(\'admin\')) in /app/Config/core.php to use prefix routing.'));
 			$this->out(__d('cake_console', 'What would you like the prefix route to be?'));
 			$this->out(__d('cake_console', 'Example: www.example.com/admin/controller'));
 			while ($admin == '') {
 				$admin = $this->in(__d('cake_console', 'Enter a routing prefix:'), null, 'admin');
 			}
 			if ($this->cakeAdmin($admin) !== true) {
-				$this->out(__d('cake_console', '<error>Unable to write to</error> /app/config/core.php.'));
-				$this->out(__d('cake_console', 'You need to enable Configure::write(\'Routing.prefixes\',array(\'admin\')) in /app/config/core.php to use prefix routing.'));
+				$this->out(__d('cake_console', '<error>Unable to write to</error> /app/Config/core.php.'));
+				$this->out(__d('cake_console', 'You need to enable Configure::write(\'Routing.prefixes\',array(\'admin\')) in /app/Config/core.php to use prefix routing.'));
 				$this->_stop();
 			}
 			return $admin . '_';
@@ -388,8 +429,8 @@ class ProjectTask extends Shell {
 			))->addOption('empty', array(
 				'help' => __d('cake_console', 'Create empty files in each of the directories. Good if you are using git')
 			))->addOption('skel', array(
-				'default' => current(App::core('Console')) . 'templates' . DS . 'skel',
-				'help' => __d('cake_console', 'The directory layout to use for the new application skeleton. Defaults to cake/console/templates/skel of CakePHP used to create the project.')
+				'default' => current(App::core('Console')) . 'Templates' . DS . 'skel',
+				'help' => __d('cake_console', 'The directory layout to use for the new application skeleton. Defaults to cake/Console/Templates/skel of CakePHP used to create the project.')
 			));
 	}
 

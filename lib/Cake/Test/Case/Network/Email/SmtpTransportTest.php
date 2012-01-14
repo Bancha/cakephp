@@ -12,7 +12,7 @@
  *
  * @copyright     Copyright 2005-2011, Cake Software Foundation, Inc. (http://cakefoundation.org)
  * @link          http://book.cakephp.org/view/1196/Testing CakePHP(tm) Tests
- * @package       cake.tests.cases.libs.email
+ * @package       Cake.Test.Case.Network.Email
  * @since         CakePHP(tm) v 2.0.0
  * @license       MIT License (http://www.opensource.org/licenses/mit-license.php)
  */
@@ -61,7 +61,7 @@ class SmtpTestTransport extends SmtpTransport {
  * @param string $method
  * @param string $args
  * @return mixed
- */ 
+ */
 	public function __call($method, $args) {
 		$method = '_' . $method;
 		return $this->$method();
@@ -73,7 +73,7 @@ class SmtpTestTransport extends SmtpTransport {
  * Test case
  *
  */
-class StmpProtocolTest extends CakeTestCase {
+class SmtpTransportTest extends CakeTestCase {
 
 /**
  * Setup
@@ -88,7 +88,7 @@ class StmpProtocolTest extends CakeTestCase {
 
 		$this->SmtpTransport = new SmtpTestTransport();
 		$this->SmtpTransport->setSocket($this->socket);
-		$this->SmtpTransport->config();
+		$this->SmtpTransport->config(array('client' => 'localhost'));
 	}
 
 /**
@@ -127,10 +127,10 @@ class StmpProtocolTest extends CakeTestCase {
 /**
  * testConnectFail method
  *
- * @expectedException Exception
+ * @expectedException SocketException
  * @return void
  */
-	public function testConnetFail() {
+	public function testConnectFail() {
 		$this->socket->expects($this->any())->method('connect')->will($this->returnValue(true));
 		$this->socket->expects($this->at(0))->method('read')->will($this->returnValue(false));
 		$this->socket->expects($this->at(1))->method('read')->will($this->returnValue("220 Welcome message\r\n"));
@@ -224,14 +224,13 @@ class StmpProtocolTest extends CakeTestCase {
 		$data = "From: CakePHP Test <noreply@cakephp.org>\r\n";
 		$data .= "To: CakePHP <cake@cakephp.org>\r\n";
 		$data .= "Cc: Mark Story <mark@cakephp.org>, Juan Basso <juan@cakephp.org>\r\n";
-		$data .= "Bcc: phpnut@cakephp.org\r\n";
 		$data .= "X-Mailer: CakePHP Email\r\n";
 		$data .= "Date: " . date(DATE_RFC2822) . "\r\n";
 		$data .= "Message-ID: <4d9946cf-0a44-4907-88fe-1d0ccbdd56cb@localhost>\r\n";
 		$data .= "Subject: Testing SMTP\r\n";
 		$data .= "MIME-Version: 1.0\r\n";
 		$data .= "Content-Type: text/plain; charset=UTF-8\r\n";
-		$data .= "Content-Transfer-Encoding: 7bit\r\n";
+		$data .= "Content-Transfer-Encoding: 8bit\r\n";
 		$data .= "\r\n";
 		$data .= "First Line\r\n";
 		$data .= "Second Line\r\n";

@@ -5,25 +5,25 @@
  * PHP 5
  *
  * CakePHP(tm) : Rapid Development Framework (http://cakephp.org)
- * Copyright 2005-2010, Cake Software Foundation, Inc.
+ * Copyright 2005-2011, Cake Software Foundation, Inc.
  *
  * Licensed under The MIT License
  * Redistributions of files must retain the above copyright notice.
  *
- * @copyright     Copyright 2005-2010, Cake Software Foundation, Inc. (http://cakefoundation.org)
+ * @copyright     Copyright 2005-2011, Cake Software Foundation, Inc. (http://cakefoundation.org)
  * @link          http://cakephp.org CakePHP(tm) Project
- * @package       cake.console.shells.tasks
  * @since         CakePHP(tm) v 1.3
  * @license       MIT License (http://www.opensource.org/licenses/mit-license.php)
  */
 
+App::uses('AppShell', 'Console/Command');
 App::uses('BakeTask', 'Console/Command/Task');
 App::uses('Model', 'Model');
 
 /**
  * Task class for creating and updating fixtures files.
  *
- * @package       cake.console.shells.tasks
+ * @package       Cake.Console.Command.Task
  */
 class FixtureTask extends BakeTask {
 
@@ -31,7 +31,6 @@ class FixtureTask extends BakeTask {
  * Tasks to be loaded by this Task
  *
  * @var array
- * @access public
  */
 	public $tasks = array('DbConfig', 'Model', 'Template');
 
@@ -39,25 +38,26 @@ class FixtureTask extends BakeTask {
  * path to fixtures directory
  *
  * @var string
- * @access public
  */
 	public $path = null;
 
 /**
  * Schema instance
  *
- * @var object
- * @access protected
+ * @var CakeSchema
  */
 	protected $_Schema = null;
 
 /**
  * Override initialize
  *
+ * @param ConsoleOutput $stdout A ConsoleOutput object for stdout.
+ * @param ConsoleOutput $stderr A ConsoleOutput object for stderr.
+ * @param ConsoleInput $stdin A ConsoleInput object for stdin.
  */
 	public function __construct($stdout = null, $stderr = null, $stdin = null) {
 		parent::__construct($stdout, $stderr, $stdin);
-		$this->path = APP . 'tests' . DS . 'Fixture' . DS;
+		$this->path = APP . 'Test' . DS . 'Fixture' . DS;
 	}
 
 /**
@@ -240,7 +240,7 @@ class FixtureTask extends BakeTask {
  * Generate the fixture file, and write to disk
  *
  * @param string $model name of the model being generated
- * @param string $fixture Contents of the fixture file.
+ * @param string $otherVars Contents of the fixture file.
  * @return string Content saved into fixture file.
  */
 	public function generateFixtureFile($model, $otherVars) {
@@ -267,7 +267,7 @@ class FixtureTask extends BakeTask {
 	public function getPath() {
 		$path = $this->path;
 		if (isset($this->plugin)) {
-			$path = $this->_pluginPath($this->plugin) . 'tests' . DS . 'Fixture' . DS;
+			$path = $this->_pluginPath($this->plugin) . 'Test' . DS . 'Fixture' . DS;
 		}
 		return $path;
 	}
@@ -275,18 +275,19 @@ class FixtureTask extends BakeTask {
 /**
  * Generates a string representation of a schema.
  *
- * @param array $table Table schema array
+ * @param array $tableInfo Table schema array
  * @return string fields definitions
  */
 	protected function _generateSchema($tableInfo) {
 		$schema = $this->_Schema->generateTable('f', $tableInfo);
-		return substr($schema, 10, -2);
+		return substr($schema, 13, -2);
 	}
 
 /**
  * Generate String representation of Records
  *
- * @param array $table Table schema array
+ * @param array $tableInfo Table schema array
+ * @param integer $recordCount
  * @return array Array of records to use in the fixture.
  */
 	protected function _generateRecords($tableInfo, $recordCount = 1) {
@@ -316,35 +317,30 @@ class FixtureTask extends BakeTask {
 								 $insert = substr($insert, 0, (int)$fieldInfo['length'] - 2);
 							}
 						}
-						$insert = "'$insert'";
 					break;
 					case 'timestamp':
-						$ts = time();
-						$insert = "'$ts'";
+						$insert = time();
 					break;
 					case 'datetime':
-						$ts = date('Y-m-d H:i:s');
-						$insert = "'$ts'";
+						$insert = date('Y-m-d H:i:s');
 					break;
 					case 'date':
-						$ts = date('Y-m-d');
-						$insert = "'$ts'";
+						$insert = date('Y-m-d');
 					break;
 					case 'time':
-						$ts = date('H:i:s');
-						$insert = "'$ts'";
+						$insert = date('H:i:s');
 					break;
 					case 'boolean':
 						$insert = 1;
 					break;
 					case 'text':
-						$insert = "'Lorem ipsum dolor sit amet, aliquet feugiat.";
+						$insert = "Lorem ipsum dolor sit amet, aliquet feugiat.";
 						$insert .= " Convallis morbi fringilla gravida,";
 						$insert .= " phasellus feugiat dapibus velit nunc, pulvinar eget sollicitudin";
 						$insert .= " venenatis cum nullam, vivamus ut a sed, mollitia lectus. Nulla";
 						$insert .= " vestibulum massa neque ut et, id hendrerit sit,";
 						$insert .= " feugiat in taciti enim proin nibh, tempor dignissim, rhoncus";
-						$insert .= " duis vestibulum nunc mattis convallis.'";
+						$insert .= " duis vestibulum nunc mattis convallis.";
 					break;
 				}
 				$record[$field] = $insert;
@@ -365,7 +361,8 @@ class FixtureTask extends BakeTask {
 		foreach ($records as $record) {
 			$values = array();
 			foreach ($record as $field => $value) {
-				$values[] = "\t\t\t'$field' => $value";
+				$val = var_export($value, true);
+				$values[] = "\t\t\t'$field' => $val";
 			}
 			$out .= "\t\tarray(\n";
 			$out .= implode(",\n", $values);
@@ -386,25 +383,32 @@ class FixtureTask extends BakeTask {
 	protected function _getRecordsFromTable($modelName, $useTable = null) {
 		if ($this->interactive) {
 			$condition = null;
-			$prompt = __d('cake_console', "Please provide a SQL fragment to use as conditions\nExample: WHERE 1=1 LIMIT 10");
+			$prompt = __d('cake_console', "Please provide a SQL fragment to use as conditions\nExample: WHERE 1=1");
 			while (!$condition) {
-				$condition = $this->in($prompt, null, 'WHERE 1=1 LIMIT 10');
+				$condition = $this->in($prompt, null, 'WHERE 1=1');
 			}
+			$prompt = __d('cake_console', "How many records do you want to import?");
+			$recordCount =  $this->in($prompt, null, 10);
 		} else {
-			$condition = 'WHERE 1=1 LIMIT ' . (isset($this->params['count']) ? $this->params['count'] : 10);
+			$condition = 'WHERE 1=1';
+			$recordCount = (isset($this->params['count']) ? $this->params['count'] : 10);
 		}
 		$modelObject = new Model(array('name' => $modelName, 'table' => $useTable, 'ds' => $this->connection));
 		$records = $modelObject->find('all', array(
 			'conditions' => $condition,
-			'recursive' => -1
+			'recursive' => -1,
+			'limit' => $recordCount
 		));
-		$db = ConnectionManager::getDataSource($modelObject->useDbConfig);
+		$db = $modelObject->getDatasource();
 		$schema = $modelObject->schema(true);
 		$out = array();
 		foreach ($records as $record) {
 			$row = array();
 			foreach ($record[$modelObject->alias] as $field => $value) {
-				$row[$field] = $db->value($value, $schema[$field]['type']);
+				if ($schema[$field]['type'] === 'boolean') {
+					$value = (int)(bool)$value;
+				}
+				$row[$field] = $value;
 			}
 			$out[] = $row;
 		}

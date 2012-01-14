@@ -5,14 +5,14 @@
  * PHP 5
  *
  * CakePHP(tm) : Rapid Development Framework (http://cakephp.org)
- * Copyright 2005-2010, Cake Software Foundation, Inc. (http://cakefoundation.org)
+ * Copyright 2005-2011, Cake Software Foundation, Inc. (http://cakefoundation.org)
  *
  * Licensed under The MIT License
  * Redistributions of files must retain the above copyright notice.
  *
- * @copyright     Copyright 2005-2010, Cake Software Foundation, Inc. (http://cakefoundation.org)
+ * @copyright     Copyright 2005-2011, Cake Software Foundation, Inc. (http://cakefoundation.org)
  * @link          http://cakephp.org CakePHP(tm) Project
- * @package       cake.libs.controller.components
+ * @package       Cake.Controller.Component
  * @since         CakePHP(tm) v 1.2.0.3467
  * @license       MIT License (http://www.opensource.org/licenses/mit-license.php)
  */
@@ -27,8 +27,9 @@ App::uses('CakeEmail', 'Network/Email');
  * This component is used for handling Internet Message Format based
  * based on the standard outlined in http://www.rfc-editor.org/rfc/rfc2822.txt
  *
- * @package       cake.libs.controller.components
- * @link http://book.cakephp.org/view/1283/Email
+ * @package       Cake.Controller.Component
+ * @link http://book.cakephp.org/2.0/en/core-libraries/components/email.html
+ * @link http://book.cakephp.org/2.0/en/core-utility-libraries/email.html
  * @deprecated Use Network/CakeEmail
  */
 class EmailComponent extends Component {
@@ -37,7 +38,6 @@ class EmailComponent extends Component {
  * Recipient of the email
  *
  * @var string
- * @access public
  */
 	public $to = null;
 
@@ -45,7 +45,6 @@ class EmailComponent extends Component {
  * The mail which the email is sent from
  *
  * @var string
- * @access public
  */
 	public $from = null;
 
@@ -53,7 +52,6 @@ class EmailComponent extends Component {
  * The email the recipient will reply to
  *
  * @var string
- * @access public
  */
 	public $replyTo = null;
 
@@ -61,7 +59,6 @@ class EmailComponent extends Component {
  * The read receipt email
  *
  * @var string
- * @access public
  */
 	public $readReceipt = null;
 
@@ -72,7 +69,6 @@ class EmailComponent extends Component {
  * - Unknown user
  *
  * @var string
- * @access public
  */
 	public $return = null;
 
@@ -83,7 +79,6 @@ class EmailComponent extends Component {
  * The Recipient WILL be able to see this list
  *
  * @var array
- * @access public
  */
 	public $cc = array();
 
@@ -94,7 +89,6 @@ class EmailComponent extends Component {
  * The Recipient WILL NOT be able to see this list
  *
  * @var array
- * @access public
  */
 	public $bcc = array();
 
@@ -105,13 +99,12 @@ class EmailComponent extends Component {
  *
  * @var string
  */
-	var $date = null;
+	public $date = null;
 
 /**
  * The subject of the email
  *
  * @var string
- * @access public
  */
 	public $subject = null;
 
@@ -120,7 +113,6 @@ class EmailComponent extends Component {
  * Keys will be prefixed 'X-' as per RFC2822 Section 4.7.5
  *
  * @var array
- * @access public
  */
 	public $headers = array();
 
@@ -130,7 +122,6 @@ class EmailComponent extends Component {
  * These will NOT be used if you are using safemode and mail()
  *
  * @var string
- * @access public
  */
 	public $additionalParams = null;
 
@@ -138,7 +129,6 @@ class EmailComponent extends Component {
  * Layout for the View
  *
  * @var string
- * @access public
  */
 	public $layout = 'default';
 
@@ -146,7 +136,6 @@ class EmailComponent extends Component {
  * Template for the view
  *
  * @var string
- * @access public
  */
 	public $template = null;
 
@@ -158,7 +147,6 @@ class EmailComponent extends Component {
  * (which leads to doubling CR if CRLF is used).
  *
  * @var string
- * @access public
  */
 	public $lineFeed = PHP_EOL;
 
@@ -171,7 +159,6 @@ class EmailComponent extends Component {
  * - both
  *
  * @var string
- * @access public
  */
 	public $sendAs = 'text';
 
@@ -184,7 +171,6 @@ class EmailComponent extends Component {
  * - debug
  *
  * @var string
- * @access public
  */
 	public $delivery = 'mail';
 
@@ -192,7 +178,6 @@ class EmailComponent extends Component {
  * charset the email is sent in
  *
  * @var string
- * @access public
  */
 	public $charset = 'utf-8';
 
@@ -202,7 +187,6 @@ class EmailComponent extends Component {
  * Can be both absolute and relative paths
  *
  * @var array
- * @access public
  */
 	public $attachments = array();
 
@@ -210,7 +194,6 @@ class EmailComponent extends Component {
  * What mailer should EmailComponent identify itself as
  *
  * @var string
- * @access public
  */
 	public $xMailer = 'CakePHP Email Component';
 
@@ -218,7 +201,6 @@ class EmailComponent extends Component {
  * The list of paths to search if an attachment isnt absolute
  *
  * @var array
- * @access public
  */
 	public $filePaths = array();
 
@@ -234,8 +216,6 @@ class EmailComponent extends Component {
  * - client
  *
  * @var array
- * @access public
- * @link http://book.cakephp.org/view/1290/Sending-A-Message-Using-SMTP
  */
 	public $smtpOptions = array();
 
@@ -243,7 +223,6 @@ class EmailComponent extends Component {
  * Contains the rendered plain text message if one was sent.
  *
  * @var string
- * @access public
  */
 	public $textMessage = null;
 
@@ -251,7 +230,6 @@ class EmailComponent extends Component {
  * Contains the rendered HTML message if one was sent.
  *
  * @var string
- * @access public
  */
 	public $htmlMessage = null;
 
@@ -265,14 +243,13 @@ class EmailComponent extends Component {
  * could encounter delivery issues if you do not.
  *
  * @var mixed
- * @access public
  */
 	public $messageId = true;
 
 /**
  * Controller reference
  *
- * @var object Controller
+ * @var Controller
  */
 	protected $_controller = null;
 
@@ -290,7 +267,8 @@ class EmailComponent extends Component {
 /**
  * Initialize component
  *
- * @param object $controller Instantiating controller
+ * @param Controller $controller Instantiating controller
+ * @return void
  */
 	public function initialize($controller) {
 		if (Configure::read('App.encoding') !== null) {
@@ -332,6 +310,7 @@ class EmailComponent extends Component {
 		}
 
 		$lib->subject($this->subject)->messageID($this->messageId);
+		$lib->helpers($this->_controller->helpers);
 
 		$headers = array('X-Mailer' => $this->xMailer);
 		foreach ($this->headers as $key => $value) {
@@ -354,7 +333,7 @@ class EmailComponent extends Component {
 			$lib->attachments($this->_formatAttachFiles());
 		}
 
-		$lib->transport($this->delivery);
+		$lib->transport(ucfirst($this->delivery));
 		if ($this->delivery === 'mail') {
 			$lib->config(array('eol' => $this->lineFeed, 'additionalParameters' => $this->additionalParams));
 		} elseif ($this->delivery === 'smtp') {
@@ -383,7 +362,7 @@ class EmailComponent extends Component {
 /**
  * Reset all EmailComponent internal variables to be able to send out a new email.
  *
- * @link http://book.cakephp.org/view/1285/Sending-Multiple-Emails-in-a-loop
+ * @return void
  */
 	public function reset() {
 		$this->template = null;
@@ -426,9 +405,8 @@ class EmailComponent extends Component {
  *
  * @param string $attachment Attachment file name to find
  * @return string Path to located file
- * @access private
  */
-	function _findFiles($attachment) {
+	protected function _findFiles($attachment) {
 		if (file_exists($attachment)) {
 			return $attachment;
 		}
@@ -446,9 +424,8 @@ class EmailComponent extends Component {
  *
  * @param string $subject String to encode
  * @return string Encoded string
- * @access private
  */
-	function _encode($subject) {
+	protected function _encode($subject) {
 		$subject = $this->_strip($subject);
 
 		$nl = "\r\n";
@@ -493,9 +470,8 @@ class EmailComponent extends Component {
  * @param string $value Value to strip
  * @param boolean $message Set to true to indicate main message content
  * @return string Stripped value
- * @access private
  */
-	function _strip($value, $message = false) {
+	protected function _strip($value, $message = false) {
 		$search  = '%0a|%0d|Content-(?:Type|Transfer-Encoding)\:';
 		$search .= '|charset\=|mime-version\:|multipart/mixed|(?:[^a-z]to|b?cc)\:.*';
 

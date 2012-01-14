@@ -13,7 +13,7 @@
  *
  * @copyright     CakePHP(tm) : Rapid Development Framework (http://cakephp.org)
  * @link          http://www.cakephp.org
- * @package       cake.tests.fixtures
+ * @package       Cake.Test.Fixture
  * @since         1.2
  * @license       MIT License (http://www.opensource.org/licenses/mit-license.php)
  */
@@ -21,7 +21,7 @@
 /**
  * AdFixture class
  *
- * @package       cake.tests.fixtures
+ * @package       Cake.Test.Fixture
  */
 class AdFixture extends CakeTestFixture {
 
@@ -29,7 +29,6 @@ class AdFixture extends CakeTestFixture {
  * name property
  *
  * @var string 'Ad'
- * @access public
  */
 	public $name = 'Ad';
 
@@ -37,7 +36,6 @@ class AdFixture extends CakeTestFixture {
  * fields property
  *
  * @var array
- * @access public
  */
 	public $fields = array(
 		'id' => array('type' => 'integer', 'key' => 'primary'),
@@ -52,7 +50,6 @@ class AdFixture extends CakeTestFixture {
  * records property
  *
  * @var array
- * @access public
  */
 	public $records = array(
 		array('parent_id' => null, 'lft' => 1,  'rght' => 2,  'campaign_id' => 1, 'name' => 'Nordover'),
